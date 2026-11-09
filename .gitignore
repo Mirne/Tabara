@@ -1,0 +1,10 @@
+.godot/
+builds/*
+!builds/.gitkeep
+*.keystore
+*.apk
+*.aab
+*.tmp
+.DS_Store
+android/build/
+test-results/
