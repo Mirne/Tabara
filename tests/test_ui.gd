@@ -49,7 +49,14 @@ func run() -> void:
  var terrain_image: Image = game.terrain_view.get_texture().get_image()
  check(terrain_image!=null and terrain_image.get_pixel(450,550).a>.9,"Cached terrain actually renders")
  check(game.screen=="menu","Starts at main menu")
+ check(game.music_player.stream.loop,"Ambient soundtrack loops")
  await capture("01-menu")
+ await tap(Vector2(350,656))
+ check(game.screen=="credits","Credits button opens notices")
+ check(game.license_label.visible and game.license_label.text.length()>1000,"Licenses are visible and included")
+ await capture("11-credits")
+ await tap(Vector2(710,615))
+ check(game.screen=="menu","Credits returns to main menu")
  # Clean test profile guarantees a new-game action.
  game.save_available = false
  await frame()
