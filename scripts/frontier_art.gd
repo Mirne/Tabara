@@ -16,8 +16,10 @@ const PROP_SIZES=[Vector2(145,220),Vector2(145,168),Vector2(220,215),Vector2(150
 const UNIT_SIZES=[Vector2(67,80),Vector2(67,80),Vector2(83.75,100),Vector2(118,114),Vector2(50,64)]
 static var unit_regions:Array[Rect2]=[]
 static var style_cache:Dictionary={}
+static var wall_icon:Texture2D
 
 static func _static_init()->void:
+ if ResourceLoader.exists("res://assets/world/wall-icon.png"):wall_icon=load("res://assets/world/wall-icon.png")
  var cell:=Vector2(UNITS.get_size())/Vector2(4,5)
  for row in 5:
   for frame in 4: unit_regions.append(Rect2(Vector2(frame,row)*cell,cell))

@@ -6,10 +6,11 @@ extends RefCounted
 const VICTORY_TIME := 900.0
 const MAX_LEVEL := 100
 const WAVE_SECONDS := 30.0
-const SAVE_VERSION := 4
+const SAVE_VERSION := 5
 const Navigator=preload("res://scripts/assault_navigation.gd")
 static var shared_navigation:Dictionary={}
 var mountains_enabled:=true
+var terrain_revision:=World.AUTHORED_REVISION
 var foundation_cells:Dictionary={}
 var navigation
 var body_cells:Dictionary={}
@@ -61,7 +62,9 @@ var rng := RandomNumberGenerator.new()
 var path_lengths: Array[float] = []
 var total_length := 0.0
 
-func _init(seed_number: int = 2026) -> void:
+func _init(seed_number:int=2026,layout:int=World.AUTHORED_REVISION)->void:
+ terrain_revision=layout
+ mountains_enabled=layout!=0
  reset_navigation()
  seed_value = seed_number
  rng.seed = seed_number
@@ -80,11 +83,11 @@ func _init(seed_number: int = 2026) -> void:
  spawn_clock=1.0
 
 func reset_navigation()->void:
- if not shared_navigation.has(mountains_enabled): shared_navigation[mountains_enabled]=Navigator.new(World.HALL,mountains_enabled)
- navigation=shared_navigation[mountains_enabled]
+ if not shared_navigation.has(terrain_revision): shared_navigation[terrain_revision]=Navigator.new(World.HALL,terrain_revision)
+ navigation=shared_navigation[terrain_revision]
 
 func grid_blocked(cell:Vector2i)->bool:
- if World.cell_terrain(cell,mountains_enabled)>0: return true
+ if World.cell_terrain(cell,terrain_revision)>0: return true
  var index:int=foundation_cells.get(cell,-1)
  return index>=0 and buildings[index]!=null and buildings[index].hp>0
 
@@ -135,7 +138,7 @@ func placement_error(position: Vector2, kind: String) -> String:
   own_deposit=deposit_near(position,kind,45.0)
   if own_deposit<0: return "Place this producer on a %s deposit."%("forest" if kind=="wood" else "stone")
   if deposit_owner(own_deposit)>=0: return "This deposit already has a producer. Repair or clear its building."
- var terrain:String=World.terrain_error(position,radius,own_deposit,mountains_enabled)
+ var terrain:String=World.terrain_error(position,radius,own_deposit,terrain_revision)
  if terrain!="": return terrain
  for i in nearby_buildings(position,radius+180):
   var b=buildings[i]
@@ -636,11 +639,11 @@ func snapshot() -> Dictionary:
   var push:Vector2=e.get("push",Vector2.ZERO)
   copy.push=[push.x,push.y]
   saved_enemies.append(copy)
- return {"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
+ return {"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
 
 static func restore(data: Dictionary):
  if not _number(data.get("version"),2,SAVE_VERSION) or float(data.version)!=floorf(data.version): return null
- if int(data.version) not in [2,3,SAVE_VERSION]: return null
+ if int(data.version) not in [2,3,4,SAVE_VERSION]: return null
  if not data.get("buildings") is Array or data.buildings.is_empty() or data.buildings.size()>MAX_BUILDINGS: return null
  if not data.get("enemies") is Array or data.enemies.size()>MAX_ENEMIES: return null
  if not data.get("resources") is Dictionary: return null
@@ -654,7 +657,14 @@ static func restore(data: Dictionary):
  if not data.get("victory_seen") is bool: return null
  if not data.get("rng_state") is String or not data.rng_state.is_valid_int(): return null
  if int(data.wave)!=int(float(data.elapsed)/WAVE_SECONDS)+1: return null
- var sim=load("res://scripts/simulation.gd").new(int(data.seed))
+ var layout:=1
+ if data.version>=5:
+  if not _number(data.get("terrain_revision"),0,World.AUTHORED_REVISION) or float(data.terrain_revision)!=floorf(data.terrain_revision): return null
+  layout=int(data.terrain_revision)
+ elif data.version>=4:
+  if not data.get("mountains_enabled") is bool: return null
+  layout=1 if data.mountains_enabled else 0
+ var sim=load("res://scripts/simulation.gd").new(int(data.seed),layout)
  if not data.get("deposits") is Array or data.deposits.size()!=sim.resource_nodes.size(): return null
  for timer in data.deposits:
   if not _number(timer,0,12.01): return null
@@ -692,15 +702,13 @@ static func restore(data: Dictionary):
  sim.cleared_ground.clear()
  for cell in data.cleared_ground: sim.cleared_ground[int(cell)]=true
  sim.buildings=restored
- if data.version>=4:
-  if not data.get("mountains_enabled") is bool: return null
-  sim.mountains_enabled=data.mountains_enabled
- else:
-  # Add the pass to old settlements only where existing foundations stay clear.
+ if data.version<4:
+  # Older settlements keep the terrain on which their foundations were built.
   for b in sim.buildings:
-   if b!=null and World.mountain_conflict(sim.foundation_rect(b.pos,b.kind)): sim.mountains_enabled=false
+   if b!=null and World.mountain_conflict(sim.foundation_rect(b.pos,b.kind),1): sim.terrain_revision=0
+ sim.mountains_enabled=sim.terrain_revision!=0
  sim.reset_navigation()
- if sim.buildings[0].pos!=World.HALL: sim.navigation=Navigator.new(sim.buildings[0].pos,sim.mountains_enabled)
+ if sim.buildings[0].pos!=World.HALL: sim.navigation=Navigator.new(sim.buildings[0].pos,sim.terrain_revision)
  sim.enemies=data.enemies.duplicate(true)
  for e in sim.enemies:
   e.pos=Vector2(e.pos[0],e.pos[1]) if data.version>=3 else sim.path_point(e.progress)+Vector2(0,e.lane)

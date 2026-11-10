@@ -70,7 +70,8 @@ func run()->void:
  await action("start")
  check(game.screen=="mission" and game.sim.enemies.size()>0 and game.sim.enemies[0].progress<game.sim.total_length*0.2,"Mission starts enemies at the path entrance")
  check(game.VIEW.end.x<=1152,"The construction rail sits to the right of the world")
- check(game.world.RESOURCE_SITES!=null and game.world.scenery.size()<1100,"Each forest and quarry uses one compact resource image")
+ check(game.world.scenery.is_empty() and game.world.mountain_sprites.size()==4 and game.world.landmarks.size()==6,"Authored world uses distinct placed formations and landmarks")
+ check(game.world.overview!=null and game.Art.wall_icon!=null,"Authored minimap and textured wall construction icon load")
  var centred:=true
  for i in game.Art.BUILD_SIZES.size():
   var base:=Vector2(500,500)

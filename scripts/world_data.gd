@@ -17,39 +17,86 @@ const GRID_WIDTH := 205
 const GRID_HEIGHT := 128
 # Two continuous spines meet the map edges, leaving a 480-unit mountain pass.
 const MOUNTAIN_RECTS := [Rect2(3600,0,320,1440),Rect2(3680,1280,480,320),Rect2(4000,1440,240,1120),Rect2(4000,3040,240,2080)]
+const AUTHORED_REVISION:=2
 static var terrain_fields:Dictionary={}
+static var authored:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/hearthvale.json"))
+static var water_cells:Dictionary={}
+
+static func _static_init()->void:
+ for key in authored.get("water_cells",[]): water_cells[int(key)]=true
+
+static func revision(value:Variant)->int:
+ if value is bool: return 1 if value else 0
+ return clampi(int(value),0,AUTHORED_REVISION)
+
+static func polygon(name:String)->PackedVector2Array:
+ var result:=PackedVector2Array()
+ for pair in authored[name]: result.append(Vector2(pair[0],pair[1]))
+ return result
+
+static func authored_landmarks()->Array:
+ var result:Array=[]
+ for item in authored.landmarks:
+  result.append({"id":item.id,"frame":int(item.frame),"pos":Vector2(item.pos[0],item.pos[1]),"size":Vector2(item.size[0],item.size[1]),"footprint":Rect2(item.footprint[0],item.footprint[1],item.footprint[2],item.footprint[3])})
+ return result
+
+static func unique_resource(index:int)->Dictionary:
+ var wood_count:int=GROVES.size()
+ if index<wood_count: return {"atlas":index/4,"frame":index%4,"size":Vector2(245+(index%3)*12,225+(index%2)*15)}
+ if index<wood_count+QUARRIES.size():
+  var n:=index-wood_count
+  return {"atlas":n/2,"frame":4+n%2,"size":Vector2(230+(n%2)*15,165+(n%3)*9)}
+ return {"atlas":4,"frame":index-wood_count-QUARRIES.size(),"size":Vector2(145,115)}
 
 static func cell_of(p:Vector2)->Vector2i: return Vector2i(floori(p.x/CELL),floori(p.y/CELL))
 static func cell_center(c:Vector2i)->Vector2: return (Vector2(c)+Vector2.ONE*0.5)*CELL
 static func resource_rect(index:int)->Rect2:
  var center:Vector2=resource_nodes()[index].pos.snapped(Vector2.ONE*CELL)
  return Rect2(center-Vector2(80,80),Vector2(160,160))
-static func mountain_at(p:Vector2)->bool:
- for rect in MOUNTAIN_RECTS:
-  if rect.has_point(p): return true
- return false
-static func mountain_conflict(rect:Rect2)->bool:
- for ridge in MOUNTAIN_RECTS:
-  if ridge.intersects(rect): return true
+static func mountain_at(p:Vector2,layout:Variant=AUTHORED_REVISION)->bool:
+ if revision(layout)==0: return false
+ if revision(layout)==1:
+  for rect in MOUNTAIN_RECTS:
+   if rect.has_point(p): return true
+  return false
+ return Geometry2D.is_point_in_polygon(p,polygon("north_polygon")) or Geometry2D.is_point_in_polygon(p,polygon("south_polygon"))
+
+static func mountain_conflict(rect:Rect2,layout:Variant=AUTHORED_REVISION)->bool:
+ if revision(layout)==0: return false
+ if revision(layout)==1:
+  for ridge in MOUNTAIN_RECTS:
+   if ridge.intersects(rect): return true
+  return false
+ var box:=PackedVector2Array([rect.position,Vector2(rect.end.x,rect.position.y),rect.end,Vector2(rect.position.x,rect.end.y)])
+ for name in ["north_polygon","south_polygon"]:
+  if not Geometry2D.intersect_polygons(box,polygon(name)).is_empty(): return true
  return false
 
-static func terrain_field(mountains_enabled:bool=true)->PackedInt32Array:
- if terrain_fields.has(mountains_enabled): return terrain_fields[mountains_enabled]
+static func compute_field(layout:int)->PackedInt32Array:
  var field:=PackedInt32Array()
  field.resize(GRID_WIDTH*GRID_HEIGHT)
  var boundary:=Rect2(Vector2(100,100),SIZE-Vector2(200,200))
+ var north:=polygon("north_polygon")
+ var south:=polygon("south_polygon")
+ var monuments:Array=authored_landmarks() if layout==2 else []
  for y in GRID_HEIGHT:
   for x in GRID_WIDTH:
    var c:=Vector2i(x,y)
    var rect:=Rect2(Vector2(c)*CELL,Vector2.ONE*CELL)
    var value:=0
    if not boundary.encloses(rect): value=1
-   elif mountains_enabled and mountain_conflict(rect): value=4
    else:
     for offset in [Vector2.ZERO,Vector2(-19,-19),Vector2(19,-19),Vector2(-19,19),Vector2(19,19)]:
      var point:Vector2=cell_center(c)+offset
-     if water_at(point): value=2
+     if water_at(point,layout): value=2
      elif rock_at(point): value=3
+     if layout==2 and (Geometry2D.is_point_in_polygon(point,north) or Geometry2D.is_point_in_polygon(point,south)): value=4
+    if layout==1:
+     for ridge in MOUNTAIN_RECTS:
+      if ridge.intersects(rect): value=4
+    if layout==2 and value==0:
+     for monument in monuments:
+      if monument.footprint.intersects(rect): value=5
    field[y*GRID_WIDTH+x]=value
  var nodes:=resource_nodes()
  for i in nodes.size():
@@ -58,34 +105,52 @@ static func terrain_field(mountains_enabled:bool=true)->PackedInt32Array:
    for x in range(floori(rect.position.x/CELL),ceili(rect.end.x/CELL)):
     var key:=y*GRID_WIDTH+x
     if key>=0 and key<field.size() and field[key]==0: field[key]=10+i
- terrain_fields[mountains_enabled]=field
  return field
 
-static func cell_terrain(c:Vector2i,mountains_enabled:bool=true)->int:
+static func terrain_field(layout:Variant=AUTHORED_REVISION)->PackedInt32Array:
+ var rev:=revision(layout)
+ if terrain_fields.has(rev): return terrain_fields[rev]
+ var baked:Variant=authored.get("terrain_fields",{}).get(str(rev))
+ var field:PackedInt32Array=PackedInt32Array(baked) if baked is Array and baked.size()==GRID_WIDTH*GRID_HEIGHT else compute_field(rev)
+ terrain_fields[rev]=field
+ return field
+
+static func cell_terrain(c:Vector2i,layout:Variant=AUTHORED_REVISION)->int:
  if c.x<0 or c.y<0 or c.x>=GRID_WIDTH or c.y>=GRID_HEIGHT: return 1
- return terrain_field(mountains_enabled)[c.y*GRID_WIDTH+c.x]
+ return terrain_field(layout)[c.y*GRID_WIDTH+c.x]
 
 static func mountain_sprites()->Array:
- var out:Array=[]
+ var result:Array=[]
+ for item in authored.mountain_objects:
+  var a:Array=item.rect
+  result.append({"id":item.id,"rect":Rect2(a[0],a[1],a[2],a[3]),"pos":Vector2(a[0]+a[2]*0.5,a[1]+a[3]*0.8)})
+ return result
+
+static func legacy_mountain_sprites()->Array:
+ var result:Array=[]
  for rect in MOUNTAIN_RECTS:
   for y in range(int(rect.position.y)+80,int(rect.end.y)+1,160):
-   out.append({"pos":Vector2(rect.get_center().x,y),"size":Vector2(rect.size.x+60,260)})
- return out
+   result.append({"pos":Vector2(rect.get_center().x,y),"size":Vector2(rect.size.x+60,260)})
+ return result
 
-static func water_at(p: Vector2) -> bool:
- return ((p-LAKE_CENTER)/LAKE_RADIUS).length_squared()<1.0
+static func water_at(p:Vector2,layout:Variant=AUTHORED_REVISION)->bool:
+ if revision(layout)<2: return ((p-LAKE_CENTER)/LAKE_RADIUS).length_squared()<1.0
+ if not water_cells.is_empty():
+  var c:=cell_of(p)
+  return water_cells.has(c.y*GRID_WIDTH+c.x)
+ return Geometry2D.is_point_in_polygon(p,polygon("lake_polygon"))
 
 static func rock_at(p: Vector2) -> bool:
  for c in CLIFFS:
   if ((p-c)/Vector2(370,210)).length_squared()<1.0: return true
  return false
 
-static func terrain_error(p:Vector2,radius:float,own_deposit:int=-1,mountains_enabled:bool=true)->String:
+static func terrain_error(p:Vector2,radius:float,own_deposit:int=-1,layout:Variant=AUTHORED_REVISION)->String:
  var rect:=Rect2(p-Vector2.ONE*radius,Vector2.ONE*radius*2)
- var reasons=["","Stay inside the frontier boundary.","Build on dry ground.","This rocky ridge cannot support foundations.","Mountains block this ground. Build walls across the pass."]
+ var reasons=["","Stay inside the frontier boundary.","Build on dry ground.","This rocky ridge cannot support foundations.","Mountains block this ground. Build walls across the pass.","This landmark occupies the ground."]
  for y in range(floori(rect.position.y/CELL),ceili(rect.end.y/CELL)):
   for x in range(floori(rect.position.x/CELL),ceili(rect.end.x/CELL)):
-   var value:=cell_terrain(Vector2i(x,y),mountains_enabled)
+   var value:=cell_terrain(Vector2i(x,y),layout)
    if value>=10:
     if value-10!=own_deposit: return "Leave this resource deposit clear, or build its matching producer on it."
    elif value>0: return reasons[value]
@@ -108,18 +173,6 @@ static func protected_resource_scenery(p: Vector2) -> bool:
   if center.distance_to(p)<180: return true
  return false
 
-static func scenery() -> Array:
- var out: Array=[]
- var rng:=RandomNumberGenerator.new()
- rng.seed=42516
- # Each forest/quarry is one compact authored resource image, not scattered copies.
- for center in CLIFFS:
-  for j in 10:
-   var p:Vector2=center+Vector2(rng.randf_range(-180,180),rng.randf_range(-110,110))
-   out.append({"pos":p,"art":4,"scale":rng.randf_range(0.65,1.6),"flip":rng.randf()<0.5})
- for j in 950:
-  var p:=Vector2(rng.randf_range(80,SIZE.x-80),rng.randf_range(80,SIZE.y-80))
-  if water_at(p) or road_distance(p)<90: continue
-  out.append({"pos":p,"art":8 if j%3 else 11,"scale":rng.randf_range(0.3,0.65),"flip":rng.randf()<0.5})
- out.sort_custom(func(a,b):return a.pos.y<b.pos.y)
- return out
+static func scenery()->Array:
+ # Natural detail is painted into the authored floor. Every major object is placed once.
+ return []

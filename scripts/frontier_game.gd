@@ -608,7 +608,7 @@ func draw_menu()->void:
  label("SINGLE PLAYER   /   OFFLINE",Vector2(83,754),13,MUTED)
  Art.skin(self,Rect2(971,620,414,142),Color(0.87,0.9,0.83))
  label("MISSION 01",Vector2(997,650),13,GOLD)
- label("The Pinewatch Frontier",Vector2(996,685),26,IVORY,true)
+ label("The Hearthvale Basin",Vector2(996,685),26,IVORY,true)
  wrapped("A vast valley. One approach. Fifteen minutes to secure your foothold.",Vector2(997,716),360,15,MUTED,23)
  if best>0:
   Art.skin(self,Rect2(1170,27,230,43),Color(0.86,0.9,0.83),9)
@@ -638,7 +638,9 @@ func draw_hud()->void:
   var active:bool=build_kind==kind
   Art.skin(self,rect,Color(1.4,1.22,0.86) if active else Color(0.8,0.86,0.8),8)
   var art_scale:float=0.22 if kind not in ["arrow","cannon"] else 0.2
-  Art.building(self,definition.art,Vector2(rect.position.x+62,rect.position.y+63),art_scale)
+  if kind=="wall" and Art.wall_icon!=null:
+   draw_texture_rect(Art.wall_icon,Rect2(rect.position+Vector2(28,7),Vector2(68,56)),false)
+  else: Art.building(self,definition.art,Vector2(rect.position.x+62,rect.position.y+63),art_scale)
   centered(definition.name,Rect2(rect.position.x,rect.position.y+67,124,23),13,GOLD if active else IVORY)
   for r in 3:
    Art.icon(self,r,Rect2(rect.position.x+7+r*39,rect.position.y+99,14,14))
@@ -695,7 +697,8 @@ func draw_inspector()->void:
 
 func draw_minimap()->void:
  Art.skin(self,Rect2(10,635,251,165),Color(0.9,0.93,0.86),10)
- if world.ground_view!=null: draw_texture_rect(world.ground_view.get_texture(),MINIMAP,false,Color(0.79,0.88,0.75))
+ if sim.terrain_revision==2 and world.overview!=null: draw_texture_rect(world.overview,MINIMAP,false,Color(0.9,0.94,0.88))
+ elif world.ground_view!=null: draw_texture_rect(world.ground_view.get_texture(),MINIMAP,false,Color(0.79,0.88,0.75))
  for b in sim.buildings:
   if b!=null: draw_rect(Rect2(MINIMAP.position+b.pos/Map.SIZE*MINIMAP.size-Vector2(1.5,1.5),Vector2(3,3)),GOLD if b.hp>0 else RED)
  for e in sim.enemies:
@@ -714,7 +717,7 @@ func overlay(rect:Rect2,tag:String,title:String,description:String="")->void:
  if description!="": wrapped(description,rect.position+Vector2(38,137),rect.size.x-76,17,MUTED,28)
 
 func draw_briefing()->void:
- overlay(Rect2(355,105,730,600),"MISSION 01  /  THE PINEWATCH FRONTIER","Carve a foothold in the valley.","The western road carries the first raiders. Keep your main hall standing for fifteen minutes, then continue the endless siege.")
+ overlay(Rect2(355,105,730,600),"MISSION 01  /  THE HEARTHVALE BASIN","Carve a foothold in the valley.","The western road carries the first raiders. Keep your main hall standing for fifteen minutes, then continue the endless siege.")
  var rows:=[["01","Expand freely","Preview buildings on the grid, then confirm. Woodcutters require forests and stonemasons require quarries, with one producer per deposit."],["02","Build a defensive line","Walls, arrow towers and cannons can be placed wherever your strategy needs them. Great hordes arrive every fifth wave."],["03","Recover from destruction","Collapsed buildings leave ruins. Repair them to keep their upgrades, or clear the ground and rebuild."]]
  for i in 3:
   var y:float=343+i*88
@@ -722,7 +725,7 @@ func draw_briefing()->void:
   label(rows[i][1],Vector2(452,y-2),20,IVORY)
   wrapped(rows[i][2],Vector2(452,y+24),578,14,MUTED,22)
  button(Rect2(394,625,152,51),"Back","menu_back")
- button(Rect2(562,625,483,51),"Establish Pinewatch","start",true)
+ button(Rect2(562,625,483,51),"Establish a settlement","start",true)
 
 func draw_end()->void:
  var title="The frontier is still."

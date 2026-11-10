@@ -12,8 +12,9 @@ var sight:Dictionary={}
 var goal:Vector2
 var goal_cell:Vector2i
 var heap:Array[Vector2]=[]
+var loaded_baked:=false
 
-func _init(destination:Vector2,mountains_enabled:bool=true)->void:
+func _init(destination:Vector2,layout:Variant=Map.AUTHORED_REVISION,use_baked:bool=true)->void:
  goal=destination
  goal_cell=cell_of(goal)
  blocked.resize(WIDTH*HEIGHT)
@@ -21,9 +22,19 @@ func _init(destination:Vector2,mountains_enabled:bool=true)->void:
  costs.fill(INF)
  following.resize(WIDTH*HEIGHT)
  following.fill(-1)
- var terrain:=Map.terrain_field(mountains_enabled)
+ var terrain:=Map.terrain_field(layout)
  for i in terrain.size(): blocked[i]=1 if terrain[i]>0 else 0
  blocked[index(goal_cell)]=0
+ var signature:=JSON.stringify(Array(terrain)).sha256_text()
+ var baked:Variant=Map.authored.get("navigation",{}).get(str(Map.revision(layout)))
+ if use_baked and goal==Map.HALL and baked is Dictionary and baked.get("signature","")==signature:
+  var links:Variant=baked.get("following")
+  var weights:Variant=baked.get("costs")
+  if links is Array and weights is Array and links.size()==WIDTH*HEIGHT and weights.size()==WIDTH*HEIGHT:
+   loaded_baked=true
+   following=PackedInt32Array(links)
+   for i in weights.size(): costs[i]=INF if float(weights[i])<0 else float(weights[i])
+   return
  costs[index(goal_cell)]=0
  push(Vector2(0,index(goal_cell)))
  while not heap.is_empty():
