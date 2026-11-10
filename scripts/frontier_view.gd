@@ -261,7 +261,7 @@ func draw_deposit(index:int)->void:
  draw_texture_rect_region(RESOURCE_SITES,Rect2(d.pos-size*Vector2(0.5,0.84),size),Rect2(Vector2.ZERO if d.kind=="wood" else Vector2(cell.x,0),cell))
 
 func wall_region(index:int)->Rect2:
- var regions=[Rect2(58,257,653,236),Rect2(1046,44,84,638),Rect2(1687,175,242,355)]
+ var regions=[Rect2(107,192,618,406),Rect2(1017,104,171,518),Rect2(1580,178,392,421)]
  var region:Rect2=regions[index]
  var factor:=Vector2(WALL_KIT.get_size())/Vector2(2172,724)
  return Rect2(region.position*factor,region.size*factor)
@@ -271,7 +271,7 @@ func wall_edge(a:Vector2,b:Vector2,tint:Color=Color.WHITE)->void:
   draw_texture_rect_region(WALL_KIT,Rect2(minf(a.x,b.x),a.y-43,absf(a.x-b.x)+1,47),wall_region(0),tint)
  else:
   # A complete top-down sprite has no sheared/cropped brick edges.
-  draw_texture_rect_region(WALL_KIT,Rect2(a.x-12,minf(a.y,b.y)-20,24,absf(a.y-b.y)+1),wall_region(1),tint)
+  draw_texture_rect_region(WALL_KIT,Rect2(a.x-17,minf(a.y,b.y)-20,34,absf(a.y-b.y)+1),wall_region(1),tint)
 
 func wall_post(p:Vector2,tint:Color=Color.WHITE)->void:
  draw_texture_rect_region(WALL_KIT,Rect2(p-Vector2(19,48),Vector2(38,56)),wall_region(2),tint)

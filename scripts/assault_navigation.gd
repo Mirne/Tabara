@@ -68,14 +68,10 @@ func sees_goal(c:Vector2i)->bool:
 
 func direction(p:Vector2)->Vector2:
  var c:=cell_of(p)
- if sees_goal(c):
-  var direct:=p.direction_to(goal)
-  if can_step(p,p+direct*CELL): return direct
+ if sees_goal(c): return p.direction_to(goal)
  var next:=following[index(c)]
  if next<0: return Vector2.ZERO
- var destination:=center(Vector2i(next%WIDTH,next/WIDTH))
- if not can_step(p,destination): return p.direction_to(center(c))
- return p.direction_to(destination)
+ return p.direction_to(center(Vector2i(next%WIDTH,next/WIDTH)))
 
 func push(value:Vector2)->void:
  heap.append(value)
@@ -102,6 +98,12 @@ func pop()->Vector2:
 
 func can_step(a:Vector2,b:Vector2)->bool:
  var previous:=Map.cell_of(a)
+ var target:=Map.cell_of(b)
+ if previous==target: return not solid(target)
+ # A fixed simulation step crosses at most one cell edge. No sample loop needed.
+ if absi(previous.x-target.x)<=1 and absi(previous.y-target.y)<=1:
+  if solid(target): return false
+  return previous.x==target.x or previous.y==target.y or not (solid(Vector2i(target.x,previous.y)) or solid(Vector2i(previous.x,target.y)))
  var samples:=maxi(1,ceili(a.distance_to(b)/10.0))
  for i in range(1,samples+1):
   var next:=Map.cell_of(a.lerp(b,float(i)/samples))

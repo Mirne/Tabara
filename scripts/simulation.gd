@@ -483,7 +483,15 @@ func step(delta: float) -> void:
   var velocity:Vector2=heading+separation*1.35
   if velocity.length()>1: velocity=velocity.normalized()
   var proposed:Vector2=pos+velocity*e.speed*delta
-  if not navigation.can_step(pos,proposed): proposed=pos+heading*e.speed*delta
+  var walkable:bool=navigation.can_step(pos,proposed)
+  if not walkable:
+   proposed=pos+heading*e.speed*delta
+   walkable=navigation.can_step(pos,proposed)
+   if not walkable:
+    # Recenter inside the current open cell before taking a tight terrain turn.
+    var recovery:Vector2=pos.direction_to(navigation.center(navigation.cell_of(pos)))
+    proposed=pos+recovery*minf(e.speed*delta,pos.distance_to(navigation.center(navigation.cell_of(pos))))
+    walkable=navigation.can_step(pos,proposed)
   var lookahead:float=220.0 if e.kind=="siege" else e.speed*delta+10.0
   var blocker:=first_blocker(pos,pos+heading*lookahead,body)
   if blocker<0: blocker=first_blocker(pos,proposed,body)
@@ -491,7 +499,7 @@ func step(delta: float) -> void:
   e.aim=0.2
   if blocker>=0:
    attack_building(e,blocker)
-  elif navigation.can_step(pos,proposed):
+  elif walkable:
    e.pos=proposed
    e.progress=minf(total_length,e.progress+pos.distance_to(proposed))
  for i in range(enemies.size()-1,-1,-1):
