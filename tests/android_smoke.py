@@ -151,6 +151,17 @@ try:
     check(restored["buildings"][4]["kind"] == "arrow", "Android cold restart preserves buildings")
     launch()
     capture("07-background-paused")
+    adb("shell", "input", "keyevent", "4")  # Back resumes the paused mission.
+    time.sleep(2)
+    adb("shell", "input", "keyevent", "4")  # Back pauses it again.
+    time.sleep(2)
+    windows = adb("shell", "dumpsys", "window", "windows")
+    focused = [line for line in windows.splitlines() if "mCurrentFocus" in line]
+    check(any(PACKAGE in line for line in focused), "Android Back keeps the game open while pausing or resuming")
+    paused_time = read_save()["elapsed"]
+    time.sleep(3)
+    check(read_save()["elapsed"] == paused_time, "Android Back pauses combat")
+    capture("08-hardware-back-paused")
     log = adb("logcat", "-d", "-v", "brief", timeout=60)
     (OUT / "logcat.txt").write_text(log)
     check("FATAL EXCEPTION" not in log and "SCRIPT ERROR:" not in log, "No Android crash or script error")

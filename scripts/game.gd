@@ -49,6 +49,7 @@ var trade_feedback := ""
 
 func _ready() -> void:
  get_tree().auto_accept_quit = false
+ get_tree().quit_on_go_back = false
  load_settings()
  load_saved_game()
  menu_settlement = Sim.new(17)
