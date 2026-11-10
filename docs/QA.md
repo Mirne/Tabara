@@ -34,12 +34,40 @@ trading, pause/Back, lifecycle, victory and defeat. The final marker verificatio
 See [model log](verification/mobile-grid/model.log) and
 [rendered UI log](verification/mobile-grid/rendered-ui.log).
 
-## Additional checks in progress
+## Completed rendered endurance run
 
-A fresh **one-hour** rendered endurance test is running on the runtime commit
-above. It performs normal-cost play, world tours, settings/pause and actual disk
-restoration every minute. It is separate from the intentionally interrupted
-v0.2 two-hour run. Final counters will be recorded when this test finishes.
+The committed v0.3 runtime completed **3600.021 confirmed real
+seconds** (one hour) in one uninterrupted segment. The report records **zero
+excluded stall seconds**, **58 actual disk restorations**, **145 camera tours**,
+one campaign and one victory followed by endless play. Resource, health,
+position, level, enemy, zoom, transient-effect and style-cache invariants remained
+valid. The completed engine log contains no script/shader errors or shutdown
+resource errors. See [report](verification/mobile-grid/endurance.json) and
+[engine log](verification/mobile-grid/endurance.log).
+
+This test used Linux Mesa llvmpipe software rendering at 1280 × 720 with a 30 FPS
+cap while native emulation, balance sampling and packaging also used the host.
+Its minimum sampled FPS was 3; this is not a physical S23 benchmark. Engine
+static allocation at completion was 43.4 MiB. The largest sampled OS high-water RSS
+was 359.8 MiB; these are different memory measurements.
+
+The earlier v0.2 run was intentionally interrupted at 7,251.514 seconds for the
+new mobile requirements. Its duration and victories are **not** added to this
+v0.3 result. The owner's requested five-hour work minimum was also met before
+this handoff.
+
+## Campaign balance and source CI
+
+All **12 of 12 normal-cost seeded campaigns** reached the 15-minute victory and
+remained alive at the **25-minute cutoff**. This cutoff is not a measured defeat
+time. The bot gathers only nearby available deposits, pays all public prices,
+limits paid actions to one per second and reserves matching resource sites.
+See [balance report](verification/mobile-grid/balance.json).
+
+[GitHub source verification](https://github.com/Mirne/Tabara/actions/runs/42819986786)
+passed on source commit `f784e34deae096db3a40e0a097de1770039fb6cd`, which contains
+the unchanged runtime above plus documentation. Only documentation/evidence
+changes follow that run; app runtime changes require fresh checks.
 
 ## Native Android result
 
@@ -59,8 +87,7 @@ The APK uses the same signing certificate as v0.2 and a higher version code,
 allowing an in-place Android update. The v0.2 save fixture also passed model
 restoration without relocating its structures. ARMv7 and ARM64 were packaged;
 the native executed ABI here is x86-64. Physical S23 performance of v0.3 has not
-been certified. Multi-seed balance sampling and the one-hour endurance run are
-still in progress; they are not counted as passes yet.
+been certified. The separate one-hour endurance result is recorded above.
 
 ## Evidence and distribution
 
