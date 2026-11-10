@@ -79,6 +79,8 @@ def wait_menu():
             check(True, "Android renders the main menu")
             return
         time.sleep(5)
+    (OUT / "menu-not-ready.png").write_bytes(data)
+    print(f"Menu probe: screen={screen_size}, point={(x, y)}, color={(red, green, blue)}", flush=True)
     check(False, "Android renders the main menu")
 
 try:
@@ -154,6 +156,19 @@ try:
     check("FATAL EXCEPTION" not in log and "SCRIPT ERROR:" not in log, "No Android crash or script error")
     completed = True
 finally:
+    try:
+        log = adb("logcat", "-d", "-v", "brief", timeout=60)
+        (OUT / "logcat.txt").write_text(log)
+        relevant = [line for line in log.splitlines() if any(word in line.lower() for word in ["godot", "fatal", "script error", "com.tabara", "exception"])]
+        print("NATIVE DIAGNOSTICS", flush=True)
+        for line in relevant[-100:]:
+            print(line[:800], flush=True)
+        windows = adb("shell", "dumpsys", "window", "windows", timeout=30)
+        for line in windows.splitlines():
+            if "mCurrentFocus" in line or "mFocusedApp" in line:
+                print(line.strip(), flush=True)
+    except Exception as error:
+        print("Diagnostics unavailable:", str(error)[:500], flush=True)
     report = {"actual_seconds": time.monotonic() - started, "checks": checks,
               "passed": completed and all(item["passed"] for item in checks)}
     (OUT / "report.json").write_text(json.dumps(report, indent=2))
