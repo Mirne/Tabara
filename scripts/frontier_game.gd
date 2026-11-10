@@ -34,6 +34,7 @@ var buttons:Array=[]
 var mouse:=Vector2(-100,-100)
 var clock:=0.0
 var accumulator:=0.0
+const SPEEDS:=[1,2,5,10]
 var speed:=1
 var autosave:=0.0
 var fx:Array=[]
@@ -303,7 +304,8 @@ func click_world(point:Vector2)->void:
   if b==null: continue
   var size:Vector2=Art.BUILD_SIZES[Sim.DEFINITIONS[b.kind].art]
   if b.hp<=0: size=Vector2(140,100)
-  var rect:=Rect2(b.pos-Vector2(size.x/2,size.y),size+Vector2(0,20))
+  var rect:Rect2=Art.building_rect(Sim.DEFINITIONS[b.kind].art,b.pos).grow(8)
+  if b.hp<=0: rect=Rect2(b.pos-Vector2(size.x/2,size.y),size+Vector2(0,20))
   if rect.has_point(at): candidates.append(i)
  if not candidates.is_empty():
   candidates.sort_custom(func(a,b):return sim.buildings[a].pos.y>sim.buildings[b].pos.y)
@@ -397,7 +399,7 @@ func act(action:String)->void:
     consume_events()
    screen="mission"
   "cancel_clear": screen="mission"
-  "speed": speed=2 if speed==1 else 1
+  "speed": speed=SPEEDS[(SPEEDS.find(speed)+1)%SPEEDS.size()]
   "cancel":
    build_kind=""
    wall_points.clear()
@@ -457,7 +459,6 @@ func start_mission()->void:
  accumulator=0
  autosave=0
  save_available=true
- notify("Raiders enter from the western road. Establish producers on resource deposits.")
  save_game()
 
 func consume_events()->void:
@@ -466,7 +467,6 @@ func consume_events()->void:
    e.time=0.35 if e.type=="shot" else 1.2
    e.duration=e.time
    if fx.size()<180: fx.append(e)
-  if e.type=="wave" and sim.wave>1: notify("Wave %d · %s"%[sim.wave,"A great horde is coming" if sim.wave%5==0 else "Movement on the western road"])
   if e.type=="ruin":
    notify("Ground cleared. New foundations can be placed here." if e.text=="Ground cleared" else "A structure has collapsed. Repair its ruins or clear the ground.")
    play_sound("cannon")
@@ -603,8 +603,7 @@ func draw_menu()->void:
  wrapped("Build beyond the walls.\nHold against the tide.".replace("\n"," "),Vector2(86,337),370,22,IVORY,32)
  button(Rect2(80,431,390,62),"Continue settlement" if save_available else "Establish a settlement","continue" if save_available else "new",true,true,21)
  if save_available: button(Rect2(80,506,390,52),"New frontier","new",false,true,18)
- button(Rect2(80,580,185,50),"Field guide","guide",false,true,17)
- button(Rect2(280,580,190,50),"Settings","settings",false,true,17)
+ button(Rect2(80,580,390,50),"Settings","settings",false,true,17)
  button(Rect2(80,646,185,46),"Credits","credits",false,true,16)
  label("SINGLE PLAYER   /   OFFLINE",Vector2(83,754),13,MUTED)
  Art.skin(self,Rect2(971,620,414,142),Color(0.87,0.9,0.83))
@@ -617,20 +616,17 @@ func draw_menu()->void:
 
 func draw_hud()->void:
  Art.skin(self,Rect2(-4,-5,1448,94),Color(0.82,0.87,0.8),14)
- Art.icon(self,4,Rect2(21,18,46,46))
- label("PINEWATCH",Vector2(79,34),23,IVORY,true)
- label("FRONTIER  /  ENDLESS" if sim.victory else "HOLD THE MAIN HALL",Vector2(80,58),11,GOLD)
  var rates:Dictionary=sim.income_rates()
  for i in 3:
-  var x:float=284+i*173
+  var x:float=28+i*220
   Art.icon(self,i,Rect2(x,17,43,43))
   label(pretty(sim.resources[Sim.RESOURCE_NAMES[i]]),Vector2(x+52,38),25,IVORY)
   label("+%.1f / sec"%rates[Sim.RESOURCE_NAMES[i]],Vector2(x+52,61),12,GREEN)
- Art.icon(self,5,Rect2(811,20,35,35))
- label(time_label(sim.elapsed)+( " +" if sim.victory else " / 15:00"),Vector2(854,39),22,IVORY)
- label("WAVE %02d   ·   %d DEFEATED"%[sim.wave,sim.kills],Vector2(854,62),11,GOLD)
+ Art.icon(self,5,Rect2(730,20,35,35))
+ label(time_label(sim.elapsed)+( " +" if sim.victory else " / 15:00"),Vector2(776,39),22,IVORY)
+ label("WAVE %02d   ·   %d DEFEATED"%[sim.wave,sim.kills],Vector2(776,62),11,GOLD)
  button(Rect2(1066,15,69,55),"%d×"%speed,"speed",false,true,18)
- button(Rect2(1145,15,101,55),"Guide","guide",false,true,16)
+ button(Rect2(1145,15,101,55),"Hall","hall",false,true,16)
  button(Rect2(1257,15,162,55),"Ⅱ  Pause","pause",false,true,18)
  # A dedicated right-hand construction rail keeps mobile actions together.
  Art.skin(self,Rect2(1150,82,294,732),Color(0.83,0.89,0.82),14)
@@ -650,9 +646,6 @@ func draw_hud()->void:
   buttons.append({"rect":rect,"action":"build:"+kind,"enabled":true})
  draw_inspector()
  draw_minimap()
- button(Rect2(939,742,52,48),"−","zoom_out",false,true,24)
- button(Rect2(997,742,52,48),"+","zoom_in",false,true,24)
- button(Rect2(1055,742,81,48),"Hall","hall",false,true,16)
 
 func draw_inspector()->void:
  Art.skin(self,Rect2(1161,516,267,283),Color(0.85,0.9,0.82),9)
@@ -689,12 +682,16 @@ func draw_inspector()->void:
  if b.hp>0 and b.age<Sim.BUILD_TIME: status="CONSTRUCTION · %.1fs"%(Sim.BUILD_TIME-b.age)
  wrapped(status,Vector2(1177,590),233,12,RED if b.hp<=0 else MUTED,18)
  var upgrade:Array=sim.upgrade_cost(b) if b.level<100 else [0,0,0]
- var show_repair:bool=b.hp<sim.stat(b,"hp")*0.7
- cost_row(sim.repair_cost(b) if show_repair else upgrade,Vector2(1177,645),12)
- button(Rect2(1176,662,115,46),"Upgrade ↑","upgrade",true,b.hp>0 and b.age>=Sim.BUILD_TIME and b.level<100 and sim.can_afford(upgrade),14)
- button(Rect2(1298,662,115,46),"Repair","repair",false,b.hp<sim.stat(b,"hp")-0.01 and sim.can_afford(sim.repair_cost(b)),14)
- button(Rect2(1176,718,237,42),"Clear ruins" if b.hp<=0 else "Dismantle","clear",false,selected>0,14)
- if b.kind=="market" and b.hp>0: button(Rect2(1176,766,237,30),"Open marketplace","trade",true,true,13)
+ # Each action owns a permanent cost row; taking damage never swaps the price.
+ button(Rect2(1176,626,237,38),"Upgrade to level %d"%(b.level+1) if b.level<100 else "Maximum level","upgrade",true,b.hp>0 and b.age>=Sim.BUILD_TIME and b.level<100 and sim.can_afford(upgrade),14)
+ cost_row(upgrade,Vector2(1180,685),11)
+ button(Rect2(1176,700,237,38),"Repair to full health","repair",false,b.hp<sim.stat(b,"hp")-0.01 and sim.can_afford(sim.repair_cost(b)),14)
+ cost_row(sim.repair_cost(b),Vector2(1180,759),11)
+ if b.hp>=sim.stat(b,"hp")-0.01: label("No repairs needed",Vector2(1180,759),11,MUTED)
+ if b.kind=="market" and b.hp>0:
+  button(Rect2(1176,773,115,28),"Trade","trade",true,true,13)
+  button(Rect2(1298,773,115,28),"Dismantle","clear",false,true,12)
+ else: button(Rect2(1176,773,237,28),"Clear ruins" if b.hp<=0 else "Dismantle","clear",false,selected>0,13)
 
 func draw_minimap()->void:
  Art.skin(self,Rect2(10,635,251,165),Color(0.9,0.93,0.86),10)
@@ -746,9 +743,8 @@ func draw_end()->void:
   label([time_label(sim.elapsed),str(sim.kills),str(sim.wave)][i],Vector2(x,437),32,IVORY,true)
  button(Rect2(424,477,592,56),"Resume the settlement" if screen=="pause" else ("Continue endless survival" if screen=="victory" else "Establish a new settlement"),"resume" if screen=="pause" else ("endless" if screen=="victory" else "start"),true)
  if screen=="pause":
-  button(Rect2(424,555,184,52),"Settings","settings",false,true,17)
-  button(Rect2(628,555,184,52),"Field guide","guide",false,true,17)
-  button(Rect2(832,555,184,52),"Save & menu","menu",false,true,16)
+  button(Rect2(424,555,286,52),"Settings","settings",false,true,17)
+  button(Rect2(730,555,286,52),"Save & menu","menu",false,true,16)
  else: button(Rect2(424,555,592,52),"Return to camp","menu",false,true,17)
 
 func draw_settings()->void:
@@ -763,7 +759,7 @@ func draw_settings()->void:
 
 func draw_guide()->void:
  overlay(Rect2(235,65,970,680),"FIELD MANUAL","Build a settlement worth defending.")
- var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch or use + / − to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a forest or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","All seven structures reach level 100. Destroyed buildings leave repairable ruins. Dismantling frees the ground but loses the upgrades."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
+ var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a forest or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","All seven structures reach level 100. Destroyed buildings leave repairable ruins. Dismantling frees the ground but loses the upgrades."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
  for i in entries.size():
   var p:=Vector2(274+(i%2)*462,245+(i/2)*141)
   label("0%d  %s"%[i+1,entries[i][0]],p,19,IVORY,true)

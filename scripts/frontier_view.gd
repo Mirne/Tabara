@@ -3,6 +3,7 @@ extends Node2D
 const Map=preload("res://scripts/world_data.gd")
 const Art=preload("res://scripts/frontier_art.gd")
 const RESOURCE_SITES=preload("res://assets/frontier/resource-sites.png")
+const MOUNTAINS=preload("res://assets/frontier/mountains.png")
 const WALL_KIT=preload("res://assets/frontier/wall-kit.png")
 const Body=preload("res://assets/fonts/Body.ttf")
 const UNIT_ROWS={"raider":0,"runner":1,"brute":2,"siege":3}
@@ -16,9 +17,15 @@ var cloud:GradientTexture2D
 var visible_world:=Rect2()
 var drawn_entities:=0
 var last_draw_us:=0
+var ground_mountains:=true
+var mountain_sprites:Array=[]
+var terrain_overlays:Dictionary={}
+var preview_range:=0.0
+var blocked_view:Sprite2D
 
 func _ready()->void:
  scenery=Map.scenery()
+ mountain_sprites=Map.mountain_sprites()
  for prop in scenery:
   prop.protected=prop.art==4 or Map.protected_resource_scenery(prop.pos)
  ground_view=SubViewport.new()
@@ -37,6 +44,9 @@ func _ready()->void:
  material.set_shader_parameter("groves",PackedVector2Array(Map.GROVES))
  material.set_shader_parameter("cliffs",PackedVector2Array(Map.CLIFFS))
  material.set_shader_parameter("road",PackedVector2Array(Map.ROAD))
+ var ridge_data:=PackedVector4Array()
+ for rect in Map.MOUNTAIN_RECTS: ridge_data.append(Vector4(rect.position.x,rect.position.y,rect.size.x,rect.size.y))
+ material.set_shader_parameter("ridge_rects",ridge_data)
  source.material=material
  ground_view.add_child(source)
  add_child(ground_view)
@@ -57,6 +67,13 @@ func _ready()->void:
  water_material.set_shader_parameter("motion_rate",0.0 if game.reduced_motion else 1.0)
  water.material=water_material
  add_child(water)
+ blocked_view=Sprite2D.new()
+ blocked_view.centered=false
+ blocked_view.scale=Vector2.ONE*Map.CELL
+ blocked_view.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+ blocked_view.z_index=-5
+ blocked_view.visible=false
+ add_child(blocked_view)
  shadow=soft_texture(Color(0.035,0.045,0.025,0.5))
  cloud=soft_texture(Color(0.42,0.39,0.33,0.55))
 
@@ -79,7 +96,15 @@ func _draw()->void:
  var sim=game.sim
  visible_world=Rect2(game.camera_center-game.VIEW.size/(game.zoom*2),game.VIEW.size/game.zoom).grow(300)
  var entities:Array=[]
+ if ground_mountains!=sim.mountains_enabled:
+  ground_mountains=sim.mountains_enabled
+  ground_view.get_child(0).material.set_shader_parameter("mountains_on",ground_mountains)
+  ground_view.render_target_update_mode=SubViewport.UPDATE_ONCE
+ blocked_view.visible=game.build_kind!=""
  if game.build_kind!="": draw_grid()
+ if sim.mountains_enabled:
+  for mountain in mountain_sprites:
+   if visible_world.grow(300).has_point(mountain.pos): entities.append({"y":mountain.pos.y,"mountain":mountain})
  for prop in scenery:
   if not scenery_visible(prop): continue
   if visible_world.has_point(prop.pos): entities.append({"y":prop.pos.y,"prop":prop})
@@ -96,8 +121,7 @@ func _draw()->void:
  drawn_entities=entities.size()
  for b in sim.buildings:
   if b==null or not visible_world.has_point(b.pos): continue
-  var width:float=sim.footprint(b.kind)*3.5+55
-  draw_texture_rect(preload("res://assets/frontier/earth.png"),Rect2(b.pos-Vector2(width/2,width*0.23),Vector2(width,width*0.46)),false,Color(0.83,0.85,0.75,0.85))
+  draw_texture_rect(preload("res://assets/frontier/earth.png"),Art.dirt_rect(sim.DEFINITIONS[b.kind].art,b.pos),false,Color(0.83,0.85,0.75,0.85))
  # Keep ground shadows together so a horde does not switch textures per soldier.
  for entity in entities:
   if entity.has("enemy"):
@@ -111,13 +135,22 @@ func _draw()->void:
   if sim.DEFINITIONS[b.kind].has("range") and b.hp>0:
    draw_arc(b.pos,sim.stat(b,"range"),0,TAU,96,Color(0.93,0.77,0.38,0.24),1.3/game.zoom,true)
  for entity in entities:
-  if entity.has("prop"):
+  if entity.has("mountain"):
+   var mountain:Dictionary=entity.mountain
+   draw_texture_rect(MOUNTAINS,Rect2(mountain.pos-mountain.size*Vector2(0.5,0.86),mountain.size),false)
+  elif entity.has("prop"):
    var item:Dictionary=entity.prop
    Art.prop(self,item.art,item.pos,item.scale,item.flip)
   elif entity.has("building"): draw_building(entity.building)
   elif entity.has("deposit"): draw_deposit(entity.deposit)
   else: draw_enemy(entity.enemy,entity.pos)
  draw_effects()
+ preview_range=0.0
+ if game.build_kind!="" and sim.DEFINITIONS[game.build_kind].has("range"):
+  preview_range=float(sim.DEFINITIONS[game.build_kind].range)
+  draw_circle(game.ghost,preview_range,Color(0.85,0.73,0.35,0.07))
+  draw_arc(game.ghost,preview_range,0,TAU,128,Color(0.96,0.82,0.4,0.85),2/game.zoom,true)
+  draw_string(Body,game.ghost+Vector2(14,preview_range-12),"Range %d"%preview_range,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("f3e6c2"))
  if game.build_kind=="wall" and not game.wall_points.is_empty():
   var preview:Dictionary=sim.wall_preview(game.wall_points)
   var tint:=Color(0.8,1,0.73,0.7) if preview.error=="" else Color(1,0.38,0.26,0.7)
@@ -148,6 +181,24 @@ func scenery_visible(prop:Dictionary)->bool:
 
 func draw_grid()->void:
  var grid:float=game.sim.GRID_SIZE
+ var layout:bool=game.sim.mountains_enabled
+ if not terrain_overlays.has(layout):
+  var field:=Map.terrain_field(layout)
+  var pixels:=PackedByteArray()
+  pixels.resize(field.size()*4)
+  for i in field.size():
+   pixels[i*4]=215
+   pixels[i*4+1]=50
+   pixels[i*4+2]=35
+   pixels[i*4+3]=55 if field[i]>0 else 0
+  var image:=Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_RGBA8,pixels)
+  terrain_overlays[layout]=ImageTexture.create_from_image(image)
+ blocked_view.texture=terrain_overlays[layout]
+ for b in game.sim.buildings:
+  if b==null or not visible_world.has_point(b.pos): continue
+  var color:=Color(0.91,0.2,0.14,0.26) if b.hp>0 else Color(0.7,0.47,0.2,0.2)
+  draw_rect(game.sim.foundation_rect(b.pos,b.kind),color)
+  draw_rect(game.sim.foundation_rect(b.pos,b.kind),Color(color,0.85),false,1.2/game.zoom)
  var area:=Rect2(game.camera_center-game.VIEW.size/(game.zoom*2),game.VIEW.size/game.zoom)
  for x in range(maxi(0,floori(area.position.x/grid)),mini(int(Map.SIZE.x/grid),ceili(area.end.x/grid))+1):
   draw_line(Vector2(x*grid,maxf(0,area.position.y)),Vector2(x*grid,minf(Map.SIZE.y,area.end.y)),Color(0.91,0.86,0.65,0.16 if x%2 else 0.28),1/game.zoom)
@@ -185,7 +236,7 @@ func draw_building(index:int)->void:
  if selected:
   ground_ring(p,radius+7,Color("d9bc71"))
  if selected or b.hp<sim.stat(b,"hp")*0.95:
-  var top:Vector2=p-Vector2(42,Art.BUILD_SIZES[sim.DEFINITIONS[b.kind].art].y+13)
+  var top:Vector2=Vector2(p.x-42,Art.building_rect(sim.DEFINITIONS[b.kind].art,p).position.y-13)
   if b.hp<=0: top=p-Vector2(42,105)
   draw_rect(Rect2(top,Vector2(84,6)),Color("242b20"))
   draw_rect(Rect2(top,Vector2(84*clampf(b.hp/sim.stat(b,"hp"),0,1),6)),Color("9bac68") if b.hp>0 else Color("a45839"))
@@ -207,28 +258,23 @@ func draw_deposit(index:int)->void:
   return
  var cell:=Vector2(RESOURCE_SITES.get_width()/2,RESOURCE_SITES.get_height())
  var size:=Vector2(240,220) if d.kind=="wood" else Vector2(220,140)
- var offset:=Vector2(-10,-35) if d.kind=="wood" else Vector2(40,15)
- draw_texture_rect_region(RESOURCE_SITES,Rect2(d.pos+offset-Vector2(size.x/2,size.y),size),Rect2(Vector2.ZERO if d.kind=="wood" else Vector2(cell.x,0),cell))
+ draw_texture_rect_region(RESOURCE_SITES,Rect2(d.pos-size*Vector2(0.5,0.84),size),Rect2(Vector2.ZERO if d.kind=="wood" else Vector2(cell.x,0),cell))
 
-func wall_region(rect:Rect2)->Rect2:
- var factor:=Vector2(WALL_KIT.get_size())/Vector2(2188,718)
- return Rect2(rect.position*factor,rect.size*factor)
+func wall_region(index:int)->Rect2:
+ var regions=[Rect2(58,257,653,236),Rect2(1046,44,84,638),Rect2(1687,175,242,355)]
+ var region:Rect2=regions[index]
+ var factor:=Vector2(WALL_KIT.get_size())/Vector2(2172,724)
+ return Rect2(region.position*factor,region.size*factor)
 
 func wall_edge(a:Vector2,b:Vector2,tint:Color=Color.WHITE)->void:
- # The same raster course bridges grid centers; no repeated tower ends between tiles.
  if absf(a.x-b.x)>1:
-  draw_texture_rect_region(WALL_KIT,Rect2(minf(a.x,b.x),a.y-45,absf(a.x-b.x)+1,50),wall_region(Rect2(28,265,660,230)),tint)
+  draw_texture_rect_region(WALL_KIT,Rect2(minf(a.x,b.x),a.y-43,absf(a.x-b.x)+1,47),wall_region(0),tint)
  else:
-  var y:float=minf(a.y,b.y)-45
-  var height:float=absf(a.y-b.y)+50
-  var vertices:=PackedVector2Array([Vector2(a.x-17,y),Vector2(a.x+17,y),Vector2(a.x+17,y+height),Vector2(a.x-17,y+height)])
-  # Unskew the authored north/south course so adjacent runs share a straight edge.
-  var uv:=PackedVector2Array([Vector2(1185,80),Vector2(1250,100),Vector2(1045,650),Vector2(975,625)])
-  for i in uv.size(): uv[i]/=Vector2(2188,718)
-  draw_polygon(vertices,PackedColorArray([tint,tint,tint,tint]),uv,WALL_KIT)
+  # A complete top-down sprite has no sheared/cropped brick edges.
+  draw_texture_rect_region(WALL_KIT,Rect2(a.x-12,minf(a.y,b.y)-20,24,absf(a.y-b.y)+1),wall_region(1),tint)
 
 func wall_post(p:Vector2,tint:Color=Color.WHITE)->void:
- draw_texture_rect_region(WALL_KIT,Rect2(p-Vector2(25,58),Vector2(50,65)),wall_region(Rect2(1700,210,260,320)),tint)
+ draw_texture_rect_region(WALL_KIT,Rect2(p-Vector2(19,48),Vector2(38,56)),wall_region(2),tint)
 
 func draw_joined_wall(index:int,tint:Color)->void:
  var sim=game.sim

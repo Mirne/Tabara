@@ -17,7 +17,7 @@ from PIL import Image, ImageChops, ImageStat
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "com.tabara.lasthearth"
-APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.4.apk"))
+APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.5.apk"))
 OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android-frontier")).name
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
@@ -188,7 +188,7 @@ def native_checks(back_only=False):
         tap(1338, 43)  # Explicit known pause.
         screen("04-built-and-paused")
         data = wait_saved_structure(6, "wall")
-        check(data["version"] == 3, "Native app writes the world-position save format")
+        check(data["version"] == 4, "Native app writes the world-position save format")
         for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow")]:
             check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
             check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")

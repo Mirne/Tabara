@@ -71,6 +71,12 @@ func run()->void:
  check(game.screen=="mission" and game.sim.enemies.size()>0 and game.sim.enemies[0].progress<game.sim.total_length*0.2,"Mission starts enemies at the path entrance")
  check(game.VIEW.end.x<=1152,"The construction rail sits to the right of the world")
  check(game.world.RESOURCE_SITES!=null and game.world.scenery.size()<1100,"Each forest and quarry uses one compact resource image")
+ var centred:=true
+ for i in game.Art.BUILD_SIZES.size():
+  var base:=Vector2(500,500)
+  var rect:Rect2=game.Art.building_rect(i,base)
+  if not (rect.position+rect.size*game.Art.BUILD_PIVOTS[i]).is_equal_approx(base) or game.Art.dirt_rect(i,base).get_center()!=base: centred=false
+ check(centred,"Buildings and dirt patches share the same visible footprint centre")
  await capture("initial")
  game.camera_center=Vector2(4780,3000)
  game.apply_camera()
@@ -101,6 +107,8 @@ func run()->void:
  touch(0,touch_site,false)
  await frame()
  check(game.placement_ready and game.sim.active_building_count()==touch_count,"Native-style touch only previews the snapped foundation")
+ check(game.world.preview_range==game.Sim.DEFINITIONS.arrow.range,"Arrow tower shows its range during placement")
+ await capture("tower-range")
  await action("cancel")
  await action("build:arrow")
  var count:int=game.sim.active_building_count()
@@ -129,6 +137,16 @@ func run()->void:
  var level:int=game.sim.buildings[3].level
  await action("upgrade")
  check(game.sim.buildings[3].level==level+1,"Inspector upgrades the selected structure")
+ game.set_process(false)
+ await capture("upgrade-cost-full")
+ var cost_before:Image=root.get_texture().get_image().get_region(Rect2i(1177,666,237,23))
+ game.sim.buildings[3].hp=game.sim.stat(game.sim.buildings[3],"hp")*0.3
+ game.queue_redraw()
+ game.world.queue_redraw()
+ await capture("separate-action-costs")
+ var cost_after:Image=root.get_texture().get_image().get_region(Rect2i(1177,666,237,23))
+ check(cost_before.get_data()==cost_after.get_data(),"Taking damage never replaces the upgrade price with repair costs")
+ game.set_process(true)
  game.sim.buildings[3].hp=0
  game.sim.buildings[3].ruined_at=game.sim.elapsed
  await capture("ruins")
@@ -182,6 +200,7 @@ func run()->void:
  check(game.camera_center.distance_to(target)<2,"Minimap tap navigates to the distant lake")
  await capture("lake")
  await action("build:cannon")
+ check(game.world.preview_range==game.Sim.DEFINITIONS.cannon.range,"Cannon shows its attack range during placement")
  var safe_count:int=game.sim.active_building_count()
  await tap(game.world_to_screen(game.Map.LAKE_CENTER))
  var confirm_controls:Array=game.buttons.filter(func(b):return b.action=="confirm_build")
@@ -192,10 +211,18 @@ func run()->void:
  await action("hall")
  check(game.camera_center.distance_to(game.Map.HALL)<1,"Hall control recenters the settlement")
  var old_zoom:float=game.zoom
- await action("zoom_out")
- check(game.zoom<old_zoom,"Zoom-out control changes the view")
- await action("zoom_in")
- check(absf(game.zoom-old_zoom)<0.0001,"Zoom controls round trip")
+ check(game.buttons.filter(func(b):return b.action in ["zoom_in","zoom_out","guide"]).is_empty(),"Mobile HUD has no zoom or guide buttons")
+ var hall_buttons:Array=game.buttons.filter(func(b):return b.action=="hall")
+ check(hall_buttons.size()==1 and hall_buttons[0].rect.position.y<80,"Hall is in the top panel")
+ game.set_process(false)
+ for expected_speed in [2,5,10,1]:
+  await action("speed")
+  check(game.speed==expected_speed,"Speed cycles through 1x, 2x, 5x and 10x")
+  var clock_before:float=game.sim.elapsed
+  game.accumulator=0
+  game._process(0.1)
+  check(absf(game.sim.elapsed-clock_before-expected_speed*0.1)<0.051,"Selected speed changes the actual simulation clock")
+ game.set_process(true)
  # Actual native-style two-finger events, with mouse emulation disabled.
  count=game.sim.active_building_count()
  old_zoom=game.zoom
@@ -292,10 +319,7 @@ func run()->void:
  await capture("settings")
  await action("back")
  check(game.screen=="pause","Settings returns to pause")
- await action("guide")
- check(game.screen=="guide","Field manual opens")
- await capture("guide")
- await action("back")
+ check(game.buttons.filter(func(b):return b.action=="guide").is_empty(),"Pause menu has no guide button")
  await action("resume")
  game.sim.elapsed=899.95
  game.sim.wave=30

@@ -6,9 +6,11 @@ extends RefCounted
 const VICTORY_TIME := 900.0
 const MAX_LEVEL := 100
 const WAVE_SECONDS := 30.0
-const SAVE_VERSION := 3
+const SAVE_VERSION := 4
 const Navigator=preload("res://scripts/assault_navigation.gd")
-static var shared_navigation
+static var shared_navigation:Dictionary={}
+var mountains_enabled:=true
+var foundation_cells:Dictionary={}
 var navigation
 var body_cells:Dictionary={}
 var wall_cells:Dictionary={}
@@ -60,8 +62,7 @@ var path_lengths: Array[float] = []
 var total_length := 0.0
 
 func _init(seed_number: int = 2026) -> void:
- if shared_navigation==null: shared_navigation=Navigator.new(World.HALL)
- navigation=shared_navigation
+ reset_navigation()
  seed_value = seed_number
  rng.seed = seed_number
  for i in range(PATH.size()-1):
@@ -77,6 +78,15 @@ func _init(seed_number: int = 2026) -> void:
  spawn_enemy()
  spawn_remaining=maxi(0,spawn_remaining-1)
  spawn_clock=1.0
+
+func reset_navigation()->void:
+ if not shared_navigation.has(mountains_enabled): shared_navigation[mountains_enabled]=Navigator.new(World.HALL,mountains_enabled)
+ navigation=shared_navigation[mountains_enabled]
+
+func grid_blocked(cell:Vector2i)->bool:
+ if World.cell_terrain(cell,mountains_enabled)>0: return true
+ var index:int=foundation_cells.get(cell,-1)
+ return index>=0 and buildings[index]!=null and buildings[index].hp>0
 
 func make_building(kind: String, position: Vector2 = Vector2.ZERO) -> Dictionary:
  return {"kind":kind,"pos":position,"level":1,"hp":float(DEFINITIONS[kind].hp),"cooldown":0.15,"age":0.0,"ruined_at":-1.0}
@@ -125,7 +135,7 @@ func placement_error(position: Vector2, kind: String) -> String:
   own_deposit=deposit_near(position,kind,45.0)
   if own_deposit<0: return "Place this producer on a %s deposit."%("forest" if kind=="wood" else "stone")
   if deposit_owner(own_deposit)>=0: return "This deposit already has a producer. Repair or clear its building."
- var terrain:String=World.terrain_error(position,radius,own_deposit)
+ var terrain:String=World.terrain_error(position,radius,own_deposit,mountains_enabled)
  if terrain!="": return terrain
  for i in nearby_buildings(position,radius+180):
   var b=buildings[i]
@@ -143,6 +153,7 @@ func active_building_count() -> int:
 
 func rebuild_building_grid() -> void:
  building_cells.clear()
+ foundation_cells.clear()
  wall_cells.clear()
  hit_cells.clear()
  hit_rects.resize(buildings.size())
@@ -152,6 +163,9 @@ func rebuild_building_grid() -> void:
   if buildings[i]==null: continue
   var rect:=foundation_rect(buildings[i].pos,buildings[i].kind)
   hit_rects[i]=rect
+  for fy in range(floori(rect.position.y/GRID_SIZE),ceili(rect.end.y/GRID_SIZE)):
+   for fx in range(floori(rect.position.x/GRID_SIZE),ceili(rect.end.x/GRID_SIZE)):
+    foundation_cells[Vector2i(fx,fy)]=i
   for hy in range(floori(rect.position.y/80),floori(rect.end.y/80)+1):
    for hx in range(floori(rect.position.x/80),floori(rect.end.x/80)+1):
     var key:=Vector2i(hx,hy)
@@ -434,6 +448,9 @@ func step(delta: float) -> void:
   if e.hp<=0: continue
   e.cooldown-=delta
   var pos:Vector2=e.pos
+  if not navigation.passable(pos):
+   pos=navigation.nearest_open(pos)
+   e.pos=pos
   var body:float=BODY_GAPS[e.kind]*0.5
   e.aim=float(e.get("aim",0.0))-delta
   var held:int=e.target
@@ -466,6 +483,7 @@ func step(delta: float) -> void:
   var velocity:Vector2=heading+separation*1.35
   if velocity.length()>1: velocity=velocity.normalized()
   var proposed:Vector2=pos+velocity*e.speed*delta
+  if not navigation.can_step(pos,proposed): proposed=pos+heading*e.speed*delta
   var lookahead:float=220.0 if e.kind=="siege" else e.speed*delta+10.0
   var blocker:=first_blocker(pos,pos+heading*lookahead,body)
   if blocker<0: blocker=first_blocker(pos,proposed,body)
@@ -473,7 +491,7 @@ func step(delta: float) -> void:
   e.aim=0.2
   if blocker>=0:
    attack_building(e,blocker)
-  elif navigation.passable(proposed):
+  elif navigation.can_step(pos,proposed):
    e.pos=proposed
    e.progress=minf(total_length,e.progress+pos.distance_to(proposed))
  for i in range(enemies.size()-1,-1,-1):
@@ -610,11 +628,11 @@ func snapshot() -> Dictionary:
   var push:Vector2=e.get("push",Vector2.ZERO)
   copy.push=[push.x,push.y]
   saved_enemies.append(copy)
- return {"version":SAVE_VERSION,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
+ return {"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
 
 static func restore(data: Dictionary):
  if not _number(data.get("version"),2,SAVE_VERSION) or float(data.version)!=floorf(data.version): return null
- if int(data.version) not in [2,SAVE_VERSION]: return null
+ if int(data.version) not in [2,3,SAVE_VERSION]: return null
  if not data.get("buildings") is Array or data.buildings.is_empty() or data.buildings.size()>MAX_BUILDINGS: return null
  if not data.get("enemies") is Array or data.enemies.size()>MAX_ENEMIES: return null
  if not data.get("resources") is Dictionary: return null
@@ -659,17 +677,25 @@ static func restore(data: Dictionary):
   if e.progress<0 or e.progress>sim.total_length or absf(e.lane)>120: return null
   if not _number(e.get("target",-1),-1,511) or float(e.get("target",-1))!=floorf(e.get("target",-1)): return null
   if not _number(e.get("scan",0.0),-1,1): return null
-  if data.version==SAVE_VERSION:
+  if data.version>=3:
    if not e.get("pos") is Array or e.pos.size()!=2: return null
    if not _number(e.pos[0],0,World.SIZE.x) or not _number(e.pos[1],0,World.SIZE.y): return null
  sim.resources=data.resources.duplicate(true)
  sim.cleared_ground.clear()
  for cell in data.cleared_ground: sim.cleared_ground[int(cell)]=true
  sim.buildings=restored
- if sim.buildings[0].pos!=World.HALL: sim.navigation=Navigator.new(sim.buildings[0].pos)
+ if data.version>=4:
+  if not data.get("mountains_enabled") is bool: return null
+  sim.mountains_enabled=data.mountains_enabled
+ else:
+  # Add the pass to old settlements only where existing foundations stay clear.
+  for b in sim.buildings:
+   if b!=null and World.mountain_conflict(sim.foundation_rect(b.pos,b.kind)): sim.mountains_enabled=false
+ sim.reset_navigation()
+ if sim.buildings[0].pos!=World.HALL: sim.navigation=Navigator.new(sim.buildings[0].pos,sim.mountains_enabled)
  sim.enemies=data.enemies.duplicate(true)
  for e in sim.enemies:
-  e.pos=Vector2(e.pos[0],e.pos[1]) if data.version==SAVE_VERSION else sim.path_point(e.progress)+Vector2(0,e.lane)
+  e.pos=Vector2(e.pos[0],e.pos[1]) if data.version>=3 else sim.path_point(e.progress)+Vector2(0,e.lane)
   var push=e.get("push",[0,0])
   if not push is Array or push.size()!=2 or not _number(push[0],-80,80) or not _number(push[1],-80,80): return null
   e.push=Vector2(push[0],push[1])

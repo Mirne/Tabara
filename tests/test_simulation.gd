@@ -126,7 +126,7 @@ func run()->void:
  assault.enemies.clear()
  assault.spawn_remaining=0
  assault.build_at(Vector2(4000,2800),"market")
- assault.build_at(Vector2(4200,3320),"market")
+ assault.build_at(Vector2(4520,3360),"market")
  assault.buildings[0].cooldown=10000
  var raider:Dictionary=assault.spawn_enemy()
  raider.pos=Vector2(3800,2800)
@@ -136,6 +136,70 @@ func run()->void:
  assault.step(3)
  check(assault.buildings[1].hp==0 and assault.buildings[2].hp>0,"Enemies break blocking buildings without attacking unrelated side buildings")
  check(raider.pos.x>4000,"Enemy advances through destroyed foundations")
+ # The same red terrain cells used by construction are impassable for units.
+ var red_matches:=true
+ for y in Map.GRID_HEIGHT:
+  for x in Map.GRID_WIDTH:
+   var cell:=Vector2i(x,y)
+   if assault.navigation.solid(cell)!=(Map.cell_terrain(cell)>0): red_matches=false
+ check(red_matches,"All construction terrain cells agree with enemy navigation")
+ for center in [Map.GROVES[0],Map.QUARRIES[0]]:
+  check(not assault.navigation.passable(center),"Resource centres cannot be crossed by enemies")
+ var around=Sim.new(77)
+ around.spawn_remaining=0
+ around.buildings[0].cooldown=10000
+ var scout:Dictionary=around.enemies[0]
+ scout.pos=Vector2(1230,3200)
+ scout.hp=1e8
+ scout.max_hp=1e8
+ var avoided:=true
+ for step in 800:
+  around.step(0.05)
+  if not around.navigation.passable(scout.pos): avoided=false
+ check(avoided and scout.pos.x>1800,"Actual enemy movement routes around a forest without entering red cells")
+ var barrier=rich()
+ barrier.enemies.clear()
+ barrier.spawn_remaining=0
+ barrier.buildings[0].cooldown=10000
+ var pass_wall:Array=barrier.wall_line(Vector2(4160,2600),Vector2(4160,3000))
+ check(barrier.build_wall(pass_wall)=="","A wall can seal the complete mountain pass")
+ for b in barrier.buildings:
+  if b.kind=="wall": b.hp=1e7
+ var trapped:Dictionary=barrier.spawn_enemy()
+ trapped.pos=Vector2(3880,2800)
+ trapped.hp=1e8
+ trapped.max_hp=1e8
+ barrier.step(10)
+ check(trapped.pos.x<4120 and trapped.target>0,"Enemies cannot bypass a sealed mountain pass or walk through its walls")
+ for b in barrier.buildings:
+  if b.kind=="wall": b.hp=1
+ barrier.step(6)
+ check(trapped.pos.x>4240,"Enemies advance after destroying a pass wall")
+ # Prove the pass is a real chokepoint, even for a path search that avoids walls.
+ var frontier:Array[Vector2i]=[Map.cell_of(Map.ROAD[0])]
+ var visited:Dictionary={frontier[0]:true}
+ var read:=0
+ var leaked:=false
+ while read<frontier.size():
+  var current:Vector2i=frontier[read]
+  read+=1
+  if current==Map.cell_of(Map.HALL): leaked=true;break
+  for offset in [Vector2i(1,0),Vector2i(-1,0),Vector2i(0,1),Vector2i(0,-1)]:
+   var next:Vector2i=current+offset
+   if visited.has(next) or barrier.navigation.solid(next): continue
+   var point:=Map.cell_center(next)
+   if Rect2(4120,2560,80,480).has_point(point): continue
+   visited[next]=true
+   frontier.append(next)
+ check(not leaked,"The mountain ridges and a pass wall form a complete barrier from the western entry")
+ var legacy_ridge=rich()
+ legacy_ridge.buildings.append(legacy_ridge.make_building("market",Vector2(4080,3440)))
+ legacy_ridge.rebuild_building_grid()
+ var old_ridge:Dictionary=legacy_ridge.snapshot()
+ old_ridge.version=3
+ old_ridge.erase("mountains_enabled")
+ var migrated=Sim.restore(JSON.parse_string(JSON.stringify(old_ridge,"",true,true)))
+ check(migrated!=null and not migrated.mountains_enabled and migrated.buildings[1].pos==Vector2(4080,3440),"Old settlements crossing a new ridge keep their original terrain and building positions")
  # Static terrain routes go around the lake and never cut through water.
  var nav=Sim.Navigator.new(Vector2(7600,1600))
  var travel:=Vector2(5300,1600)

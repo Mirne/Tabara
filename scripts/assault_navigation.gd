@@ -1,9 +1,9 @@
 extends RefCounted
 ## Shared reverse Dijkstra field over terrain. Buildings are attacked, not avoided.
 const Map=preload("res://scripts/world_data.gd")
-const CELL:=80.0
-const WIDTH:=103
-const HEIGHT:=64
+const CELL:=Map.CELL
+const WIDTH:=Map.GRID_WIDTH
+const HEIGHT:=Map.GRID_HEIGHT
 const STEPS=[Vector2i(-1,0),Vector2i(1,0),Vector2i(0,-1),Vector2i(0,1),Vector2i(-1,-1),Vector2i(1,-1),Vector2i(-1,1),Vector2i(1,1)]
 var blocked:=PackedByteArray()
 var costs:=PackedFloat32Array()
@@ -13,7 +13,7 @@ var goal:Vector2
 var goal_cell:Vector2i
 var heap:Array[Vector2]=[]
 
-func _init(destination:Vector2)->void:
+func _init(destination:Vector2,mountains_enabled:bool=true)->void:
  goal=destination
  goal_cell=cell_of(goal)
  blocked.resize(WIDTH*HEIGHT)
@@ -21,13 +21,8 @@ func _init(destination:Vector2)->void:
  costs.fill(INF)
  following.resize(WIDTH*HEIGHT)
  following.fill(-1)
- for y in HEIGHT:
-  for x in WIDTH:
-   var p:=center(Vector2i(x,y))
-   var solid:bool=p.x<60 or p.y<60 or p.x>Map.SIZE.x-60 or p.y>Map.SIZE.y-60
-   for offset in [Vector2.ZERO,Vector2(24,0),Vector2(-24,0),Vector2(0,24),Vector2(0,-24)]:
-    if Map.water_at(p+offset) or Map.rock_at(p+offset): solid=true
-   blocked[y*WIDTH+x]=1 if solid else 0
+ var terrain:=Map.terrain_field(mountains_enabled)
+ for i in terrain.size(): blocked[i]=1 if terrain[i]>0 else 0
  blocked[index(goal_cell)]=0
  costs[index(goal_cell)]=0
  push(Vector2(0,index(goal_cell)))
@@ -41,7 +36,7 @@ func _init(destination:Vector2)->void:
    if solid(next): continue
    if move.x!=0 and move.y!=0 and (solid(cell+Vector2i(move.x,0)) or solid(cell+Vector2i(0,move.y))): continue
    var n:=index(next)
-   var distance:float=item.x+(113.137085 if move.x!=0 and move.y!=0 else CELL)
+   var distance:float=item.x+(CELL*1.41421356237 if move.x!=0 and move.y!=0 else CELL)
    if distance+0.01<costs[n]:
     costs[n]=distance
     following[n]=current
@@ -54,7 +49,7 @@ func center(c:Vector2i)->Vector2: return (Vector2(c)+Vector2.ONE*0.5)*CELL
 func solid(c:Vector2i)->bool:
  return c.x<0 or c.y<0 or c.x>=WIDTH or c.y>=HEIGHT or blocked[index(c)]==1
 func passable(p:Vector2)->bool:
- return p.x>=30 and p.y>=30 and p.x<Map.SIZE.x-30 and p.y<Map.SIZE.y-30 and not solid(cell_of(p))
+ return not solid(Map.cell_of(p))
 
 func sees_goal(c:Vector2i)->bool:
  var key:=index(c)
@@ -73,10 +68,14 @@ func sees_goal(c:Vector2i)->bool:
 
 func direction(p:Vector2)->Vector2:
  var c:=cell_of(p)
- if sees_goal(c): return p.direction_to(goal)
+ if sees_goal(c):
+  var direct:=p.direction_to(goal)
+  if can_step(p,p+direct*CELL): return direct
  var next:=following[index(c)]
  if next<0: return Vector2.ZERO
- return p.direction_to(center(Vector2i(next%WIDTH,next/WIDTH)))
+ var destination:=center(Vector2i(next%WIDTH,next/WIDTH))
+ if not can_step(p,destination): return p.direction_to(center(c))
+ return p.direction_to(destination)
 
 func push(value:Vector2)->void:
  heap.append(value)
@@ -100,3 +99,31 @@ func pop()->Vector2:
   i=child
  heap[i]=tail
  return result
+
+func can_step(a:Vector2,b:Vector2)->bool:
+ var previous:=Map.cell_of(a)
+ var samples:=maxi(1,ceili(a.distance_to(b)/10.0))
+ for i in range(1,samples+1):
+  var next:=Map.cell_of(a.lerp(b,float(i)/samples))
+  if solid(next): return false
+  if next.x!=previous.x and next.y!=previous.y and (solid(Vector2i(next.x,previous.y)) or solid(Vector2i(previous.x,next.y))): return false
+  previous=next
+ return true
+
+func nearest_open(p:Vector2)->Vector2:
+ if passable(p): return p
+ var origin:=Map.cell_of(p)
+ for radius in range(1,30):
+  var best:=INF
+  var result:=p
+  for y in range(-radius,radius+1):
+   for x in range(-radius,radius+1):
+    if absi(x)!=radius and absi(y)!=radius: continue
+    var c:=origin+Vector2i(x,y)
+    if solid(c): continue
+    var candidate:=center(c)
+    if candidate.distance_squared_to(p)<best:
+     result=candidate
+     best=candidate.distance_squared_to(p)
+  if best<INF: return result
+ return p

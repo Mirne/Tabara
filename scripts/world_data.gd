@@ -1,3 +1,4 @@
+@static_unload
 class_name FrontierMap
 extends RefCounted
 ## Immutable geography shared by simulation, terrain rendering, and minimap.
@@ -11,6 +12,66 @@ const QUARRIES := [Vector2(5150,3110),Vector2(3760,2080),Vector2(2100,3450),Vect
 const ORES := [Vector2(4500,2390),Vector2(3080,3350),Vector2(1490,2200),Vector2(5750,3050),Vector2(7200,4050),Vector2(3500,730)]
 const CLIFFS := [Vector2(1730,650),Vector2(4800,4300),Vector2(3600,4350)]
 
+const CELL := 40.0
+const GRID_WIDTH := 205
+const GRID_HEIGHT := 128
+# Two continuous spines meet the map edges, leaving a 480-unit mountain pass.
+const MOUNTAIN_RECTS := [Rect2(3600,0,320,1440),Rect2(3680,1280,480,320),Rect2(4000,1440,240,1120),Rect2(4000,3040,240,2080)]
+static var terrain_fields:Dictionary={}
+
+static func cell_of(p:Vector2)->Vector2i: return Vector2i(floori(p.x/CELL),floori(p.y/CELL))
+static func cell_center(c:Vector2i)->Vector2: return (Vector2(c)+Vector2.ONE*0.5)*CELL
+static func resource_rect(index:int)->Rect2:
+ var center:Vector2=resource_nodes()[index].pos.snapped(Vector2.ONE*CELL)
+ return Rect2(center-Vector2(80,80),Vector2(160,160))
+static func mountain_at(p:Vector2)->bool:
+ for rect in MOUNTAIN_RECTS:
+  if rect.has_point(p): return true
+ return false
+static func mountain_conflict(rect:Rect2)->bool:
+ for ridge in MOUNTAIN_RECTS:
+  if ridge.intersects(rect): return true
+ return false
+
+static func terrain_field(mountains_enabled:bool=true)->PackedInt32Array:
+ if terrain_fields.has(mountains_enabled): return terrain_fields[mountains_enabled]
+ var field:=PackedInt32Array()
+ field.resize(GRID_WIDTH*GRID_HEIGHT)
+ var boundary:=Rect2(Vector2(100,100),SIZE-Vector2(200,200))
+ for y in GRID_HEIGHT:
+  for x in GRID_WIDTH:
+   var c:=Vector2i(x,y)
+   var rect:=Rect2(Vector2(c)*CELL,Vector2.ONE*CELL)
+   var value:=0
+   if not boundary.encloses(rect): value=1
+   elif mountains_enabled and mountain_conflict(rect): value=4
+   else:
+    for offset in [Vector2.ZERO,Vector2(-19,-19),Vector2(19,-19),Vector2(-19,19),Vector2(19,19)]:
+     var point:Vector2=cell_center(c)+offset
+     if water_at(point): value=2
+     elif rock_at(point): value=3
+   field[y*GRID_WIDTH+x]=value
+ var nodes:=resource_nodes()
+ for i in nodes.size():
+  var rect:=resource_rect(i)
+  for y in range(floori(rect.position.y/CELL),ceili(rect.end.y/CELL)):
+   for x in range(floori(rect.position.x/CELL),ceili(rect.end.x/CELL)):
+    var key:=y*GRID_WIDTH+x
+    if key>=0 and key<field.size() and field[key]==0: field[key]=10+i
+ terrain_fields[mountains_enabled]=field
+ return field
+
+static func cell_terrain(c:Vector2i,mountains_enabled:bool=true)->int:
+ if c.x<0 or c.y<0 or c.x>=GRID_WIDTH or c.y>=GRID_HEIGHT: return 1
+ return terrain_field(mountains_enabled)[c.y*GRID_WIDTH+c.x]
+
+static func mountain_sprites()->Array:
+ var out:Array=[]
+ for rect in MOUNTAIN_RECTS:
+  for y in range(int(rect.position.y)+80,int(rect.end.y)+1,160):
+   out.append({"pos":Vector2(rect.get_center().x,y),"size":Vector2(rect.size.x+60,260)})
+ return out
+
 static func water_at(p: Vector2) -> bool:
  return ((p-LAKE_CENTER)/LAKE_RADIUS).length_squared()<1.0
 
@@ -19,20 +80,15 @@ static func rock_at(p: Vector2) -> bool:
   if ((p-c)/Vector2(370,210)).length_squared()<1.0: return true
  return false
 
-static func terrain_error(p: Vector2, radius: float, own_deposit: int = -1) -> String:
- if not Rect2(Vector2(100,100),SIZE-Vector2(200,200)).encloses(Rect2(p-Vector2.ONE*radius,Vector2.ONE*radius*2)):
-  return "Stay inside the frontier boundary."
- for offset in [Vector2.ZERO,Vector2(radius,0),Vector2(-radius,0),Vector2(0,radius),Vector2(0,-radius),Vector2(radius,radius),Vector2(radius,-radius),Vector2(-radius,radius),Vector2(-radius,-radius)]:
-  if water_at(p+offset): return "Build on dry ground."
-  if rock_at(p+offset): return "This rocky ridge cannot support foundations."
- var foundation:=Rect2(p-Vector2.ONE*radius,Vector2.ONE*radius*2)
- var nodes:=resource_nodes()
- for i in nodes.size():
-  if i==own_deposit: continue
-  var c:Vector2=nodes[i].pos
-  var closest:=c.clamp(foundation.position,foundation.end)
-  var reserved:float=150.0 if nodes[i].kind=="wood" else 110.0
-  if c.distance_to(closest)<reserved: return "Leave this resource deposit clear, or build its matching producer on it."
+static func terrain_error(p:Vector2,radius:float,own_deposit:int=-1,mountains_enabled:bool=true)->String:
+ var rect:=Rect2(p-Vector2.ONE*radius,Vector2.ONE*radius*2)
+ var reasons=["","Stay inside the frontier boundary.","Build on dry ground.","This rocky ridge cannot support foundations.","Mountains block this ground. Build walls across the pass."]
+ for y in range(floori(rect.position.y/CELL),ceili(rect.end.y/CELL)):
+  for x in range(floori(rect.position.x/CELL),ceili(rect.end.x/CELL)):
+   var value:=cell_terrain(Vector2i(x,y),mountains_enabled)
+   if value>=10:
+    if value-10!=own_deposit: return "Leave this resource deposit clear, or build its matching producer on it."
+   elif value>0: return reasons[value]
  return ""
 
 static func road_distance(p: Vector2) -> float:

@@ -6,6 +6,8 @@ uniform vec2 world_size=vec2(8192.0,5120.0);
 uniform vec2 groves[14];
 uniform vec2 cliffs[3];
 uniform vec2 road[6];
+uniform vec4 ridge_rects[4];
+uniform bool mountains_on=true;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1)),f.x),f.y);}
 vec3 material(vec2 p,vec2 tile){vec2 uv=fract(p/480.0)*0.472+0.014+tile*0.5;return texture(terrain_materials,uv).rgb;}
@@ -24,7 +26,14 @@ void fragment(){
  color=mix(color,material(p,vec2(1,0))*vec3(1.12,1.08,0.95),track*0.92);
  float stone=0.0;
  for(int i=0;i<3;i++){stone=max(stone,1.0-smoothstep(0.75,1.25,length((p-cliffs[i])/vec2(370,210))+n*0.12));}
- color=mix(color,material(p,vec2(0,1)),stone);
+ if(mountains_on){
+  for(int i=0;i<4;i++){
+   vec2 q=abs(p-(ridge_rects[i].xy+ridge_rects[i].zw*0.5))-ridge_rects[i].zw*0.5;
+   float outside=length(max(q,vec2(0.0)));
+   stone=max(stone,1.0-smoothstep(0.0,45.0,outside+n*12.0));
+  }
+ }
+ color=mix(color,material(p,vec2(0,1))*vec3(0.78,0.8,0.72),stone);
  float shore=length((p-vec2(6500,1600))/vec2(950,520));
  float wet=1.0-smoothstep(0.98,1.13,shore+n*0.02);
  color=mix(color,material(p,vec2(1,0))*vec3(0.75,0.81,0.67),wet);
