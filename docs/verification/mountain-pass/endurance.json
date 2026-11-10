@@ -1,0 +1,30 @@
+{
+  "action_cycles": 1187,
+  "actual_real_seconds": 1200.03099999998,
+  "camera": [
+    7400.0,
+    4300.0,
+    0.85
+  ],
+  "camera_tours": 49,
+  "complete": true,
+  "current_mission_seconds": 1194.64999999946,
+  "current_segment_real_seconds": 1200.03099999998,
+  "current_segment_wall_seconds": 1200.045,
+  "current_session_seed": 1001,
+  "current_static_memory_bytes": 39316966,
+  "disk_resumes": 19,
+  "errors": [],
+  "excluded_stall_seconds": 0.0,
+  "fps": 30.0,
+  "game_version": "0.5.0",
+  "max_process_ms_after_warmup": 977.554,
+  "max_static_memory_bytes": 39401002,
+  "min_fps_after_warmup": 2.0,
+  "prior_confirmed_real_seconds": 0.0,
+  "requested_real_seconds": 1200,
+  "segments": 1,
+  "sessions": 1,
+  "source_commit": "60185b7466be142ba1fdf2f396f7da2858630c8d",
+  "victories": 1
+}

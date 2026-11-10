@@ -1,0 +1,7 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+WARNING: Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.
+     at: set_use_vsync (platform/linuxbsd/x11/gl_manager_x11.cpp:364)
+OpenGL API 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 19.1.7, 256 bits)
+
+STRESS START: 512 structures / 1000 enemies
+STRESS RESULT {"enemies":1000,"fixture":"512 structures and 1000 high-health, low-damage enemies; unlimited supplies, not campaign balance","fps_cap":30,"max_process_ms":1637.264,"max_static_memory_bytes":47056353,"mean_sampled_fps_after_warmup":4.3785046728972,"mean_simulation_cpu_ms":72.3889065420561,"mean_world_draw_cpu_ms":31.9640280373832,"minimum_fps_after_warmup":1.0,"real_seconds":60.166,"rendered_entities":1188,"simulation_frozen":false,"structures":512}

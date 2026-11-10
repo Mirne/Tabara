@@ -16,14 +16,21 @@ rounded dashboard panels.
 ## World and placement
 
 The world is 8,192 × 5,120 units. The headquarters is at (4,800, 2,800), and one
-decorative winding road connects the western boundary to it. Attackers choose
+decorative winding road connects the western boundary to it. Two mountain spines touch
+the map boundaries and leave a 480-unit pass at y=2,560–3,040. Six wall
+sections centred at x=4,160 can seal the pass. Attackers choose
 a direct land route to the hall. Forest groves, quarries, gold
 ore, ridges, scattered vegetation, and a large eastern lake give the valley
 geographic landmarks. Geography is deterministic and shared by rendering,
 placement checks, production bonuses, and the minimap.
 
 Placement snaps to a visible 40-unit grid. Rectangular foundations occupy whole
-grid cells and may meet without overlapping. Each building has a footprint; collisions,
+grid cells and may meet without overlapping. The same cached 40-unit terrain
+mask drives placement, red grid cells and enemy navigation. Resource cores,
+water, ridges, mountains and boundaries are impassable. A matching producer
+is the one construction exception on its resource core. Standing structures
+are red and physically block attackers until destroyed; ruins are amber and
+allow passage. Each building has a footprint; collisions,
 water, ridges, map boundaries and resource cores reject construction before any
 materials are spent. There are no fixed defense pads or reserved wall checkpoints. Woodcutters and
 stonemasons require matching deposits, one producer per deposit. Ruins retain
@@ -32,7 +39,7 @@ and reserve the closest matching site.
 There is one main hall and room for up to 512 structures. Clearing ruins reuses
 storage slots and ground without growing the building array indefinitely.
 
-Each forest and quarry is a compact, single raster image. Resources have no tap
+Each forest and quarry is a compact, single raster image with no pale base mat. Resources have no tap
 interaction, collection button or floating refill timer. A matching producer
 occupies each site; resource cores remain protected from unrelated buildings.
 
@@ -75,9 +82,11 @@ Base enemy health scales by `1.065^(wave − 1)` and damage by
 continue increasing in number. A 2,400-enemy population bound protects memory.
 
 Enemies have actual two-dimensional world positions. A shared reverse Dijkstra
-field on an 80-unit grid routes around water and cliffs; clear line of sight
+field on the shared 40-unit grid routes around resources, water, cliffs and mountains; clear line of sight
 allows a direct heading to the hall. Eight neighboring terrain cells participate,
-with no diagonal corner cutting. Buildings do not divert the route: a swept
+with no diagonal corner cutting. Same-cell and adjacent-cell movement use
+constant-time checks; larger debug moves retain a sampled fallback. Tight turns
+can recenter within an open cell. Buildings do not divert the route: a swept
 foundation test finds the first blocking structure and attackers destroy it
 before advancing through its ruins. Nearby structures outside the route are
 ignored. Siege carts attack from farther away.
@@ -118,24 +127,30 @@ and renderer instrumentation distinguish simulation cost from draw-command cost.
 The construction cards and inspector occupy the right rail. Selecting a card
 shows the grid; a world tap previews a location without spending. The separate
 Build confirmation revalidates resources, the foundation and deposit ownership.
-A successful build exits placement mode. Cancel spends nothing.
+A successful build exits placement mode. Cancel spends nothing. Tower
+previews show a range circle at the proposed position. Upgrade and Repair
+keep distinct, permanent price rows; damage cannot swap the displayed upgrade
+price to a repair quote. Building sprites and dirt decals share the same
+ground-centred anchor.
 
 One-finger drag or mouse/WASD moves the camera, except that the wall tool uses
 a world drag to draw a preview. Two-finger input pans and zooms during wall
-placement and never confirms construction. Pinch, wheel or zoom buttons
-change scale. The minimap and Hall button provide navigation. Tap release is
+placement and never confirms construction. Pinch or wheel input changes scale. The mobile +/− controls and Guide buttons
+are removed. Hall sits in the top bar, and speed cycles 1×, 2×, 5× and 10×. The minimap and Hall button provide navigation. Tap release is
 separated from dragging so panning does not place buildings. Two-finger input
 suppresses tap placement. Desktop and Android use the same logical canvas.
 
 ## Saves and lifecycle
 
-Save version 3 stores free building positions, ruins, levels, health, enemy
-world positions and cached movement/attack state,
+Save version 4 stores free building positions, ruins, levels, health, enemy
+world positions, cached movement/attack state and mountain-layout selection,
 wave state, random-generator state, resource cooldowns, cleared vegetation,
 camera and zoom. Full-precision JSON reduces rounding; restoration validates
-all fields before accepting the settlement. Version-2 frontier files migrate
-old road progress into actual enemy positions and retain buildings, economy and
-mission time. JSON numeric version values are normalized before validation. Files are atomically renamed over
+all fields before accepting the settlement. Version-2 and version-3 frontier files retain buildings, economy and mission
+time. Version 2 converts road progress into actual enemy positions. The new
+mountain pass is used unless it conflicts with an existing foundation; those
+old settlements retain the previous layout. Enemies inside newly blocked
+resource cells recover to the nearest open cell on their next step. JSON numeric version values are normalized before validation. Files are atomically renamed over
 the previous save. JSON round trips are compared within floating-point precision.
 
 The frontier uses `frontier-settlement.json`; version-1 fixed-plot saves are left

@@ -4,7 +4,7 @@
 
 The building atlas was generated specifically for Tabara with OpenAI image
 generation on **9 November 2026**. Its seven buildings remain part of the frontier
-revision. Ten additional images were generated for the new presentation on
+revision. The frontier terrain, units and interface art were generated on
 **10 November 2026**. Original generated files remain in the working environment;
 repository assets are copies of those outputs, sampled through atlas regions.
 
@@ -20,11 +20,15 @@ repository assets are copies of those outputs, sampled through atlas regions.
 | `assets/frontier/water.png` | Tileable lake material used by the terrain and animated surface |
 | `assets/frontier/earth.png` | Transparent irregular compacted-earth foundation decal |
 | `assets/frontier/resource-sites.png` | Compact pine grove and limestone quarry; one raster image per producer site |
-| `assets/frontier/wall-kit.png` | Horizontal course, north/south course and junction pier for connected grid walls |
+| `assets/frontier/wall-kit.png` | Complete short horizontal/north–south modules and junction pier; no angled sprite crop |
+| `assets/frontier/mountains.png` | Transparent rugged mountain cluster used along impassable spines |
 
-The two v0.4 atlases retain their original generated pixels; runtime atlas crops
-and textured geometry assemble the sites and wall connections. Their mobile
-imports are limited to 1,024 pixels on the longest axis.
+Version 0.5 regenerated the resource sites without pale ground mats, replaced
+the wall atlas with complete orthographic short modules, and added mountains.
+Repository PNGs are unchanged copies of the generated outputs. Runtime regions
+include each complete wall sprite. Their mobile imports are limited to 1,024
+pixels on the longest axis. Building pivots align visible ground footprints
+with dirt-patch centres.
 
 The gameplay reference **They Are Billions** informed the settlement-defense
 structure, not the graphics. No art or screenshots from that game are included.
