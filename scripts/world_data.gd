@@ -56,14 +56,8 @@ static func scenery() -> Array:
  var out: Array=[]
  var rng:=RandomNumberGenerator.new()
  rng.seed=42516
- for center in GROVES:
-  for j in 58:
-   var angle:=rng.randf()*TAU
-   var radius:=sqrt(rng.randf())*430
-   var p:Vector2=center+Vector2(cos(angle)*radius,sin(angle)*radius*0.72)
-   if road_distance(p)<150 or water_at(p) or p.distance_to(HALL)<300: continue
-   out.append({"pos":p,"art":rng.randi_range(0,2),"scale":rng.randf_range(0.8,1.35),"flip":rng.randf()<0.5})
- for center in QUARRIES+CLIFFS:
+ # Each forest/quarry is one compact authored resource image, not scattered copies.
+ for center in CLIFFS:
   for j in 10:
    var p:Vector2=center+Vector2(rng.randf_range(-180,180),rng.randf_range(-110,110))
    out.append({"pos":p,"art":4,"scale":rng.randf_range(0.65,1.6),"flip":rng.randf()<0.5})

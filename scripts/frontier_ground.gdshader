@@ -16,7 +16,7 @@ void fragment(){
  vec3 grass=material(p,vec2(0));
  vec3 forest=material(p,vec2(1,1));
  float woods=0.0;
- for(int i=0;i<14;i++){woods=max(woods,1.0-smoothstep(170.0,600.0,distance(p,groves[i])+n*90.0));}
+ for(int i=0;i<14;i++){woods=max(woods,1.0-smoothstep(65.0,210.0,distance(p,groves[i])+n*22.0));}
  vec3 color=mix(grass,forest,woods*0.75);
  float d=100000.0;
  for(int i=0;i<5;i++){d=min(d,segment(p,road[i],road[i+1]));}

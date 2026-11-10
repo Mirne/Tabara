@@ -70,14 +70,7 @@ func run()->void:
  await action("start")
  check(game.screen=="mission" and game.sim.enemies.size()>0 and game.sim.enemies[0].progress<game.sim.total_length*0.2,"Mission starts enemies at the path entrance")
  check(game.VIEW.end.x<=1152,"The construction rail sits to the right of the world")
- var found_rock:=false
- for prop in game.world.scenery:
-  if prop.art==4 and prop.pos.distance_to(game.Map.QUARRIES[0])<220:
-   game.sim.clear_vegetation(prop.pos,120)
-   check(game.world.scenery_visible(prop),"Construction clearing never hides quarry rocks")
-   found_rock=true
-   break
- check(found_rock,"Resource rock regression uses actual map scenery")
+ check(game.world.RESOURCE_SITES!=null and game.world.scenery.size()<1100,"Each forest and quarry uses one compact resource image")
  await capture("initial")
  game.camera_center=Vector2(4780,3000)
  game.apply_camera()
@@ -177,10 +170,12 @@ func run()->void:
  await capture("marketplace")
  await action("back")
  check(game.screen=="mission","Trade returns to the game")
- stock=game.sim.resources.gold
+ var resource_stock:Dictionary=game.sim.resources.duplicate()
+ game.set_process(false)
  var free_gold:int=game.Map.GROVES.size()+game.Map.QUARRIES.size()
  await tap(game.world_to_screen(game.sim.resource_nodes[free_gold].pos))
- check(game.sim.resources.gold>stock+23,"Tapping an unoccupied deposit gathers supplies")
+ check(game.sim.resources==resource_stock,"Resource art has no tap-to-gather interaction")
+ game.set_process(true)
  # The minimap routes input before world placement and reaches distant geography.
  var target:=Vector2(6500,1600)
  await tap(game.MINIMAP.position+target/game.Map.SIZE*game.MINIMAP.size)
@@ -223,6 +218,45 @@ func run()->void:
  touch(0,Vector2(800,350),false)
  await frame()
  check(game.camera_center.distance_to(before)>30,"One-finger drag pans")
+ # A mobile wall stroke previews multiple joined cells and waits for confirmation.
+ game.camera_center=Vector2(6200,3800)
+ game.zoom=0.85
+ game.apply_camera()
+ game.sim.resources={"wood":1000.0,"stone":1000.0,"gold":1000.0}
+ await action("build:wall")
+ var wall_start:Vector2=game.world_to_screen(Vector2(6000,3680))
+ var wall_end:Vector2=game.world_to_screen(Vector2(6240,3680))
+ var wall_count:int=game.sim.active_building_count()
+ var wall_camera:Vector2=game.camera_center
+ touch(0,wall_start,true)
+ await frame()
+ drag_touch(0,wall_end,wall_end-wall_start)
+ await frame()
+ touch(0,wall_end,false)
+ await frame()
+ check(game.wall_points.size()==4 and game.sim.active_building_count()==wall_count,"Dragging a wall previews four pieces without spending")
+ check(game.camera_center==wall_camera,"A wall drag draws instead of panning")
+ await capture("wall-preview")
+ await action("confirm_build")
+ check(game.sim.active_building_count()==wall_count+4,"One confirmation builds the whole wall stroke")
+ var last_wall:int=game.sim.wall_at(Vector2(6080,3680))
+ check(last_wall>=0 and game.sim.wall_neighbors(last_wall).size()==2,"Built wall pieces form a continuous joined run")
+ game.sim.step(3)
+ await capture("joined-wall")
+ await action("build:wall")
+ var turn_end:Vector2=game.world_to_screen(Vector2(6240,3920))
+ touch(0,wall_end,true)
+ await frame()
+ drag_touch(0,turn_end,turn_end-wall_end)
+ await frame()
+ touch(0,turn_end,false)
+ await frame()
+ check(game.sim.wall_preview(game.wall_points).count==3,"Corner extension reuses the existing wall endpoint")
+ await action("confirm_build")
+ var corner:int=game.sim.wall_at(Vector2(6240,3680))
+ check(game.sim.wall_neighbors(corner).size()==2,"Perpendicular wall strokes join at the corner")
+ game.sim.step(3)
+ await capture("wall-corner")
  # View state and model state both survive actual filesystem persistence.
  var saved_camera:Vector2=game.camera_center
  var saved_zoom:float=game.zoom

@@ -3,7 +3,7 @@ extends RefCounted
 const Sim=preload("res://scripts/simulation.gd")
 const PLAN=[
  [Vector2(4380,3030),"wood"],[Vector2(5150,3110),"stone"],[Vector2(4512,2576),"arrow"],
- [Vector2(4976,2992),"market"],[Vector2(4384,2640),"wall"],[Vector2(4400,2720),"wall"],[Vector2(4368,2560),"wall"],
+ [Vector2(4976,2992),"market"],[Vector2(4200,2720),"wall"],[Vector2(4200,2800),"wall"],[Vector2(4200,2880),"wall"],
  [Vector2(4720,3056),"cannon"],[Vector2(4656,2528),"arrow"],[Vector2(4464,2864),"cannon"],
  [Vector2(5110,2420),"wood"],[Vector2(3760,2080),"stone"],[Vector2(4912,2528),"arrow"],
  [Vector2(5010,3200),"market"],[Vector2(4736,2400),"cannon"],[Vector2(4160,2784),"arrow"]
@@ -38,8 +38,6 @@ func planned_site(position:Vector2,kind:String)->Vector2:
  return center
 
 func act()->void:
- for i in nearby_nodes:
-  if sim.collect(i): break
  var repair_index:=-1
  var fraction:=0.58
  for i in sim.buildings.size():

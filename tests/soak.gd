@@ -154,7 +154,7 @@ func validate() -> void:
   if not is_finite(b.pos.x) or not is_finite(b.pos.y) or not Rect2(Vector2.ZERO,Sim.World.SIZE).has_point(b.pos): errors.append("World position invariant")
   if b.level<1 or b.level>100 or not is_finite(b.hp) or b.hp<0 or b.hp>s.stat(b,"hp")+0.01: errors.append("Building invariant")
  for e in s.enemies:
-  if not is_finite(e.hp) or e.hp<=0 or e.progress<0 or e.progress>s.total_length: errors.append("Enemy invariant")
+  if not is_finite(e.hp) or e.hp<=0 or e.progress<0 or e.progress>s.total_length or not is_finite(e.pos.x) or not is_finite(e.pos.y) or not Rect2(Vector2.ZERO,Sim.World.SIZE).has_point(e.pos): errors.append("Enemy invariant")
  if s.events.size()>250 or game.fx.size()>180 or s.buildings.size()>Sim.MAX_BUILDINGS or s.enemies.size()>Sim.MAX_ENEMIES or s.cleared_ground.size()>10240: errors.append("Unbounded transient state")
  if not is_finite(game.zoom) or game.zoom<0.28 or game.zoom>1.6: errors.append("Camera zoom invariant")
  if game.Art.style_cache.size()>64: errors.append("Unbounded interface style cache")

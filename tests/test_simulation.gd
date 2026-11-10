@@ -54,10 +54,7 @@ func run()->void:
  var rates:Dictionary=s.income_rates()
  var node:=0
  var timber:float=s.resources.wood
- check(s.collect(node) and s.resources.wood>timber,"Deposits yield real supplies")
- check(not s.collect(node),"Gather cooldown prevents repeated harvesting")
- s.step(12)
- check(s.collect(node),"Deposits replenish after twelve seconds")
+ check(not s.collect(node) and s.resources.wood==timber,"Resource sites cannot be harvested by tapping")
  check(s.build_at(Vector2(7000,4000),"hall")!="","Only one main hall is allowed")
  check(not s.buy("stone") and not s.trade("wood"),"Trading requires a marketplace")
  var tiles=rich()
@@ -96,6 +93,59 @@ func run()->void:
  before_gold=reward_test.resources.gold
  reward_test.step(0.05)
  check(reward_test.resources.gold-before_gold<1,"A removed enemy cannot pay gold twice")
+ # Dragged wall batches are connected, priced once and atomic.
+ var walls=rich()
+ var stroke:Array=walls.wall_line(Vector2(6100,3700),Vector2(6420,3860))
+ for i in range(1,stroke.size()):
+  check(absf(stroke[i].x-stroke[i-1].x)+absf(stroke[i].y-stroke[i-1].y)==80,"Every dragged wall piece joins a neighbor")
+ var preview:Dictionary=walls.wall_preview(stroke)
+ check(preview.error=="" and preview.count==stroke.size(),"Wall preview validates the complete stroke")
+ var wall_gold:float=walls.resources.gold
+ check(walls.build_wall(stroke)=="" and walls.resources.gold==wall_gold-10*stroke.size(),"Wall batch charges exactly once per new piece")
+ check(walls.wall_neighbors(2).size()==2,"Interior wall segments have two connected neighbors")
+ var extension:Array=walls.wall_line(stroke[-1],stroke[-1]+Vector2(160,0))
+ check(walls.wall_preview(extension).count==2,"Joining an existing endpoint charges only new pieces")
+ var empty=Sim.new(3)
+ var unpaid:Dictionary=empty.snapshot()
+ check(empty.build_wall(empty.wall_line(Vector2(6100,3700),Vector2(6740,3700)))!="" and empty.snapshot()==unpaid,"Unaffordable wall strokes make no partial changes")
+ var blocked=rich()
+ var blocked_stock:Dictionary=blocked.resources.duplicate()
+ var lake_line:Array=blocked.wall_line(Map.LAKE_CENTER-Vector2(1000,0),Map.LAKE_CENTER+Vector2(200,0))
+ check(blocked.build_wall(lake_line)!="" and blocked.resources==blocked_stock and blocked.buildings.size()==1,"An invalid middle tile cancels the entire wall")
+ # Enemies walk directly across open terrain rather than following the decorative road.
+ var assault=rich()
+ assault.spawn_remaining=0
+ var walker:Dictionary=assault.enemies[0]
+ walker.pos=Vector2(1800,2700)
+ var distance_before:float=walker.pos.distance_to(Map.HALL)
+ assault.step(3)
+ check(walker.pos.x>2000 and walker.pos.y>2700 and walker.pos.distance_to(Map.HALL)<distance_before-200,"Enemy takes the direct route to the hall")
+ check(walker.pos.distance_to(assault.path_point(walker.progress))>200,"Enemy position is independent of old road progress")
+ # The first building on the route is destroyed before advancing; side buildings are ignored.
+ assault=rich()
+ assault.enemies.clear()
+ assault.spawn_remaining=0
+ assault.build_at(Vector2(4000,2800),"market")
+ assault.build_at(Vector2(4200,3320),"market")
+ assault.buildings[0].cooldown=10000
+ var raider:Dictionary=assault.spawn_enemy()
+ raider.pos=Vector2(3800,2800)
+ raider.lane=0
+ raider.speed=100
+ assault.buildings[1].hp=1
+ assault.step(3)
+ check(assault.buildings[1].hp==0 and assault.buildings[2].hp>0,"Enemies break blocking buildings without attacking unrelated side buildings")
+ check(raider.pos.x>4000,"Enemy advances through destroyed foundations")
+ # Static terrain routes go around the lake and never cut through water.
+ var nav=Sim.Navigator.new(Vector2(7600,1600))
+ var travel:=Vector2(5300,1600)
+ var original_distance:float=travel.distance_to(Vector2(7600,1600))
+ for tick in 900:
+  var candidate:Vector2=travel+nav.direction(travel)*8
+  check(not Map.water_at(candidate),"Shortest terrain route avoids the lake")
+  if nav.passable(candidate): travel=candidate
+  if travel.distance_to(Vector2(7600,1600))<60: break
+ check(travel.distance_to(Vector2(7600,1600))<60,"Terrain route reaches the far side of the lake")
  # A great horde must dispatch fully rather than being overwritten by the next wave.
  var horde=Sim.new(1)
  horde.elapsed=120.0
@@ -178,10 +228,10 @@ func run()->void:
  s.spawn_remaining=0
  var leader:Dictionary=s.spawn_enemy(1000)
  var follower:Dictionary=s.spawn_enemy(990)
- leader.lane=0
- follower.lane=0
+ leader.pos=Vector2(2100,2700)
+ follower.pos=Vector2(2080,2700)
  s.step(0.05)
- check(leader.progress-follower.progress>=29.99,"Crowds keep physical headway in their approach lane")
+ check(leader.pos.distance_to(follower.pos)>20,"Free-moving crowds separate without fixed lanes")
  # A removed target's reused index must not damage a new, distant structure.
  s=rich()
  s.enemies.clear()
@@ -190,6 +240,7 @@ func run()->void:
  check(s.build_at(s.enemy_position(enemy),"wall")=="","Build target for reused-index regression")
  enemy.target=1
  enemy.scan=0.2
+ enemy.aim=0.2
  enemy.cooldown=-1
  s.clear_at(1)
  s.build_at(Vector2(6400,4000),"wall")

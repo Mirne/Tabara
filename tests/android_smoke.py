@@ -17,7 +17,7 @@ from PIL import Image, ImageChops, ImageStat
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "com.tabara.lasthearth"
-APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.3.apk"))
+APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.4.apk"))
 OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android-frontier")).name
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
@@ -167,16 +167,36 @@ def native_checks(back_only=False):
             tap(1226, 311)
             tap(433, 257)  # Tower on free grid ground, snapped to (4520,2560).
             tap(1294, 704)
+            tap(1338, 43)
+            before_wall = save()
+            check(len(before_wall["buildings"]) == 4, "Native initial grid buildings are stored before wall dragging")
+            adb("shell", "input", "keyevent", "4")
+            time.sleep(4)
+            tap(1359, 311)
+            adb("shell", "input", "swipe", *physical(168,379), *physical(168,515), "700")
+            time.sleep(4)
+            screen("03b-wall-preview")
+            tap(1338, 43)
+            check(len(save()["buildings"]) == 4, "Native wall drag previews without constructing")
+            adb("shell", "input", "keyevent", "4")
+            time.sleep(4)
+            tap(1359, 311)
+            adb("shell", "input", "swipe", *physical(168,379), *physical(168,515), "700")
+            time.sleep(4)
+            tap(1294, 704)
+            screen("03c-wall-built")
         tap(1338, 43)  # Explicit known pause.
         screen("04-built-and-paused")
-        data = wait_saved_structure(3, "arrow")
-        check(data["version"] == 2, "Native app writes the world-position save format")
+        data = wait_saved_structure(6, "wall")
+        check(data["version"] == 3, "Native app writes the world-position save format")
         for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow")]:
             check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
             check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")
         expected = [(4400,3040),(5160,3120),(4520,2560)]
         for index, position in enumerate(expected, 1):
             check(tuple(data["buildings"][index]["pos"]) == position, "Native confirmed building follows the grid at " + str(position))
+        for index, position in [(4,(4200,2720)),(5,(4200,2800)),(6,(4200,2880))]:
+            check(data["buildings"][index]["kind"] == "wall" and tuple(data["buildings"][index]["pos"]) == position, "Native wall stroke creates joined piece at " + str(position))
         check(data["elapsed"] > 0 and data["wave"] >= 1, "Native mission advances")
         before = data["elapsed"]
         time.sleep(12)

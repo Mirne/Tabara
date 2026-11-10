@@ -3,13 +3,16 @@ extends SceneTree
 const Sim = preload("res://scripts/simulation.gd")
 const Bot = preload("res://tests/player_bot.gd")
 var results: Array = []
+var seed_count:=12
 
 func _init() -> void:
+ for arg in OS.get_cmdline_user_args():
+  if arg.begins_with("--seeds="): seed_count=clampi(int(arg.trim_prefix("--seeds=")),1,100)
  call_deferred("run")
 
 func run() -> void:
  var started := Time.get_ticks_msec()
- for seed_number in range(1,13):
+ for seed_number in range(1,seed_count+1):
   var sim = Sim.new(seed_number)
   var bot = Bot.new(sim)
   for second in 1500:

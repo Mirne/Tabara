@@ -2,6 +2,8 @@ extends Node2D
 ## Raster scenery, animated sprite units, depth ordering, and culled world rendering.
 const Map=preload("res://scripts/world_data.gd")
 const Art=preload("res://scripts/frontier_art.gd")
+const RESOURCE_SITES=preload("res://assets/frontier/resource-sites.png")
+const WALL_KIT=preload("res://assets/frontier/wall-kit.png")
 const Body=preload("res://assets/fonts/Body.ttf")
 const UNIT_ROWS={"raider":0,"runner":1,"brute":2,"siege":3}
 var game
@@ -115,20 +117,25 @@ func _draw()->void:
   elif entity.has("building"): draw_building(entity.building)
   elif entity.has("deposit"): draw_deposit(entity.deposit)
   else: draw_enemy(entity.enemy,entity.pos)
- # Gathering controls stay legible even when foreground canopies overlap a grove.
- for i in sim.resource_nodes.size():
-  if visible_world.has_point(sim.resource_nodes[i].pos): draw_deposit_marker(i)
  draw_effects()
- if game.build_kind!="" and visible_world.has_point(game.ghost):
+ if game.build_kind=="wall" and not game.wall_points.is_empty():
+  var preview:Dictionary=sim.wall_preview(game.wall_points)
+  var tint:=Color(0.8,1,0.73,0.7) if preview.error=="" else Color(1,0.38,0.26,0.7)
+  for i in game.wall_points.size():
+   var p:Vector2=game.wall_points[i]
+   draw_rect(sim.foundation_rect(p,"wall"),Color(tint,0.16))
+   draw_rect(sim.foundation_rect(p,"wall"),tint,false,1.5/game.zoom)
+   if i>0: wall_edge(game.wall_points[i-1],p,tint)
+  if game.wall_points.size()==1: wall_edge(game.wall_points[0]-Vector2(40,0),game.wall_points[0]+Vector2(40,0),tint)
+  wall_post(game.wall_points[0],tint)
+  wall_post(game.wall_points[-1],tint)
+ elif game.build_kind!="" and visible_world.has_point(game.ghost):
   var error:String=sim.placement_error(game.ghost,game.build_kind)
   var tint:=Color(0.8,1,0.73,0.6) if error=="" and sim.can_afford(sim.DEFINITIONS[game.build_kind].cost) else Color(1,0.38,0.26,0.6)
-  var radius:float=sim.footprint(game.build_kind)
   var foundation:Rect2=sim.foundation_rect(game.ghost,game.build_kind)
   draw_rect(foundation,Color(tint,0.17))
   draw_rect(foundation,tint,false,2/game.zoom)
-  draw_texture_rect(shadow,Rect2(game.ghost-Vector2(radius,radius*0.5),Vector2(radius*2,radius)),false,Color(1,1,1,0.6))
   Art.building(self,sim.DEFINITIONS[game.build_kind].art,game.ghost,1,tint)
-  ground_ring(game.ghost,radius,tint)
  last_draw_us=Time.get_ticks_usec()-draw_started
 
 func scenery_visible(prop:Dictionary)->bool:
@@ -165,7 +172,8 @@ func draw_building(index:int)->void:
  else:
   var tint:=Color(0.94,0.96,0.89)
   if b.age<sim.BUILD_TIME: tint=Color(0.75,0.7,0.56,0.55+b.age/sim.BUILD_TIME*0.45)
-  Art.building(self,sim.DEFINITIONS[b.kind].art,p,1,tint)
+  if b.kind=="wall": draw_joined_wall(index,tint)
+  else: Art.building(self,sim.DEFINITIONS[b.kind].art,p,1,tint)
   if not game.reduced_motion:
    if b.kind in ["hall","wood","stone","market"]: smoke(p-Vector2(15,Art.BUILD_SIZES[sim.DEFINITIONS[b.kind].art].y*0.75),0.5)
    if b.kind in ["wood","stone","market"]:
@@ -194,21 +202,51 @@ func draw_enemy(e:Dictionary,p:Vector2)->void:
 
 func draw_deposit(index:int)->void:
  var d:Dictionary=game.sim.resource_nodes[index]
- var art:int={"wood":6,"stone":4,"gold":5}[d.kind]
- Art.prop(self,art,d.pos,1.2)
+ if d.kind=="gold":
+  Art.prop(self,5,d.pos,0.85)
+  return
+ var cell:=Vector2(RESOURCE_SITES.get_width()/2,RESOURCE_SITES.get_height())
+ var size:=Vector2(240,220) if d.kind=="wood" else Vector2(220,140)
+ var offset:=Vector2(-10,-35) if d.kind=="wood" else Vector2(40,15)
+ draw_texture_rect_region(RESOURCE_SITES,Rect2(d.pos+offset-Vector2(size.x/2,size.y),size),Rect2(Vector2.ZERO if d.kind=="wood" else Vector2(cell.x,0),cell))
 
-func draw_deposit_marker(index:int)->void:
- var d:Dictionary=game.sim.resource_nodes[index]
- var anchor:Vector2=d.pos+Vector2(0,24)
- Art.skin(self,Rect2(anchor-Vector2(23,22),Vector2(46,42)),Color(0.82,0.88,0.8),7)
- Art.icon(self,["wood","stone","gold"].find(d.kind),Rect2(anchor-Vector2(15,16),Vector2(30,30)),Color(1,1,1,0.5 if game.sim.deposits[index]>0 else 1))
- var owner:int=game.sim.deposit_owner(index)
- if owner>=0:
-  var b:Dictionary=game.sim.buildings[owner]
-  var state:String="REPAIR" if b.hp<=0 else ("BUILDING" if b.age<game.sim.BUILD_TIME else "WORKING")
-  draw_string(Body,anchor+Vector2(29,5),state,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("cdbb7e") if b.hp>0 else Color("df9573"))
- elif game.sim.deposits[index]>0:
-  draw_string(Body,anchor+Vector2(27,5),"%ds"%ceili(game.sim.deposits[index]),HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("e3d7b7"))
+func wall_region(rect:Rect2)->Rect2:
+ var factor:=Vector2(WALL_KIT.get_size())/Vector2(2188,718)
+ return Rect2(rect.position*factor,rect.size*factor)
+
+func wall_edge(a:Vector2,b:Vector2,tint:Color=Color.WHITE)->void:
+ # The same raster course bridges grid centers; no repeated tower ends between tiles.
+ if absf(a.x-b.x)>1:
+  draw_texture_rect_region(WALL_KIT,Rect2(minf(a.x,b.x),a.y-45,absf(a.x-b.x)+1,50),wall_region(Rect2(28,265,660,230)),tint)
+ else:
+  var y:float=minf(a.y,b.y)-45
+  var height:float=absf(a.y-b.y)+50
+  var vertices:=PackedVector2Array([Vector2(a.x-17,y),Vector2(a.x+17,y),Vector2(a.x+17,y+height),Vector2(a.x-17,y+height)])
+  # Unskew the authored north/south course so adjacent runs share a straight edge.
+  var uv:=PackedVector2Array([Vector2(1185,80),Vector2(1250,100),Vector2(1045,650),Vector2(975,625)])
+  for i in uv.size(): uv[i]/=Vector2(2188,718)
+  draw_polygon(vertices,PackedColorArray([tint,tint,tint,tint]),uv,WALL_KIT)
+
+func wall_post(p:Vector2,tint:Color=Color.WHITE)->void:
+ draw_texture_rect_region(WALL_KIT,Rect2(p-Vector2(25,58),Vector2(50,65)),wall_region(Rect2(1700,210,260,320)),tint)
+
+func draw_joined_wall(index:int,tint:Color)->void:
+ var sim=game.sim
+ var p:Vector2=sim.buildings[index].pos
+ var neighbors:Dictionary=sim.wall_neighbors(index)
+ for direction in [Vector2i(2,0),Vector2i(0,2)]:
+  if neighbors.has(direction): wall_edge(p,sim.buildings[neighbors[direction]].pos,tint)
+ if neighbors.is_empty():
+  wall_edge(p-Vector2(40,0),p+Vector2(40,0),tint)
+  wall_post(p-Vector2(40,0),tint)
+  wall_post(p+Vector2(40,0),tint)
+ elif neighbors.size()==1:
+  var direction:Vector2=Vector2(neighbors.keys()[0]).normalized()
+  var end:=p-direction*40
+  wall_edge(p,end,tint)
+  wall_post(end,tint)
+ elif not (neighbors.size()==2 and (neighbors.has(Vector2i(2,0)) and neighbors.has(Vector2i(-2,0)) or neighbors.has(Vector2i(0,2)) and neighbors.has(Vector2i(0,-2)))):
+  wall_post(p,tint)
 
 func smoke(p:Vector2,scale_value:float)->void:
  for i in 3:

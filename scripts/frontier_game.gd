@@ -22,6 +22,9 @@ var return_screen:="menu"
 var selected:=0
 var build_kind:=""
 var placement_ready:=false
+var wall_points:Array=[]
+var wall_anchor:=Vector2.ZERO
+var wall_drawing:=false
 var ghost:=Map.HALL-Vector2(220,0)
 var camera_center:=Map.HALL-Vector2(110,0)
 var zoom:=0.85
@@ -152,6 +155,7 @@ func _notification(what:int)->void:
   if screen=="mission": screen="pause"
   pointer_down=false
   touches.clear()
+  wall_drawing=false
   if is_node_ready(): save_game()
  if what==NOTIFICATION_APPLICATION_RESUMED and world!=null:
   world.ground_view.render_target_update_mode=SubViewport.UPDATE_ONCE
@@ -171,8 +175,10 @@ func _input(event:InputEvent)->void:
   if pointer_down:
    if mouse.distance_to(pointer_start)>8: dragged=true
    if dragged:
-    camera_center-=event.relative/zoom
-    apply_camera()
+    if wall_drawing: update_wall(event.position)
+    else:
+     camera_center-=event.relative/zoom
+     apply_camera()
   elif screen=="mission" and VIEW.has_point(mouse): ghost=sim.snap_position(screen_to_world(mouse),build_kind) if not placement_ready else ghost
  if event is InputEventMouseButton:
   mouse=event.position
@@ -187,9 +193,11 @@ func _input(event:InputEvent)->void:
      pointer_down=true
      dragged=false
      pointer_start=mouse
+     if build_kind=="wall": begin_wall(mouse)
    elif pointer_down:
     pointer_down=false
-    if not dragged and VIEW.has_point(mouse): click_world(mouse)
+    if wall_drawing: finish_wall(mouse)
+    elif not dragged and VIEW.has_point(mouse): click_world(mouse)
  if event is InputEventScreenTouch:
   if event.pressed:
    touches[event.index]=event.position
@@ -200,28 +208,41 @@ func _input(event:InputEvent)->void:
     pointer_down=screen=="mission" and VIEW.has_point(event.position)
     pointer_start=event.position
     dragged=false
+    if pointer_down and build_kind=="wall": begin_wall(event.position)
    elif touches.size()==2:
+    if wall_drawing:
+     wall_drawing=false
+     wall_points.clear()
+     placement_ready=false
     dragged=true
     var points:Array=touches.values()
     pinch_distance=points[0].distance_to(points[1])
   else:
    touches.erase(event.index)
    if touches.is_empty():
-    if pointer_down and not dragged and VIEW.has_point(event.position): click_world(event.position)
+    if wall_drawing: finish_wall(event.position)
+    elif pointer_down and not dragged and VIEW.has_point(event.position): click_world(event.position)
     pointer_down=false
     pinch_distance=0
  if event is InputEventScreenDrag and touches.has(event.index):
+  var old_points:Array=touches.values()
+  var old_center:Vector2=Vector2.ZERO
+  for point in old_points: old_center+=point
+  old_center/=old_points.size()
   touches[event.index]=event.position
   if not pointer_down or screen!="mission": return
   if touches.size()>=2:
    var points:Array=touches.values()
+   var center:Vector2=(points[0]+points[1])/2
    var distance:float=points[0].distance_to(points[1])
-   if pinch_distance>0: zoom_at((points[0]+points[1])/2,zoom*distance/pinch_distance)
+   camera_center-=(center-old_center)/zoom
+   if pinch_distance>0: zoom_at(center,zoom*distance/pinch_distance)
    pinch_distance=distance
    dragged=true
   else:
    if event.position.distance_to(pointer_start)>8: dragged=true
-   if dragged:
+   if wall_drawing: update_wall(event.position)
+   elif dragged:
     camera_center-=event.relative/zoom
     apply_camera()
  if event is InputEventKey and event.pressed and not event.echo:
@@ -270,14 +291,12 @@ func click_world(point:Vector2)->void:
  if screen!="mission" or sim==null: return
  var at:=screen_to_world(point)
  if build_kind!="":
-  ghost=sim.snap_position(at,build_kind)
+  if build_kind=="wall":
+   wall_points=sim.wall_line(at,at)
+   ghost=wall_points[0]
+  else: ghost=sim.snap_position(at,build_kind)
   placement_ready=true
   return
- # Deposit markers remain usable when a canopy or producer overlaps them.
- for i in sim.resource_nodes.size():
-  if Rect2(sim.resource_nodes[i].pos+Vector2(-28,2),Vector2(56,48)).has_point(at):
-   interact_deposit(i)
-   return
  var candidates:Array=[]
  for i in sim.buildings.size():
   var b=sim.buildings[i]
@@ -290,28 +309,32 @@ func click_world(point:Vector2)->void:
   candidates.sort_custom(func(a,b):return sim.buildings[a].pos.y>sim.buildings[b].pos.y)
   selected=candidates[0]
   return
- for i in sim.resource_nodes.size():
-  if at.distance_to(sim.resource_nodes[i].pos)<75:
-   interact_deposit(i)
-   return
  selected=-1
 
-func interact_deposit(index:int)->void:
- var owner:int=sim.deposit_owner(index)
- if owner>=0:
-  selected=owner
-  return
- if sim.collect(index):
-  play_sound("gather")
-  consume_events()
- else: notify("This deposit replenishes in %ds."%ceili(sim.deposits[index]))
+func begin_wall(point:Vector2)->void:
+ wall_drawing=true
+ wall_anchor=screen_to_world(point)
+ wall_points=sim.wall_line(wall_anchor,wall_anchor)
+ ghost=wall_points[-1]
+ placement_ready=false
+
+func update_wall(point:Vector2)->void:
+ if not wall_drawing: return
+ var clamped:=point.clamp(VIEW.position,VIEW.end-Vector2.ONE)
+ wall_points=sim.wall_line(wall_anchor,screen_to_world(clamped))
+ ghost=wall_points[-1]
+
+func finish_wall(point:Vector2)->void:
+ update_wall(point)
+ wall_drawing=false
+ placement_ready=true
 
 func confirm_placement()->void:
  if not placement_ready or build_kind=="": return
  if not VIEW.has_point(world_to_screen(ghost)):
   notify("Bring the building preview back into view before confirming.")
   return
- var error:String=sim.build_at(ghost,build_kind)
+ var error:String=sim.build_wall(wall_points) if build_kind=="wall" else sim.build_at(ghost,build_kind)
  if error!="":
   notify(error)
   return
@@ -319,6 +342,7 @@ func confirm_placement()->void:
   if sim.buildings[i]!=null and sim.buildings[i].pos==ghost: selected=i
  build_kind=""
  placement_ready=false
+ wall_points.clear()
  play_sound("build")
  consume_events()
 
@@ -327,8 +351,10 @@ func act(action:String)->void:
   var kind:String=action.trim_prefix("build:")
   build_kind="" if build_kind==kind else kind
   placement_ready=false
+  wall_points.clear()
+  wall_drawing=false
   ghost=sim.snap_position(camera_center,kind)
-  if build_kind!="": notify("Tap a grid location to preview. Confirm with Build; Cancel spends nothing.")
+  if build_kind!="": notify("Drag a wall line, then confirm. Use two fingers to pan or zoom." if kind=="wall" else "Tap a grid location to preview. Confirm with Build; Cancel spends nothing.")
   return
  match action:
   "confirm_build": confirm_placement()
@@ -372,7 +398,11 @@ func act(action:String)->void:
    screen="mission"
   "cancel_clear": screen="mission"
   "speed": speed=2 if speed==1 else 1
-  "cancel": build_kind=""
+  "cancel":
+   build_kind=""
+   wall_points.clear()
+   wall_drawing=false
+   placement_ready=false
   "endless":
    screen="mission"
    notify("The frontier is secured. The endless siege continues.")
@@ -630,12 +660,17 @@ func draw_inspector()->void:
   var d:Dictionary=Sim.DEFINITIONS[build_kind]
   label(d.name,Vector2(1177,546),21,IVORY,true)
   wrapped(d.desc,Vector2(1177,572),234,13,MUTED,19)
-  var error:String=sim.placement_error(ghost,build_kind)
-  var ready:bool=placement_ready and error=="" and sim.can_afford(d.cost) and VIEW.has_point(world_to_screen(ghost))
-  var status:String="Tap a grid location to preview."
+  var wall:Dictionary=sim.wall_preview(wall_points) if build_kind=="wall" else {}
+  var error:String=wall.error if build_kind=="wall" else sim.placement_error(ghost,build_kind)
+  var cost:Array=wall.cost if build_kind=="wall" else d.cost
+  var ready:bool=placement_ready and error=="" and sim.can_afford(cost) and VIEW.has_point(world_to_screen(ghost))
+  var status:String="Drag a line; two fingers pan." if build_kind=="wall" else "Tap a grid location to preview."
   if placement_ready:
-   status=error if error!="" else ("Ready to build." if sim.can_afford(d.cost) else "Not enough supplies.")
+   status=error if error!="" else ("Ready to build." if sim.can_afford(cost) else "Not enough supplies.")
    if not VIEW.has_point(world_to_screen(ghost)): status="Bring the preview into view."
+  if build_kind=="wall" and placement_ready:
+   status=("%d new pieces"%wall.count) if error=="" else error
+   cost_row(cost,Vector2(1177,659),12)
   wrapped(status,Vector2(1177,625),234,13,GREEN if ready else GOLD,19)
   button(Rect2(1176,680,237,48),"Build · Confirm","confirm_build",true,ready,17)
   button(Rect2(1176,739,237,45),"Cancel","cancel",false,true,16)
@@ -664,9 +699,6 @@ func draw_inspector()->void:
 func draw_minimap()->void:
  Art.skin(self,Rect2(10,635,251,165),Color(0.9,0.93,0.86),10)
  if world.ground_view!=null: draw_texture_rect(world.ground_view.get_texture(),MINIMAP,false,Color(0.79,0.88,0.75))
- var path:=PackedVector2Array()
- for p in Map.ROAD: path.append(MINIMAP.position+p/Map.SIZE*MINIMAP.size)
- draw_polyline(path,Color("c6ae7c"),1.3,true)
  for b in sim.buildings:
   if b!=null: draw_rect(Rect2(MINIMAP.position+b.pos/Map.SIZE*MINIMAP.size-Vector2(1.5,1.5),Vector2(3,3)),GOLD if b.hp>0 else RED)
  for e in sim.enemies:
@@ -731,7 +763,7 @@ func draw_settings()->void:
 
 func draw_guide()->void:
  overlay(Rect2(235,65,970,680),"FIELD MANUAL","Build a settlement worth defending.")
- var entries:=[["Explore the frontier","Drag the landscape to pan. Pinch or use the + / − buttons to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Tap timber, stone or gold deposits. They replenish in 12 seconds. Build one producer directly on each forest or quarry. Defeated raiders also award gold."],["Hold the western approach","Raiders follow one road. Place walls in their way and cover them with towers. Your main hall attacks from the beginning."],["Upgrade, repair or clear","All seven structures reach level 100. Destroyed buildings leave repairable ruins. Dismantling frees the ground but loses the upgrades."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
+ var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch or use + / − to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a forest or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","All seven structures reach level 100. Destroyed buildings leave repairable ruins. Dismantling frees the ground but loses the upgrades."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
  for i in entries.size():
   var p:=Vector2(274+(i%2)*462,245+(i/2)*141)
   label("0%d  %s"%[i+1,entries[i][0]],p,19,IVORY,true)

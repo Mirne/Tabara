@@ -1,3 +1,4 @@
+@static_unload
 class_name Settlement
 extends RefCounted
 ## Deterministic, presentation-independent mission simulation. All time is seconds.
@@ -5,7 +6,16 @@ extends RefCounted
 const VICTORY_TIME := 900.0
 const MAX_LEVEL := 100
 const WAVE_SECONDS := 30.0
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
+const Navigator=preload("res://scripts/assault_navigation.gd")
+static var shared_navigation
+var navigation
+var body_cells:Dictionary={}
+var wall_cells:Dictionary={}
+var hit_cells:Dictionary={}
+var hit_rects:Array[Rect2]=[]
+var hit_seen:=PackedInt64Array()
+var hit_serial:=0
 const RESOURCE_NAMES := ["wood", "stone", "gold"]
 const World = preload("res://scripts/world_data.gd")
 const PATH = World.ROAD
@@ -50,6 +60,8 @@ var path_lengths: Array[float] = []
 var total_length := 0.0
 
 func _init(seed_number: int = 2026) -> void:
+ if shared_navigation==null: shared_navigation=Navigator.new(World.HALL)
+ navigation=shared_navigation
  seed_value = seed_number
  rng.seed = seed_number
  for i in range(PATH.size()-1):
@@ -131,8 +143,21 @@ func active_building_count() -> int:
 
 func rebuild_building_grid() -> void:
  building_cells.clear()
+ wall_cells.clear()
+ hit_cells.clear()
+ hit_rects.resize(buildings.size())
+ hit_seen.resize(buildings.size())
+ hit_seen.fill(0)
  for i in buildings.size():
   if buildings[i]==null: continue
+  var rect:=foundation_rect(buildings[i].pos,buildings[i].kind)
+  hit_rects[i]=rect
+  for hy in range(floori(rect.position.y/80),floori(rect.end.y/80)+1):
+   for hx in range(floori(rect.position.x/80),floori(rect.end.x/80)+1):
+    var key:=Vector2i(hx,hy)
+    if not hit_cells.has(key): hit_cells[key]=[]
+    hit_cells[key].append(i)
+  if buildings[i].kind=="wall": wall_cells[Vector2i((buildings[i].pos/GRID_SIZE).round())]=i
   var cell:=Vector2i(floori(buildings[i].pos.x/256),floori(buildings[i].pos.y/256))
   if not building_cells.has(cell): building_cells[cell]=[]
   building_cells[cell].append(i)
@@ -246,15 +271,9 @@ func repair_at(index: int) -> String:
  events.append({"type":"build","pos":b.pos,"text":"Repaired"})
  return ""
 
-func collect(index: int) -> bool:
- if defeated or index < 0 or index >= deposits.size() or deposits[index] > 0 or deposit_owner(index)>=0: return false
- var d: Dictionary = resource_nodes[index]
- # Modest scaling keeps hand-gathering useful alongside the economy.
- var amount: float = d.amount*(1.0+elapsed/600.0)
- resources[d.kind] += amount
- deposits[index] = 12.0
- events.append({"type":"gather","pos":d.pos,"text":"+%d %s" % [amount,d.kind]})
- return true
+func collect(_index: int) -> bool:
+ # Resource sites are passive scenery; production and combat supply the economy.
+ return false
 
 func trade(from: String) -> bool:
  if defeated or from not in ["wood","stone"]: return false
@@ -319,6 +338,9 @@ func spawn_enemy(initial_progress: float = 0.0) -> Dictionary:
   speed *= 0.55
   damage *= 3.5
  var enemy:={"id":next_id,"kind":kind,"hp":health,"max_hp":health,"damage":damage,"speed":speed,"progress":initial_progress,"cooldown":0.5,"lane":float(rng.randi_range(0,8)*26-104)+rng.randf_range(-3,3),"phase":rng.randf()*TAU,"target":-1,"scan":0.0}
+ enemy.pos=path_point(initial_progress)+Vector2(0,enemy.lane)
+ enemy.push=Vector2.ZERO
+ enemy.aim=0.0
  var index:=enemies.size()
  if initial_progress>0:
   for i in enemies.size():
@@ -340,7 +362,7 @@ func path_point(progress: float) -> Vector2:
  return PATH[-1]
 
 func enemy_position(enemy: Dictionary) -> Vector2:
- return path_point(enemy.progress)+Vector2(0,enemy.lane)
+ return enemy.pos
 
 func step(delta: float) -> void:
  if defeated or delta <= 0: return
@@ -370,20 +392,17 @@ func step(delta: float) -> void:
  for i in deposits.size(): deposits[i] = maxf(0,deposits[i]-delta)
  enemy_cells.clear()
  enemy_positions.clear()
- var initial_fronts:Array=[INF,INF,INF,INF,INF,INF,INF,INF,INF]
- var initial_bodies:Array=[30.0,30.0,30.0,30.0,30.0,30.0,30.0,30.0,30.0]
+ body_cells.clear()
  for e in enemies:
   if e.hp<=0: continue
-  var lane:=lane_index(e)
-  var body:float=BODY_GAPS[e.kind]
-  e.progress=minf(e.progress,maxf(0,initial_fronts[lane]-maxf(body,initial_bodies[lane])))
-  initial_fronts[lane]=e.progress
-  initial_bodies[lane]=body
-  var p:=enemy_position(e)
+  var p:Vector2=e.pos
   enemy_positions[e.id]=p
   var cell:=Vector2i(floori(p.x/256),floori(p.y/256))
   if not enemy_cells.has(cell): enemy_cells[cell]=[]
   enemy_cells[cell].append(e)
+  var body_cell:=Vector2i(floori(p.x/64),floori(p.y/64))
+  if not body_cells.has(body_cell): body_cells[body_cell]=[]
+  body_cells[body_cell].append(e)
  for i in buildings.size():
   var b = buildings[i]
   if b == null: continue
@@ -392,13 +411,14 @@ func step(delta: float) -> void:
   b.cooldown -= delta
   if b.cooldown > 0 or not DEFINITIONS[b.kind].has("damage"): continue
   var target = null
-  var farthest := -1.0
+  var farthest := -INF
   var radius:=stat(b,"range")
   for e in nearby_enemies(b.pos,radius):
    if e.hp <= 0: continue
-   if enemy_positions[e.id].distance_to(b.pos) <= radius and e.progress > farthest:
+   var threat:float=-enemy_positions[e.id].distance_to(buildings[0].pos)
+   if enemy_positions[e.id].distance_to(b.pos) <= radius and threat > farthest:
     target = e
-    farthest = e.progress
+    farthest = threat
   if target == null:
    b.cooldown=0.15
    continue
@@ -410,54 +430,52 @@ func step(delta: float) -> void:
   else: target.hp -= damage
   b.cooldown = stat(b,"period")
   events.append({"type":"shot","from":b.pos-Vector2(0,100),"pos":impact,"cannon":b.kind=="cannon"})
- var movement_fronts:Array=[INF,INF,INF,INF,INF,INF,INF,INF,INF]
- var movement_bodies:Array=[30.0,30.0,30.0,30.0,30.0,30.0,30.0,30.0,30.0]
  for e in enemies:
-  if e.hp <= 0: continue
-  e.cooldown -= delta
-  var pos:Vector2=enemy_positions[e.id]
-  var target_index:int=e.target
-  var target_valid:bool=target_index>=0 and target_index<buildings.size() and buildings[target_index]!=null and buildings[target_index].hp>0
-  if target_valid:
-   var held:Dictionary=buildings[target_index]
-   var reach:float=300.0 if e.kind=="siege" and held.kind!="wall" else footprint(held.kind)+(42 if held.kind=="wall" else 40)
-   target_valid=pos.distance_squared_to(held.pos)<=reach*reach
-  if not target_valid and target_index>=0: e.scan=0.0
-  if not target_valid: target_index=-1
+  if e.hp<=0: continue
+  e.cooldown-=delta
+  var pos:Vector2=e.pos
+  var body:float=BODY_GAPS[e.kind]*0.5
+  e.aim=float(e.get("aim",0.0))-delta
+  var held:int=e.target
+  var reach:float=220.0 if e.kind=="siege" else e.speed*delta+10.0
+  if e.aim>0 and held>=0 and held<buildings.size() and buildings[held]!=null and buildings[held].hp>0 and hit_rects[held].grow(body+reach).has_point(pos):
+   attack_building(e,held)
+   continue
+  var heading:Vector2=navigation.direction(pos)
   e.scan-=delta
+  var separation:Vector2=e.get("push",Vector2.ZERO)
   if e.scan<=0:
    e.scan=0.2
-   target_index=-1
-   # Search at 5 Hz; targets remain stationary while attackers strike them.
-   var nearest := 300.0 if e.kind == "siege" else 180.0
-   for i in nearby_buildings(pos,nearest):
-    var b = buildings[i]
-    if b == null or b.hp <= 0: continue
-    var dist := pos.distance_to(b.pos)
-    if b.kind == "wall" and dist < footprint("wall")+42:
-     target_index = i
-     break
-    if b.kind != "wall" and dist < minf(nearest,300 if e.kind=="siege" else footprint(b.kind)+40):
-     nearest = dist
-     target_index = i
-  e.target=target_index
-  if target_index >= 0:
-   if e.cooldown <= 0:
-    var b: Dictionary = buildings[target_index]
-    b.hp = maxf(0,b.hp-e.damage)
-    e.cooldown = 1.15
-    events.append({"type":"hit","pos":b.pos,"text":""})
-    if b.hp <= 0:
-     b.ruined_at=elapsed
-     events.append({"type":"ruin","pos":b.pos,"text":"Building ruined","kind":b.kind})
-     if target_index == 0: defeated = true
-  var lane:=lane_index(e)
-  var body:float=BODY_GAPS[e.kind]
-  if target_index<0:
-   var limit:=maxf(0,movement_fronts[lane]-maxf(body,movement_bodies[lane]))
-   e.progress=minf(minf(total_length,e.progress+e.speed*delta),limit)
-  movement_fronts[lane]=e.progress
-  movement_bodies[lane]=body
+   separation=Vector2.ZERO
+   var cell:=Vector2i(floori(pos.x/64),floori(pos.y/64))
+   var checked:=0
+   for dy in range(-1,2):
+    for dx in range(-1,2):
+     for other in body_cells.get(cell+Vector2i(dx,dy),[]):
+      if other.id==e.id or other.hp<=0: continue
+      checked+=1
+      if checked>40: break
+      var diff:Vector2=pos-enemy_positions[other.id]
+      var distance:float=diff.length()
+      var gap:float=body+BODY_GAPS[other.kind]*0.5+4
+      if distance<gap:
+       if distance<0.01: diff=Vector2.from_angle(float(e.id)*2.399963)
+       else: diff/=distance
+       separation+=diff*(1.0-distance/gap)
+   e.push=separation
+  var velocity:Vector2=heading+separation*1.35
+  if velocity.length()>1: velocity=velocity.normalized()
+  var proposed:Vector2=pos+velocity*e.speed*delta
+  var lookahead:float=220.0 if e.kind=="siege" else e.speed*delta+10.0
+  var blocker:=first_blocker(pos,pos+heading*lookahead,body)
+  if blocker<0: blocker=first_blocker(pos,proposed,body)
+  e.target=blocker
+  e.aim=0.2
+  if blocker>=0:
+   attack_building(e,blocker)
+  elif navigation.passable(proposed):
+   e.pos=proposed
+   e.progress=minf(total_length,e.progress+pos.distance_to(proposed))
  for i in range(enemies.size()-1,-1,-1):
   var e: Dictionary = enemies[i]
   if e.hp <= 0:
@@ -469,6 +487,114 @@ func step(delta: float) -> void:
  # Bound event memory even in non-visual simulations.
  if events.size() > 250: events = events.slice(-150)
 
+func segment_entry(start:Vector2,end:Vector2,rect:Rect2)->float:
+ var direction:=end-start
+ var enter:=0.0
+ var leave:=1.0
+ for axis in 2:
+  if absf(direction[axis])<0.00001:
+   if start[axis]<rect.position[axis] or start[axis]>rect.end[axis]: return INF
+  else:
+   var a:float=(rect.position[axis]-start[axis])/direction[axis]
+   var b:float=(rect.end[axis]-start[axis])/direction[axis]
+   enter=maxf(enter,minf(a,b))
+   leave=minf(leave,maxf(a,b))
+   if enter>leave: return INF
+ return enter
+
+func first_blocker(start:Vector2,end:Vector2,body:float)->int:
+ var result:=-1
+ var nearest:=INF
+ hit_serial+=1
+ var minimum:Vector2=start.min(end)-Vector2.ONE*body
+ var maximum:Vector2=start.max(end)+Vector2.ONE*body
+ for y in range(floori(minimum.y/80),floori(maximum.y/80)+1):
+  for x in range(floori(minimum.x/80),floori(maximum.x/80)+1):
+   for i in hit_cells.get(Vector2i(x,y),[]):
+    if hit_seen[i]==hit_serial: continue
+    hit_seen[i]=hit_serial
+    var b=buildings[i]
+    if b==null or b.hp<=0: continue
+    var contact:=segment_entry(start,end,hit_rects[i].grow(body))
+    if contact<nearest:
+     nearest=contact
+     result=i
+ return result
+
+func attack_building(enemy:Dictionary,index:int)->void:
+ if enemy.cooldown>0: return
+ var b:Dictionary=buildings[index]
+ b.hp=maxf(0,b.hp-enemy.damage)
+ enemy.cooldown=1.15
+ events.append({"type":"hit","pos":b.pos,"text":""})
+ if b.hp<=0:
+  b.ruined_at=elapsed
+  events.append({"type":"ruin","pos":b.pos,"text":"Building ruined","kind":b.kind})
+  if index==0: defeated=true
+
+func wall_neighbors(index:int)->Dictionary:
+ var result:Dictionary={}
+ var b=buildings[index]
+ if b==null or b.kind!="wall" or b.hp<=0: return result
+ for offset in [Vector2i(2,0),Vector2i(-2,0),Vector2i(0,2),Vector2i(0,-2)]:
+  var i:int=wall_cells.get(Vector2i((b.pos/GRID_SIZE).round())+offset,-1)
+  if i>=0 and buildings[i]!=null and buildings[i].hp>0: result[offset]=i
+ return result
+
+func wall_line(start:Vector2,end:Vector2)->Array:
+ var anchor:=snap_position(start)
+ # A stroke beginning on a wall uses that wall's lattice, including legacy saves.
+ for i in nearby_buildings(anchor,80):
+  if buildings[i]!=null and buildings[i].kind=="wall" and buildings[i].pos.distance_to(start)<45:
+   anchor=buildings[i].pos
+   break
+ var destination:=anchor+(end-anchor).snapped(Vector2(80,80))
+ var cursor:=anchor
+ var result:Array=[cursor]
+ while cursor!=destination and result.size()<65:
+  var diff:Vector2=destination-cursor
+  if absf(diff.x)>=absf(diff.y): cursor.x+=signf(diff.x)*80
+  else: cursor.y+=signf(diff.y)*80
+  result.append(cursor)
+ return result
+
+func wall_at(position:Vector2)->int:
+ for i in nearby_buildings(position,80):
+  if buildings[i]!=null and buildings[i].kind=="wall" and buildings[i].pos.distance_to(position)<1: return i
+ return -1
+
+func wall_preview(points:Array)->Dictionary:
+ var count:=0
+ var error:=""
+ if points.is_empty(): error="Drag on the map to preview a wall."
+ elif points.size()>64: error="Build a shorter wall (maximum 64 pieces per stroke)."
+ for point in points:
+  var existing:=wall_at(point)
+  if existing>=0:
+   if buildings[existing].hp<=0 and error=="": error="Repair or clear the ruined wall before extending this line."
+   continue
+  count+=1
+  if error=="": error=placement_error(point,"wall")
+ if error=="" and count==0: error="These wall pieces already exist."
+ if error=="" and active_building_count()+count>MAX_BUILDINGS: error="The frontier supports up to 512 structures."
+ var cost:Array=[]
+ for value in DEFINITIONS.wall.cost: cost.append(value*count)
+ if error=="" and not can_afford(cost): error="Not enough supplies for the entire wall."
+ return {"count":count,"cost":cost,"error":error}
+
+func build_wall(points:Array)->String:
+ var preview:=wall_preview(points)
+ if preview.error!="": return preview.error
+ var event_start:=events.size()
+ # Full validation precedes spending; no partial walls when a stroke is invalid.
+ for point in points:
+  if wall_at(point)>=0: continue
+  var error:=build_at(point,"wall")
+  if error!="": return error
+ events.resize(event_start)
+ events.append({"type":"build","pos":points[points.size()/2],"text":"Wall · %d new pieces"%preview.count})
+ return ""
+
 func snapshot() -> Dictionary:
  var saved_buildings:Array=[]
  for b in buildings:
@@ -477,10 +603,18 @@ func snapshot() -> Dictionary:
    var copy:Dictionary=b.duplicate(true)
    copy.pos=[b.pos.x,b.pos.y]
    saved_buildings.append(copy)
- return {"version":SAVE_VERSION,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":enemies.duplicate(true),"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
+ var saved_enemies:Array=[]
+ for e in enemies:
+  var copy:Dictionary=e.duplicate(true)
+  copy.pos=[e.pos.x,e.pos.y]
+  var push:Vector2=e.get("push",Vector2.ZERO)
+  copy.push=[push.x,push.y]
+  saved_enemies.append(copy)
+ return {"version":SAVE_VERSION,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
 
 static func restore(data: Dictionary):
- if data.get("version",0)!=SAVE_VERSION: return null
+ if not _number(data.get("version"),2,SAVE_VERSION) or float(data.version)!=floorf(data.version): return null
+ if int(data.version) not in [2,SAVE_VERSION]: return null
  if not data.get("buildings") is Array or data.buildings.is_empty() or data.buildings.size()>MAX_BUILDINGS: return null
  if not data.get("enemies") is Array or data.enemies.size()>MAX_ENEMIES: return null
  if not data.get("resources") is Dictionary: return null
@@ -525,12 +659,22 @@ static func restore(data: Dictionary):
   if e.progress<0 or e.progress>sim.total_length or absf(e.lane)>120: return null
   if not _number(e.get("target",-1),-1,511) or float(e.get("target",-1))!=floorf(e.get("target",-1)): return null
   if not _number(e.get("scan",0.0),-1,1): return null
+  if data.version==SAVE_VERSION:
+   if not e.get("pos") is Array or e.pos.size()!=2: return null
+   if not _number(e.pos[0],0,World.SIZE.x) or not _number(e.pos[1],0,World.SIZE.y): return null
  sim.resources=data.resources.duplicate(true)
  sim.cleared_ground.clear()
  for cell in data.cleared_ground: sim.cleared_ground[int(cell)]=true
  sim.buildings=restored
+ if sim.buildings[0].pos!=World.HALL: sim.navigation=Navigator.new(sim.buildings[0].pos)
  sim.enemies=data.enemies.duplicate(true)
  for e in sim.enemies:
+  e.pos=Vector2(e.pos[0],e.pos[1]) if data.version==SAVE_VERSION else sim.path_point(e.progress)+Vector2(0,e.lane)
+  var push=e.get("push",[0,0])
+  if not push is Array or push.size()!=2 or not _number(push[0],-80,80) or not _number(push[1],-80,80): return null
+  e.push=Vector2(push[0],push[1])
+  if not _number(e.get("aim",0.0),-1,1): return null
+  e.aim=float(e.get("aim",0.0))
   e.target=int(e.get("target",-1))
   e.scan=float(e.get("scan",0.0))
  sim.deposits=data.deposits.duplicate()
