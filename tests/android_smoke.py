@@ -4,13 +4,15 @@ ANDROID_ADB selects adb; ANDROID_SERIAL and ANDROID_ADB_PORT select the test
 device/server. This script clears ONLY com.tabara.lasthearth on that device.
 """
 import json
+import io
 import os
 from pathlib import Path
 import subprocess
 import time
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "test-results" / "android"
+OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android")).name
 OUT.mkdir(parents=True, exist_ok=True)
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
@@ -19,11 +21,14 @@ PACKAGE = "com.tabara.lasthearth"
 checks = []
 completed = False
 started = time.monotonic()
+screen_size = (1280, 720)
 
 def adb(*args, timeout=60, binary=False):
     result = subprocess.run([ADB, "-P", PORT, "-s", SERIAL, *args],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            timeout=timeout, check=True)
+                            timeout=timeout)
+    if result.returncode:
+        raise RuntimeError(f"adb {args}: {result.returncode}: " + result.stdout.decode(errors="replace")[-2000:] + result.stderr.decode(errors="replace")[-2000:])
     return result.stdout if binary else result.stdout.decode().strip()
 
 def check(condition, label):
@@ -33,14 +38,20 @@ def check(condition, label):
         raise AssertionError(label)
 
 def capture(name):
+    global screen_size
     data = adb("exec-out", "screencap", "-p", timeout=90, binary=True)
     check(data.startswith(b"\x89PNG"), "Android screenshot: " + name)
     path = OUT / (name + ".png")
     path.write_bytes(data)
+    screen_size = Image.open(io.BytesIO(data)).size
     return path
 
 def tap(x, y):
-    adb("shell", "input", "tap", str(round(x * 1280 / 1440)), str(round(y * 720 / 810)))
+    width, height = screen_size
+    scale = min(width / 1440, height / 810)
+    px = (width - 1440 * scale) / 2 + x * scale
+    py = (height - 810 * scale) / 2 + y * scale
+    adb("shell", "input", "tap", str(round(px)), str(round(py)))
     time.sleep(3)
 
 def launch():
@@ -52,26 +63,55 @@ def read_save():
     data = adb("shell", "run-as", PACKAGE, "cat", "files/settlement.json")
     return json.loads(data)
 
+def wait_menu():
+    global screen_size
+    deadline = time.monotonic() + 150
+    while time.monotonic() < deadline:
+        data = adb("exec-out", "screencap", "-p", timeout=90, binary=True)
+        image = Image.open(io.BytesIO(data)).convert("RGB")
+        screen_size = image.size
+        width, height = screen_size
+        scale = min(width / 1440, height / 810)
+        x = round((width - 1440 * scale) / 2 + 46 * scale)
+        y = round((height - 810 * scale) / 2 + 52 * scale)
+        red, green, blue = image.getpixel((x, y))
+        if red > 150 and green > 100 and blue < 150:
+            check(True, "Android renders the main menu")
+            return
+        time.sleep(5)
+    check(False, "Android renders the main menu")
+
 try:
     print("Waiting for Android boot and package service...", flush=True)
     deadline = time.monotonic() + 2700
     while time.monotonic() < deadline:
         try:
-            if adb("shell", "getprop", "sys.boot_completed", timeout=12) == "1":
+            booted = adb("shell", "getprop", "sys.boot_completed", timeout=12) == "1"
+            package_ready = adb("shell", "service", "check", "package", timeout=12).endswith(": found")
+            if booted and package_ready:
                 break
-        except (subprocess.SubprocessError, OSError):
+        except (subprocess.SubprocessError, OSError, RuntimeError):
             pass
         time.sleep(5)
     else:
         raise TimeoutError("Android did not finish booting in 45 minutes")
     check(True, "Android finished booting")
-    adb("shell", "wm", "size", "1280x720")
-    adb("shell", "wm", "density", "160")
-    installed = adb("install", "--no-incremental", "-r", str(ROOT / "builds/tabara-last-hearth.apk"), timeout=240)
+    installed = ""
+    for attempt in range(3):
+        try:
+            installed = adb("install", "--no-incremental", "-r", str(ROOT / "builds/tabara-last-hearth.apk"), timeout=240)
+            break
+        except RuntimeError as error:
+            transient = any(message in str(error) for message in ["Can't find service: package", "PackageManagerInternal", "DeadObjectException"])
+            if not transient or attempt == 2:
+                raise
+            print("Android package service restarted; waiting before retrying installation.", flush=True)
+            time.sleep(10)
     check("Success" in installed, "APK installs on Android")
     adb("shell", "pm", "clear", PACKAGE)
     adb("logcat", "-c")
     launch()
+    wait_menu()
     capture("01-menu")
     tap(220, 520)
     capture("02-briefing")
@@ -97,6 +137,7 @@ try:
     check(read_save()["elapsed"] == before, "Android pause freezes mission")
     adb("shell", "am", "force-stop", PACKAGE)
     launch()
+    wait_menu()
     capture("05-continue-menu")
     tap(220, 520)
     time.sleep(3)

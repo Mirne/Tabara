@@ -1,0 +1,72 @@
+name: Verify native Android
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GODOT: /tmp/godot/Godot_v4.6.3-stable_linux.x86_64
+      XDG_DATA_HOME: /tmp/tabara-android-data
+      XDG_CONFIG_HOME: /tmp/tabara-android-config
+      XDG_CACHE_HOME: /tmp/tabara-android-cache
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install official game export tools
+        run: |
+          mkdir -p /tmp/godot "$XDG_DATA_HOME/godot/export_templates/4.6.3.stable"
+          curl -fL https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip -o /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          chmod +x "$GODOT"
+          curl -fL https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_export_templates.tpz -o /tmp/templates.tpz
+          unzip -j -q /tmp/templates.tpz 'templates/android_debug.apk' 'templates/android_release.apk' -d "$XDG_DATA_HOME/godot/export_templates/4.6.3.stable"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'build-tools;36.0.0'
+          python3 -m venv "$RUNNER_TEMP/tabara-test-python"
+          "$RUNNER_TEMP/tabara-test-python/bin/pip" install Pillow
+      - name: Build test APK
+        run: |
+          "$GODOT" --headless --editor --path . --import --quit
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          path = Path(os.environ['XDG_CONFIG_HOME']) / 'godot/editor_settings-4.6.tres'
+          lines = path.read_text().splitlines()
+          values = {'export/android/java_sdk_path': os.environ['JAVA_HOME'], 'export/android/android_sdk_path': os.environ['ANDROID_HOME']}
+          lines = [line for line in lines if line.split(' = ')[0] not in values]
+          lines += [key + ' = "' + value + '"' for key, value in values.items()]
+          path.write_text('\n'.join(lines) + '\n')
+          PY
+          mkdir -p builds
+          "$GODOT" --headless --path . --export-debug Android builds/tabara-last-hearth.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify builds/tabara-last-hearth.apk
+      - name: Exercise actual Android app
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: default
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none
+          script: |
+            adb shell settings put secure immersive_mode_confirmations confirmed
+            ANDROID_SERIAL=emulator-5554 "$RUNNER_TEMP/tabara-test-python/bin/python" tests/android_smoke.py
+      - name: Show native check evidence
+        if: always()
+        run: |
+          test ! -f test-results/android/report.json || cat test-results/android/report.json
+          test ! -f test-results/android/logcat.txt || tail -80 test-results/android/logcat.txt

@@ -107,6 +107,8 @@ The GitHub verification workflow runs this suite and retains screenshots.
 native launcher startup, real touch construction, pause, app switching, and
 cold save restoration. Set `ANDROID_ADB`, `ANDROID_SERIAL`, and
 `ANDROID_ADB_PORT` if needed. It clears the game's data on that test device.
+The manually triggered **Verify native Android** workflow builds and exercises
+the APK on a hardware-accelerated Android 15 emulator and prints the check report.
 
 ## Project structure
 
