@@ -20,16 +20,11 @@ when killed, and construction clears vegetation around the foundations.
 
 ## Play
 
-Download the APK from [GitHub Releases](https://github.com/Mirne/Tabara/releases),
+Download the [tested Android APK](https://github.com/Mirne/Tabara/raw/54666d5b71476fd2e2249cea967b6cc7b41cee3d/builds/tabara-frontier.apk) from GitHub,
 or install the local `builds/tabara-frontier.apk`. You can also open `project.godot` in Godot 4.6.3 and
 press **F5**. Android 7.0/API 24 or later with OpenGL ES 3.0 is required.
 This is a **development-signed test build**. The game is in English and has no
 advertising, analytics, accounts, purchases, or runtime network requirement.
-
-[Watch the 40-second gameplay preview](builds/tabara-frontier-preview.mp4).
-It shows an established settlement, paid construction and demolition, and a
-camera tour of the wider valley. The recording is from the desktop renderer;
-the Android build is verified separately.
 
 1. Start **The Pinewatch Frontier** from the menu. A vanguard is already near
    the settlement; the main hall attacks automatically.
