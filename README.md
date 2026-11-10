@@ -6,41 +6,46 @@ hold the main hall for **15 in-game minutes**. Victory unlocks endless survival.
 
 ![The Pinewatch Frontier](docs/screenshots/gameplay.png)
 
-## The frontier revision
+## The assault revision
 
-Version **0.3.0** replaces the original fixed plots with an **8,192 × 5,120** world,
+Version **0.4.0** replaces the original fixed plots with an **8,192 × 5,120** world,
 about **54 times the original map area**. Defenses use a visible construction grid on clear
 land. Woodcutters and stonemasons occupy matching resource deposits, one per site. Pan and zoom around forests, quarries, rocky ridges, a lake, and the single
-western approach. A minimap provides fast travel across the valley.
+western entry. Attackers take a direct land route to the hall, breaking through structures in their way instead of following the road. A minimap provides fast travel across the valley.
 
 The interface uses illustrated resource icons and a textured brass-and-leather
 command deck. Terrain, woodland props, four-frame enemy sprites, workers, and
-water use original raster art. Buildings collapse into rubble, enemies fall
+water use original raster art. Compact resource sites and connected stone walls
+use new generated raster atlases. Buildings collapse into rubble, enemies fall
 when killed, and construction clears vegetation around the foundations.
 
 ## Play
 
-Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/54666d5b71476fd2e2249cea967b6cc7b41cee3d/builds/tabara-frontier-v0.3.apk) from GitHub,
-or install the local `builds/tabara-frontier-v0.3.apk`. You can also open `project.godot` in Godot 4.6.3 and
+Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/298a1e3859238d49ccff5ad21fca35bb50b3f8f1/builds/tabara-frontier-v0.4.apk) from GitHub,
+or install the local `builds/tabara-frontier-v0.4.apk`. You can also open `project.godot` in Godot 4.6.3 and
 press **F5**. Android 7.0/API 24 or later with OpenGL ES 3.0 is required.
 This is a **development-signed test build**. The game is in English and has no
 advertising, analytics, accounts, purchases, or runtime network requirement.
 
-On Android, open the download link in Chrome, then open `tabara-frontier-v0.3.apk`
+On Android, open the download link in Chrome, then open `tabara-frontier-v0.4.apk`
 from **Downloads** (or Samsung **My Files → Downloads**). The complete file is
-100,755,023 bytes, approximately 96 MB.
+101,640,356 bytes, approximately 97 MiB.
 
 1. Start **The Pinewatch Frontier** from the menu. Enemies spawn immediately at
    the western path entrance. The main hall attacks enemies that reach its range.
-2. Tap the wood, stone, and gold deposits to gather supplies. They refill every
-   12 seconds. Build one producer on each forest or quarry for steady income.
+2. Resource sites are scenery and cannot be tapped to collect supplies. Build
+   one producer on each forest or quarry for steady income. The hall also
+   supplies passive income.
    Killed enemies award gold, shown by a coin reward above the fallen enemy.
 3. Choose a card in the **right-hand construction panel**, then tap the map to
    preview the building on the visible grid. Move the preview by tapping another
    location. **Build · Confirm** spends the listed cost; Cancel spends nothing.
    Drag to pan, pinch or use **+ / −** to zoom, and tap the minimap to travel.
    **Hall** returns to your headquarters.
-4. Place walls across the approach and cover them with arrow and cannon towers.
+4. Select **Wall**, then drag a line on the map. Release to preview the whole
+   connected run and its total price; tap **Build · Confirm** to construct it.
+   Existing wall endpoints are reused. Use two fingers to pan while the wall
+   tool is selected. Cover the defensive line with arrow and cannon towers.
    Enemies form a physical crowd rather than occupying identical positions.
    Every fifth wave brings a larger horde.
 5. Select a structure to upgrade or repair it. Every structure reaches **level
@@ -60,7 +65,7 @@ Ruined producers keep their resource claim until repaired or cleared. New constr
 | Woodcutter | Requires a forest deposit; one per forest; produces timber |
 | Stonemason | Requires a quarry; one per stone deposit; produces stone |
 | Arrow tower | Fast attacks against individual raiders |
-| Wall | Freely placed barrier that attackers must break through |
+| Wall | Drag connected grid runs; each section can be upgraded, breached and repaired |
 | Cannon tower | Slow shells with wide area damage |
 | Marketplace | Produces gold and permits buying or selling supplies |
 
@@ -72,7 +77,8 @@ upgrade costs are not refunded. Trees cleared by construction remain cleared.
 
 ### Controls and saves
 
-Android: tap to interact, one-finger drag to pan, two-finger pinch to zoom. Back
+Android: tap buildings to select them; drag to pan, or draw a line with the wall
+tool selected. Two fingers pan and pinch to zoom during wall placement. Back
 cancels construction or toggles pause. Desktop: mouse drag or **WASD / arrows**
 pans; the wheel zooms; **1–6** select construction, **U** upgrades, **R** repairs,
 **F** finds the hall, **Space** pauses, and **Esc** goes back.
@@ -82,7 +88,9 @@ to the menu. Continue restores buildings, ruins, enemies, economy, cleared
 vegetation, camera, and zoom. Returning from another app requires explicit
 resume. Settings include sound, music, and reduced motion.
 
-Version 0.3 retains existing v0.2 frontier saves without moving structures.
+Version 0.4 migrates v0.2/v0.3 frontier saves to save format 3 without moving
+structures or losing economy and mission progress. Existing enemies retain
+their positions and then use the new terrain movement.
 Existing producers reserve their closest matching deposit; new producers must
 be placed directly on an available site. Install the APK as an update to keep
 your settlement.
@@ -100,7 +108,7 @@ Install Godot **4.6.3** and matching export templates, an Android SDK with
 ```sh
 godot --headless --editor --path . --import --quit
 mkdir -p builds
-godot --headless --path . --export-debug Android builds/tabara-frontier-v0.3.apk
+godot --headless --path . --export-debug Android builds/tabara-frontier-v0.4.apk
 ```
 
 The preset includes ARMv7, ARM64, and x86-64. A local development signing key is
@@ -108,7 +116,7 @@ excluded from source control. A Play Store release needs the owner's release
 keystore and a Gradle AAB export. No production key is included.
 
 ```sh
-godot --headless --path . --export-release Linux builds/tabara-frontier-v0.3.x86_64
+godot --headless --path . --export-release Linux builds/tabara-frontier-v0.4.x86_64
 ```
 
 ## Verify
@@ -116,7 +124,7 @@ godot --headless --path . --export-release Linux builds/tabara-frontier-v0.3.x86
 Use a separate `XDG_DATA_HOME` for automated tests: they save test settlements.
 
 ```sh
-# Syntax, free placement, economy, combat, level 100, ruins, saves and campaign.
+# Syntax, terrain movement, wall strokes, economy, level 100, saves and campaign.
 python3 tools/verify.py
 
 # Real rendered menu, mouse/touch, gestures, camera and lifecycle interactions.
@@ -150,6 +158,7 @@ emulator. Local results and device limitations are in the [QA record](docs/QA.md
 - `scripts/simulation.gd`: deterministic fixed-step economy, combat, crowd
   spacing, free placement, progression, spatial indexes, and save validation.
 - `scripts/world_data.gd`: shared geography, deposits, scenery, and terrain rules.
+- `scripts/assault_navigation.gd`: shared terrain flow field and direct hall approach.
 - `scripts/frontier_game.gd`: screens, illustrated HUD, input, camera, saves,
   audio, and Android lifecycle handling.
 - `scripts/frontier_view.gd`: culled, depth-sorted raster world and combat effects.

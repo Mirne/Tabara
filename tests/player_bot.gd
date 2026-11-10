@@ -1,5 +1,5 @@
 extends RefCounted
-## Normal costs, nearby gathering, and at most one paid action per second.
+## Normal costs, passive producers, and at most one paid action per second.
 const Sim=preload("res://scripts/simulation.gd")
 const PLAN=[
  [Vector2(4380,3030),"wood"],[Vector2(5150,3110),"stone"],[Vector2(4512,2576),"arrow"],

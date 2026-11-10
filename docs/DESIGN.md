@@ -2,7 +2,7 @@
 
 ## Direction
 
-A freely built settlement faces increasing pressure along one western approach.
+A freely built settlement faces increasing pressure from one western entry.
 The player chooses positions and defensive lines rather than filling prescribed
 plots. The gameplay reference is the colony-defense structure of **They Are
 Billions**; the world and art are original, and this is a smaller single-mission
@@ -16,7 +16,8 @@ rounded dashboard panels.
 ## World and placement
 
 The world is 8,192 × 5,120 units. The headquarters is at (4,800, 2,800), and one
-winding road connects the western boundary to it. Forest groves, quarries, gold
+decorative winding road connects the western boundary to it. Attackers choose
+a direct land route to the hall. Forest groves, quarries, gold
 ore, ridges, scattered vegetation, and a large eastern lake give the valley
 geographic landmarks. Geography is deterministic and shared by rendering,
 placement checks, production bonuses, and the minimap.
@@ -31,6 +32,10 @@ and reserve the closest matching site.
 There is one main hall and room for up to 512 structures. Clearing ruins reuses
 storage slots and ground without growing the building array indefinitely.
 
+Each forest and quarry is a compact, single raster image. Resources have no tap
+interaction, collection button or floating refill timer. A matching producer
+occupies each site; resource cores remain protected from unrelated buildings.
+
 Construction clears nearby decorative vegetation. A bounded 128 × 80 grid stores
 those clearings, including after demolition and across save restoration.
 
@@ -40,7 +45,8 @@ those clearings, including after demolition and across save restoration.
 - Producers become operational after 2.5 seconds of construction.
 - Woodcutters and stonemasons receive +25% output within 520 units of their
   respective resource grove or quarry.
-- Deposits refill every 12 seconds. Their yields slowly rise with mission time.
+- Resource sites cannot be manually collected. Producers, the hall, markets
+  and kills supply the economy; old deposit timers remain only for save compatibility.
 - Buildings start at level 1 and cap at 100.
 - Maximum health scales by `1.11^(level − 1)`.
 - Damage and production scale by `1.14^(level − 1)`.
@@ -68,15 +74,27 @@ Base enemy health scales by `1.065^(wave − 1)` and damage by
 `1.055^(wave − 1)`. Exponents are bounded to keep arithmetic finite; waves
 continue increasing in number. A 2,400-enemy population bound protects memory.
 
-The approach has nine loose crowd lanes with small positional variation. Bodies
-maintain headway, so an army queues behind its frontline instead of stacking on
-identical coordinates. Buildings and walls in reach are attacked. Standing walls
-stop that part of the approach; ruined walls permit passage. Siege carts can
-attack from farther away. Arrow towers focus individuals; cannons damage groups.
+Enemies have actual two-dimensional world positions. A shared reverse Dijkstra
+field on an 80-unit grid routes around water and cliffs; clear line of sight
+allows a direct heading to the hall. Eight neighboring terrain cells participate,
+with no diagonal corner cutting. Buildings do not divert the route: a swept
+foundation test finds the first blocking structure and attackers destroy it
+before advancing through its ruins. Nearby structures outside the route are
+ignored. Siege carts attack from farther away.
 
-Spatial indexes limit target searches to nearby cells. Positions are cached
-within each step, idle defenses search less often, and enemy target refreshes run
-at five hertz with immediate invalidation of destroyed or removed targets.
+Local crowd separation is cached at five hertz and bounded to 40 nearby bodies
+per search. Spatial indexes cache expanded building rectangles and attack
+candidates. Stationary attackers reuse their target for 0.2 seconds while
+checking that the same live structure still blocks them. Towers prioritize
+threats near the hall; cannons damage groups.
+
+Walls use 80-unit segments on the construction grid. A drag previews a Manhattan
+stroke, with a maximum of 64 sections per confirmation. Existing live endpoints
+are reused without charging twice. The complete stroke is validated before any
+materials are spent. Cardinal neighbors render joined raster courses; straight
+interiors have no repeated end piers. Corners and junctions have shared posts.
+Destroyed sections leave a breach; repairing them reconnects the course. Each
+section retains its own health, level, upgrade and repair actions.
 
 Kills award rounded gold based on wave, with higher rewards for brutes and
 siege carts. Each death is paid once and carries a coin reward visual.
@@ -102,17 +120,22 @@ shows the grid; a world tap previews a location without spending. The separate
 Build confirmation revalidates resources, the foundation and deposit ownership.
 A successful build exits placement mode. Cancel spends nothing.
 
-One-finger drag or mouse/WASD moves the camera; pinch, wheel or zoom buttons
+One-finger drag or mouse/WASD moves the camera, except that the wall tool uses
+a world drag to draw a preview. Two-finger input pans and zooms during wall
+placement and never confirms construction. Pinch, wheel or zoom buttons
 change scale. The minimap and Hall button provide navigation. Tap release is
 separated from dragging so panning does not place buildings. Two-finger input
 suppresses tap placement. Desktop and Android use the same logical canvas.
 
 ## Saves and lifecycle
 
-Save version 2 stores free building positions, ruins, levels, health, enemies,
+Save version 3 stores free building positions, ruins, levels, health, enemy
+world positions and cached movement/attack state,
 wave state, random-generator state, resource cooldowns, cleared vegetation,
 camera and zoom. Full-precision JSON reduces rounding; restoration validates
-all fields before accepting the settlement. Files are atomically renamed over
+all fields before accepting the settlement. Version-2 frontier files migrate
+old road progress into actual enemy positions and retain buildings, economy and
+mission time. JSON numeric version values are normalized before validation. Files are atomically renamed over
 the previous save. JSON round trips are compared within floating-point precision.
 
 The frontier uses `frontier-settlement.json`; version-1 fixed-plot saves are left

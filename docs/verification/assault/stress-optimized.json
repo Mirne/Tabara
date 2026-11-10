@@ -1,0 +1,15 @@
+{
+  "enemies": 1000,
+  "fixture": "512 structures and 1000 high-health, low-damage enemies; unlimited supplies, not campaign balance",
+  "fps_cap": 30,
+  "max_process_ms": 208.951,
+  "max_static_memory_bytes": 46974973,
+  "mean_sampled_fps_after_warmup": 12.632,
+  "mean_simulation_cpu_ms": 16.5233552,
+  "mean_world_draw_cpu_ms": 11.8891792,
+  "minimum_fps_after_warmup": 8.0,
+  "real_seconds": 60.147,
+  "rendered_entities": 1163,
+  "simulation_frozen": false,
+  "structures": 512
+}
