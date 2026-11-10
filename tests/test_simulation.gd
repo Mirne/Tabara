@@ -45,8 +45,19 @@ func test_start_and_economy() -> void:
  var wood_before: float = s.resources.wood
  check(s.trade("wood"),"Active marketplace enables trading")
  check(s.resources.wood==wood_before-60 and s.resources.gold==gold_before+30,"Trading exchanges the exact resources")
+ var stone_before: float = s.resources.stone
+ gold_before = s.resources.gold
+ check(s.buy("stone"),"Marketplace sells supplies for gold")
+ check(s.resources.stone==stone_before+60 and s.resources.gold==gold_before-60,"Buying exchanges exact resources")
+ s.buildings[3].level = 100
+ gold_before = s.resources.gold
+ wood_before = s.resources.wood
+ s.trade("wood")
+ s.buy("wood")
+ check(s.resources.wood==wood_before and s.resources.gold==gold_before-5,"Level 100 marketplace cannot generate resources through arbitrage")
  s.buildings[3].hp = 0.0
  check(not s.trade("wood"),"Ruined marketplace cannot trade")
+ check(not s.buy("stone"),"Ruined marketplace cannot sell supplies")
 
 func test_building_rules() -> void:
  var s = Sim.new(4)

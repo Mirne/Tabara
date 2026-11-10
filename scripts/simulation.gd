@@ -155,6 +155,16 @@ func trade(from: String) -> bool:
  resources.gold += 30.0+minf(25.0,market_level-1)
  return true
 
+func buy(resource: String) -> bool:
+ if defeated or resource not in ["wood","stone"] or resources.gold < 60: return false
+ var active_market := false
+ for b in buildings:
+  if b != null and b.kind == "market" and b.hp > 0: active_market = true
+ if not active_market: return false
+ resources.gold -= 60.0
+ resources[resource] += 60.0
+ return true
+
 func income_rates() -> Dictionary:
  var rates := {"wood":1.5,"stone":0.9,"gold":0.45}
  for i in buildings.size():

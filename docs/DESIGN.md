@@ -28,6 +28,8 @@ economy while enemies are already on screen.
 - Resource caches replenish every 12 seconds and slowly increase yields over time.
 - Enemies award gold when defeated; marketplaces provide stable gold income.
 - A marketplace exchanges 60 timber or stone for 30–55 gold, depending on level.
+- An active marketplace also sells 60 timber or stone for 60 gold. Trading pauses
+  combat. The buy/sell spread stays positive at level 100, preventing arbitrage.
 
 ## Layout
 

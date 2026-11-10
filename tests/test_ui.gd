@@ -91,6 +91,32 @@ func run() -> void:
  await capture("05-ruins")
  await tap(Vector2(1260,595))
  check(game.sim.buildings[4].hp>0,"Inspector repairs ruined tower")
+ await tap(Vector2(1060,747))
+ await capture("12-cannon-preview")
+ await tap(Vector2(808,450))
+ check(game.sim.buildings[6]!=null and game.sim.buildings[6].kind=="cannon","Cannon can be constructed through touch controls")
+ await tap(Vector2(1300,747))
+ await tap(Vector2(951,517))
+ check(game.sim.buildings[3]!=null and game.sim.buildings[3].kind=="market","Marketplace can be constructed through touch controls")
+ game.sim.step(30)
+ game.consume_events()
+ await frame()
+ await tap(Vector2(1270,650))
+ check(game.screen=="trade","Marketplace opens trade controls")
+ var trade_clock: float = game.sim.elapsed
+ await create_timer(.2).timeout
+ check(game.sim.elapsed==trade_clock,"Marketplace pauses combat while trading")
+ var stone_stock: float = game.sim.resources.stone
+ var gold_stock: float = game.sim.resources.gold
+ await tap(Vector2(885,382))
+ check(game.sim.resources.stone==stone_stock+60 and game.sim.resources.gold==gold_stock-60,"Marketplace buy button exchanges exact resources")
+ var timber_stock: float = game.sim.resources.wood
+ gold_stock = game.sim.resources.gold
+ await tap(Vector2(540,455))
+ check(game.sim.resources.wood==timber_stock-60 and game.sim.resources.gold==gold_stock+30,"Marketplace sell button exchanges exact resources")
+ await capture("13-marketplace")
+ await tap(Vector2(700,630))
+ check(game.screen=="mission","Marketplace returns to battle")
  var wood_before: float = game.sim.resources.wood
  await tap(Vector2(192,198))
  check(game.sim.resources.wood>wood_before+19,"Touch resource collection adds supplies")

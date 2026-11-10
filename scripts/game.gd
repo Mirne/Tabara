@@ -14,7 +14,9 @@ const RED := Color("b65e49")
 const SAVE_PATH := "user://settlement.json"
 const SETTINGS_PATH := "user://settings.json"
 const BUILD_ORDER := ["wood","stone","arrow","wall","cannon","market"]
-const ART_SIZES := [Vector2(142,151),Vector2(105,106),Vector2(108,106),Vector2(97,126),Vector2(100,82),Vector2(102,116),Vector2(109,108),Vector2(132,115)]
+const ART_SIZES := [Vector2(142,137),Vector2(100,79),Vector2(105,79),Vector2(66,114),Vector2(90,50),Vector2(80,89),Vector2(111,77),Vector2(112,83)]
+# Individual atlas regions exclude neighboring objects that cross grid boundaries.
+const ART_RECTS := [Rect2(8,40,385,465),Rect2(404,117,368,380),Rect2(784,119,373,381),Rect2(1230,42,260,463),Rect2(30,645,345,310),Rect2(416,566,303,391),Rect2(750,600,390,367),Rect2(1184,572,326,369)]
 var sim: Settlement
 var screen := "menu"
 var return_screen := "menu"
@@ -43,6 +45,7 @@ var terrain_view: SubViewport
 var style_cache: Dictionary = {}
 var menu_settlement: Settlement
 var license_label: RichTextLabel
+var trade_feedback := ""
 
 func _ready() -> void:
  get_tree().auto_accept_quit = false
@@ -239,9 +242,10 @@ func act(action: String) -> void:
    save_game()
    screen = "menu"
    build_kind = ""
-  "settings", "credits":
+  "settings", "credits", "trade":
    return_screen = screen
    screen = action
+   trade_feedback = ""
   "guide":
    return_screen = screen
    screen = "guide"
@@ -277,9 +281,14 @@ func act(action: String) -> void:
    save_settings()
   "trade_wood", "trade_stone":
    if sim.trade(action.trim_prefix("trade_")):
-    notify("Trade complete · Gold added to your treasury")
+    trade_feedback = "Sold supplies. Gold added to your treasury."
     play_sound("gather")
-   else: notify("You need an active marketplace and 60 supplies.")
+   else: trade_feedback = "You need an active marketplace and 60 supplies."
+  "buy_wood", "buy_stone":
+   if sim.buy(action.trim_prefix("buy_")):
+    trade_feedback = "Bought supplies. Your stores are replenished."
+    play_sound("gather")
+   else: trade_feedback = "You need an active marketplace and 60 gold."
 
 func go_back() -> void:
  match screen:
@@ -290,7 +299,7 @@ func go_back() -> void:
    if build_kind != "": build_kind = ""
    else: act("pause")
   "pause": act("resume")
-  "settings","guide","credits": act("back")
+  "settings","guide","credits","trade": act("back")
   "briefing","confirm": screen = "menu"
   "victory": act("endless")
   "defeat": act("menu")
@@ -359,12 +368,13 @@ func _draw() -> void:
   draw_menu()
   if screen == "briefing": draw_briefing()
   if screen == "confirm": draw_confirm()
- elif screen in ["settings","guide","credits"]:
+ elif screen in ["settings","guide","credits","trade"]:
   if return_screen == "menu": draw_menu()
   else: draw_mission()
   buttons.clear()
   if screen == "settings": draw_settings()
   elif screen == "credits": draw_credits()
+  elif screen == "trade": draw_trade()
   else: draw_guide()
  else:
   draw_mission()
@@ -442,7 +452,7 @@ func icon(kind: String, pos: Vector2, radius: float = 9.0) -> void:
 
 func sprite(art: int, base: Vector2, scale_value: float = 1.0, tint: Color = Color.WHITE) -> void:
  var dimensions: Vector2 = ART_SIZES[art]*scale_value
- var source := Rect2((art%4)*384,floori(float(art)/4.0)*512,384,512)
+ var source: Rect2 = ART_RECTS[art]
  draw_texture_rect_region(Atlas,Rect2(base.x-dimensions.x/2,base.y-dimensions.y,dimensions.x,dimensions.y),source,tint)
 
 func pretty(value: float) -> String:
@@ -467,7 +477,7 @@ func draw_menu() -> void:
  draw_rect(Rect2(0,0,1440,810),Color("1e3832"))
  # A living miniature of the same frontier, behind the menu card.
  var old_sim = sim
- if sim == null: sim = menu_settlement
+ sim = menu_settlement
  draw_set_transform(Vector2(405,60),0,Vector2(0.9,0.9))
  draw_world(true)
  draw_set_transform(Vector2.ZERO)
@@ -707,8 +717,7 @@ func draw_side_panel() -> void:
   else:
    text_at("✓  Building in good condition",Vector2(x,568),13,TEAL)
   if b.kind == "market" and b.hp > 0:
-   button(Rect2(x,630,121,38),"60 wood → gold","trade_wood",false,sim.resources.wood>=60,11)
-   button(Rect2(x+129,630,121,38),"60 stone → gold","trade_stone",false,sim.resources.stone>=60,11)
+   button(Rect2(x,630,250,38),"Open marketplace  →","trade",false,true,15)
   else: text_at("Upgrades increase health & output.",Vector2(x,652),12,MUTED)
  elif selected > 0:
   var role: String = Sim.PADS[selected].role
@@ -826,6 +835,23 @@ func draw_credits() -> void:
  text_at("Built with Godot 4.6 · Noto Sans & Noto Serif Display.",Vector2(396,284),16,MUTED)
  text_at("LICENSES & NOTICES — SCROLL BELOW",Vector2(396,321),11,TEAL)
  button(Rect2(396,592,648,50),"Back","back",true)
+
+func draw_trade() -> void:
+ overlay(Rect2(365,113,710,580),"PINEWATCH MARKETPLACE","A fair trade keeps the hearth lit.","Buy the supplies you need, or sell your surplus. The battle is paused while you trade.")
+ var market_level := 1
+ for b in sim.buildings:
+  if b != null and b.kind=="market" and b.hp>0: market_level = maxi(market_level,b.level)
+ var proceeds := 30+mini(25,market_level-1)
+ for i in 3:
+  var x := 408+i*216
+  icon(Sim.RESOURCE_NAMES[i],Vector2(x+10,315),11)
+  text_at(pretty(sim.resources[Sim.RESOURCE_NAMES[i]]),Vector2(x+34,322),24)
+ button(Rect2(404,352,307,58),"Buy 60 wood · 60 gold","buy_wood",true,sim.resources.gold>=60,17)
+ button(Rect2(729,352,307,58),"Buy 60 stone · 60 gold","buy_stone",true,sim.resources.gold>=60,17)
+ button(Rect2(404,427,307,58),"Sell 60 wood · +%d gold" % proceeds,"trade_wood",false,sim.resources.wood>=60,17)
+ button(Rect2(729,427,307,58),"Sell 60 stone · +%d gold" % proceeds,"trade_stone",false,sim.resources.stone>=60,17)
+ wrapped(trade_feedback if trade_feedback!="" else "Higher marketplace levels improve your selling price.",Vector2(405,535),625,16,TEAL,25)
+ button(Rect2(404,604,632,50),"Return to the settlement","back",true)
 
 func draw_guide() -> void:
  overlay(Rect2(235,66,970,678),"THE PINEWATCH FIELD GUIDE","A little planning goes a long way.")

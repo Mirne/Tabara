@@ -13,6 +13,7 @@ func _init(settlement: Settlement) -> void:
 
 func act() -> void:
  for i in 3: sim.collect(i)
+ if sim.resources.stone<100 and sim.resources.gold>200: sim.buy("stone")
  for i in sim.buildings.size():
   var b = sim.buildings[i]
   if b != null and b.hp < sim.stat(b,"hp")*0.65: sim.repair_at(i)

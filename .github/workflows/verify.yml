@@ -1,0 +1,38 @@
+name: Verify game
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  game:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GODOT: /tmp/godot/Godot_v4.6.3-stable_linux.x86_64
+      XDG_DATA_HOME: /tmp/tabara-ci-data
+      XDG_CONFIG_HOME: /tmp/tabara-ci-config
+      XDG_CACHE_HOME: /tmp/tabara-ci-cache
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install official Godot build
+        run: |
+          mkdir -p /tmp/godot
+          curl -fL https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip -o /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          chmod +x "$GODOT"
+      - name: Import assets
+        run: "$GODOT --headless --editor --path . --import --quit"
+      - name: Verify simulation and rendered interactions
+        run: xvfb-run -a python3 tools/verify.py --ui
+      - name: Save UI screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-screenshots
+          path: test-results/*.png
+          retention-days: 7

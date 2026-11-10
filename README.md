@@ -36,7 +36,7 @@ and settings persist across runs.
 | Arrow tower | Fast single-target arrows |
 | Wall | Stops enemies at a road checkpoint until ruined |
 | Cannon tower | Slow shells that damage all enemies in the blast area |
-| Marketplace | Produces gold and trades surplus wood or stone for gold |
+| Marketplace | Produces gold; buy supplies or sell surplus wood and stone |
 
 Ruined buildings retain their plot and upgrade level. They stop operating until
 repaired. Repairs restore full health and cost wood and stone; you can repair
@@ -96,6 +96,15 @@ Use a separate Godot user-data directory for automated UI/soak tests: they start
 and save test settlements. On Linux, set `XDG_DATA_HOME` to a temporary directory.
 The soak report is written to `test-results/soak.json`, which is excluded from
 exports and Git. A short smoke run can use `--seconds=65`.
+
+`python3 tools/verify.py --ui` runs syntax, simulation, and rendered checks and
+fails on engine script errors even if the engine returns a zero exit code.
+The GitHub verification workflow runs this suite and retains screenshots.
+
+`tests/android_smoke.py` installs the APK on a disposable emulator and checks
+native launcher startup, real touch construction, pause, app switching, and
+cold save restoration. Set `ANDROID_ADB`, `ANDROID_SERIAL`, and
+`ANDROID_ADB_PORT` if needed. It clears the game's data on that test device.
 
 ## Project structure
 
