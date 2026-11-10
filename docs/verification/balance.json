@@ -1,0 +1,163 @@
+{
+  "actual_seconds": 142.527,
+  "campaigns": [
+    {
+      "defeated": true,
+      "kills": 629,
+      "resources": {
+        "gold": 17370.797623674,
+        "stone": 140.994289849803,
+        "wood": 8.07909235181901
+      },
+      "seconds": 1374.8999999993,
+      "seed": 1,
+      "victory": true,
+      "wave": 46
+    },
+    {
+      "defeated": true,
+      "kills": 423,
+      "resources": {
+        "gold": 8768.03838055778,
+        "stone": 204.82107048308,
+        "wood": 8.251517451729
+      },
+      "seconds": 1111.49999999954,
+      "seed": 2,
+      "victory": true,
+      "wave": 38
+    },
+    {
+      "defeated": true,
+      "kills": 493,
+      "resources": {
+        "gold": 10154.0555505069,
+        "stone": 353.995364577048,
+        "wood": 8.19565250996984
+      },
+      "seconds": 1206.94999999945,
+      "seed": 3,
+      "victory": true,
+      "wave": 41
+    },
+    {
+      "defeated": true,
+      "kills": 384,
+      "resources": {
+        "gold": 6848.9376643846,
+        "stone": 259.221542472944,
+        "wood": 10.9333219872971
+      },
+      "seconds": 1062.14999999958,
+      "seed": 4,
+      "victory": true,
+      "wave": 36
+    },
+    {
+      "defeated": true,
+      "kills": 556,
+      "resources": {
+        "gold": 14638.0791407182,
+        "stone": 268.8260566759,
+        "wood": 13.1328363507948
+      },
+      "seconds": 1283.04999999938,
+      "seed": 5,
+      "victory": true,
+      "wave": 43
+    },
+    {
+      "defeated": true,
+      "kills": 510,
+      "resources": {
+        "gold": 10726.7680173451,
+        "stone": 148.570174685246,
+        "wood": 6.84873260344833
+      },
+      "seconds": 1233.79999999943,
+      "seed": 6,
+      "victory": true,
+      "wave": 42
+    },
+    {
+      "defeated": true,
+      "kills": 467,
+      "resources": {
+        "gold": 10398.6198301991,
+        "stone": 235.95565670944,
+        "wood": 41.7424013969749
+      },
+      "seconds": 1170.94999999948,
+      "seed": 7,
+      "victory": true,
+      "wave": 40
+    },
+    {
+      "defeated": true,
+      "kills": 528,
+      "resources": {
+        "gold": 12230.9110958441,
+        "stone": 161.592368300162,
+        "wood": 10.7008557998013
+      },
+      "seconds": 1244.59999999942,
+      "seed": 8,
+      "victory": true,
+      "wave": 42
+    },
+    {
+      "defeated": true,
+      "kills": 395,
+      "resources": {
+        "gold": 7227.54661958539,
+        "stone": 434.494637775911,
+        "wood": 2.14551679824439
+      },
+      "seconds": 1066.09999999958,
+      "seed": 9,
+      "victory": true,
+      "wave": 36
+    },
+    {
+      "defeated": true,
+      "kills": 478,
+      "resources": {
+        "gold": 9205.93868048363,
+        "stone": 357.793493413527,
+        "wood": 6.43750700450578
+      },
+      "seconds": 1187.24999999947,
+      "seed": 10,
+      "victory": true,
+      "wave": 40
+    },
+    {
+      "defeated": true,
+      "kills": 459,
+      "resources": {
+        "gold": 9213.69130246901,
+        "stone": 476.936013454069,
+        "wood": 3.16934069935102
+      },
+      "seconds": 1145.44999999951,
+      "seed": 11,
+      "victory": true,
+      "wave": 39
+    },
+    {
+      "defeated": true,
+      "kills": 610,
+      "resources": {
+        "gold": 15624.4558168537,
+        "stone": 217.488106028469,
+        "wood": 5.35962885103333
+      },
+      "seconds": 1349.24999999932,
+      "seed": 12,
+      "victory": true,
+      "wave": 45
+    }
+  ],
+  "total": 12,
+  "wins": 12
+}

@@ -1,0 +1,94 @@
+{
+  "actual_seconds": 98.95922606699997,
+  "checks": [
+    {
+      "label": "Android finished booting",
+      "passed": true
+    },
+    {
+      "label": "APK installs on Android",
+      "passed": true
+    },
+    {
+      "label": "Android launcher starts the game",
+      "passed": true
+    },
+    {
+      "label": "Android renders the main menu",
+      "passed": true
+    },
+    {
+      "label": "Android screenshot: 01-menu",
+      "passed": true
+    },
+    {
+      "label": "Android screenshot: 02-briefing",
+      "passed": true
+    },
+    {
+      "label": "Android screenshot: 03-mission",
+      "passed": true
+    },
+    {
+      "label": "Android screenshot: 04-built-and-paused",
+      "passed": true
+    },
+    {
+      "label": "Android touch builds woodcutter",
+      "passed": true
+    },
+    {
+      "label": "Android touch builds stonemason",
+      "passed": true
+    },
+    {
+      "label": "Android touch builds arrow tower",
+      "passed": true
+    },
+    {
+      "label": "Android mission advances",
+      "passed": true
+    },
+    {
+      "label": "Android pause freezes mission",
+      "passed": true
+    },
+    {
+      "label": "Android launcher starts the game",
+      "passed": true
+    },
+    {
+      "label": "Android renders the main menu",
+      "passed": true
+    },
+    {
+      "label": "Android screenshot: 05-continue-menu",
+      "passed": true
+    },
+    {
+      "label": "Android screenshot: 06-restored-settlement",
+      "passed": true
+    },
+    {
+      "label": "Android cold restart preserves elapsed time",
+      "passed": true
+    },
+    {
+      "label": "Android cold restart preserves buildings",
+      "passed": true
+    },
+    {
+      "label": "Android launcher starts the game",
+      "passed": true
+    },
+    {
+      "label": "Android screenshot: 07-background-paused",
+      "passed": true
+    },
+    {
+      "label": "No Android crash or script error",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

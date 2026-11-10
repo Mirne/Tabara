@@ -1,0 +1,30 @@
+{
+  "checks": [
+    {
+      "label": "Fresh native activity renders menu",
+      "passed": true
+    },
+    {
+      "label": "Saved mission reaches visible pause panel",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back resumes game clock",
+      "passed": true
+    },
+    {
+      "label": "Next Back freezes game clock",
+      "passed": true
+    },
+    {
+      "label": "Captured native diagnostics contain no script error or fatal exception",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "before": 9.7,
+  "after": 10.75,
+  "error": null,
+  "actual_seconds": 346.0375650240003,
+  "setup": "Fresh activity, existing saved mission; isolates Back from emulator background-surface restoration"
+}

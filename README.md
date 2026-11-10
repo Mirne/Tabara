@@ -134,4 +134,5 @@ the APK on a hardware-accelerated Android 15 emulator and prints the check repor
 - `tests/`: simulation, rendered UI, fair-cost player bot, and stability harness.
 - `tools/generate_audio.py`: reproducible audio synthesis; uses Python and FFmpeg.
 
-See [asset credits](docs/ASSETS.md) and [design/balance notes](docs/DESIGN.md).
+See [asset credits](docs/ASSETS.md), [design/balance notes](docs/DESIGN.md), and
+the [verification record and device limitations](docs/QA.md).

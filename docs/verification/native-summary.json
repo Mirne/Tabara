@@ -1,0 +1,52 @@
+{
+  "apk_sha256": "bd9d6f1f84f6a44530c9e62ced604ba0f1318cd26b5f714a26ad366a982728b6",
+  "api35_core_ci": {
+    "passed": true,
+    "checks": 22,
+    "url": "https://github.com/Mirne/Tabara/actions/runs/42730688110"
+  },
+  "api24_observed_functional_steps": {
+    "source": "android-api24-functional.json",
+    "checks": 28,
+    "all_observed_checks_passed": true,
+    "full_harness_passed": false,
+    "harness_interruption": "Full log dump timed out after all functional checks completed"
+  },
+  "api24_fresh_activity_back": {
+    "checks": [
+      {
+        "label": "Fresh native activity renders menu",
+        "passed": true
+      },
+      {
+        "label": "Saved mission reaches visible pause panel",
+        "passed": true
+      },
+      {
+        "label": "Hardware Back resumes game clock",
+        "passed": true
+      },
+      {
+        "label": "Next Back freezes game clock",
+        "passed": true
+      },
+      {
+        "label": "Captured native diagnostics contain no script error or fatal exception",
+        "passed": true
+      }
+    ],
+    "passed": true,
+    "before": 9.7,
+    "after": 10.75,
+    "error": null,
+    "actual_seconds": 346.0375650240003,
+    "setup": "Fresh activity, existing saved mission; isolates Back from emulator background-surface restoration"
+  },
+  "bounded_native_log": {
+    "script_errors": false,
+    "fatal_exceptions": false
+  },
+  "limitations": [
+    "Software-only Android 7 ANGLE emulator sometimes stalls its graphics surface after backgrounding. Cold restart, persistence, touch construction, and foreground Back were verified; no claim of real-device certification."
+  ]
+}
