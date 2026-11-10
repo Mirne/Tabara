@@ -150,15 +150,24 @@ try:
     check(restored["elapsed"] >= before, "Android cold restart preserves elapsed time")
     check(restored["buildings"][4]["kind"] == "arrow", "Android cold restart preserves buildings")
     launch()
-    capture("07-background-paused")
+    background_image = Image.open(capture("07-background-paused")).convert("RGB")
+    width, height = background_image.size
+    scale = min(width / 1440, height / 810)
+    red, green, blue = background_image.getpixel((round((width-1440*scale)/2+46*scale), round((height-810*scale)/2+52*scale)))
+    if red>150 and green>100 and blue<150:
+        # Android may recreate a background activity. Continue the saved mission.
+        tap(220,520)
+        tap(1320,58)
+    before_back = read_save()["elapsed"]
     adb("shell", "input", "keyevent", "4")  # Back resumes the paused mission.
     time.sleep(2)
     adb("shell", "input", "keyevent", "4")  # Back pauses it again.
     time.sleep(2)
-    windows = adb("shell", "dumpsys", "window", "windows")
+    windows = adb("shell", "dumpsys", "window")
     focused = [line for line in windows.splitlines() if "mCurrentFocus" in line]
     check(any(PACKAGE in line for line in focused), "Android Back keeps the game open while pausing or resuming")
     paused_time = read_save()["elapsed"]
+    check(paused_time > before_back + 1, "Android Back resumes combat before pausing again")
     time.sleep(3)
     check(read_save()["elapsed"] == paused_time, "Android Back pauses combat")
     capture("08-hardware-back-paused")
@@ -174,7 +183,7 @@ finally:
         print("NATIVE DIAGNOSTICS", flush=True)
         for line in relevant[-100:]:
             print(line[:800], flush=True)
-        windows = adb("shell", "dumpsys", "window", "windows", timeout=30)
+        windows = adb("shell", "dumpsys", "window", timeout=30)
         for line in windows.splitlines():
             if "mCurrentFocus" in line or "mFocusedApp" in line:
                 print(line.strip(), flush=True)
