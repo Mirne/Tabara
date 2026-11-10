@@ -12,9 +12,15 @@ args = parser.parse_args()
 godot = os.environ.get("GODOT", "godot")
 
 def run(arguments, marker=None, timeout=300):
-    result = subprocess.run([godot, "--path", str(ROOT), *arguments], cwd=ROOT,
-                            text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                            timeout=timeout)
+    try:
+        result = subprocess.run([godot, "--path", str(ROOT), *arguments], cwd=ROOT,
+                                text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                timeout=timeout)
+    except subprocess.TimeoutExpired as problem:
+        output = problem.stdout or b""
+        print(output.decode(errors="replace") if isinstance(output, bytes) else output)
+        print("Check timed out:", " ".join(arguments))
+        sys.exit(1)
     print(result.stdout, end="")
     if result.returncode or "SCRIPT ERROR:" in result.stdout or "\nERROR:" in result.stdout:
         sys.exit(1)

@@ -9,6 +9,10 @@ var samples:=0
 var longest:=0.0
 func _init()->void:call_deferred("run")
 func run()->void:
+ if DirAccess.make_dir_recursive_absolute("res://test-results")!=OK:
+  printerr("Cannot create movement report directory")
+  quit(1)
+  return
  var started:=Time.get_ticks_msec()
  var results:Array=[]
  for y in range(400,5000,800):
@@ -45,6 +49,10 @@ func run()->void:
    results.append({"origin":[origin.x,origin.y],"arrived":arrived,"stayed_open":stayed_open,"seconds":sim.elapsed})
  var data:={"traces":traces,"position_samples":samples,"failures":failures,"longest_game_seconds":longest,"actual_seconds":(Time.get_ticks_msec()-started)/1000.0,"fixture":"One durable raider per stratified origin, hall fire and wave spawns suppressed; actual fixed-step movement","results":results}
  var file:=FileAccess.open("res://test-results/authored-walks.json",FileAccess.WRITE)
+ if file==null:
+  printerr("Cannot write movement report")
+  quit(1)
+  return
  file.store_string(JSON.stringify(data,"  "))
  file.close()
  print("AUTHORED WALKS RESULT: ",traces," traces, ",samples," positions, ",failures," failures")
