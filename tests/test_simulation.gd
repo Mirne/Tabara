@@ -59,6 +59,16 @@ func run()->void:
  check(s.collect(node),"Deposits replenish after twelve seconds")
  check(s.build_at(Vector2(7000,4000),"hall")!="","Only one main hall is allowed")
  check(not s.buy("stone") and not s.trade("wood"),"Trading requires a marketplace")
+ # A great horde must dispatch fully rather than being overwritten by the next wave.
+ var horde=Sim.new(1)
+ horde.elapsed=120.0
+ horde.wave=5
+ horde.enemies.clear()
+ horde.begin_wave()
+ var expected_horde:int=horde.spawn_remaining
+ var first_horde_id:int=horde.next_id
+ horde.step(23.0)
+ check(horde.next_id-first_horde_id==expected_horde and horde.spawn_remaining==0,"Every doubled-horde attacker dispatches before the next wave")
  # Every structure reaches the same explicit cap, preserving injury percentage.
  for kind in Sim.DEFINITIONS:
   s=rich()

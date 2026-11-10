@@ -68,5 +68,5 @@ jobs:
       - name: Show native check evidence
         if: always()
         run: |
-          test ! -f test-results/android/report.json || cat test-results/android/report.json
-          test ! -f test-results/android/logcat.txt || tail -80 test-results/android/logcat.txt
+          test ! -f test-results/android-frontier/report.json || cat test-results/android-frontier/report.json
+          test ! -f test-results/android-frontier/logcat.txt || tail -80 test-results/android-frontier/logcat.txt

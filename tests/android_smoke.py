@@ -28,6 +28,8 @@ size = (1280, 720)
 started = 0.0
 reference = Image.open(ROOT / "assets/frontier/menu.png").convert("RGB").resize((1440, 810))
 MENU_REGION = (1100, 100, 1390, 570)
+with APK.open("rb") as stream:
+    APK_SHA256 = hashlib.file_digest(stream, "sha256").hexdigest()
 
 def adb(*args, binary=False, timeout=None):
     result = subprocess.run([ADB, "-P", PORT, "-s", SERIAL, *map(str, args)],
@@ -213,7 +215,7 @@ def native_checks(back_only=False):
         log = adb("logcat", "-d", "-t", "500", "-v", "brief", timeout=90)
         (OUT / "logcat.txt").write_text(log)
         check(not any(text in log for text in ["FATAL EXCEPTION", "SCRIPT ERROR:", "SHADER ERROR:", "Shader compilation failed"]), "Captured native diagnostics contain no script, shader, or fatal error")
-    except Exception as problem:
+    except BaseException as problem:
         error = str(problem)
         print("NATIVE ERROR:", error, flush=True)
     finally:
@@ -222,13 +224,9 @@ def native_checks(back_only=False):
             (OUT / "logcat.txt").write_text(log)
         except Exception as problem:
             print("Diagnostic capture unavailable:", str(problem)[:250], flush=True)
-        digest = None
-        if APK.exists():
-            with APK.open("rb") as stream:
-                digest = hashlib.file_digest(stream, "sha256").hexdigest()
         report = {"passed": error is None and bool(checks) and all(c["passed"] for c in checks),
                   "error": error, "checks": checks, "actual_seconds": time.monotonic() - started,
-                  "apk_sha256": digest, "mode": "foreground-back" if back_only else "full-native"}
+                  "apk_sha256": APK_SHA256, "mode": "foreground-back" if back_only else "full-native"}
         (OUT / "report.json").write_text(json.dumps(report, indent=2))
         print(json.dumps(report), flush=True)
     return 0 if report["passed"] else 1

@@ -250,9 +250,12 @@ func income_rates() -> Dictionary:
   rates[d.resource] += stat(b,"income")*bonus
  return rates
 
+func wave_size(number:int) -> int:
+ var count:=mini(220,8+int(number*2.7))
+ return mini(300,count*2) if number%5==0 else count
+
 func begin_wave() -> void:
- spawn_remaining = mini(220,8+int(wave*2.7))
- if wave%5==0: spawn_remaining=mini(300,spawn_remaining*2)
+ spawn_remaining = wave_size(wave)
  spawn_clock = 0.0
  events.append({"type":"wave","text":"Wave %d" % wave})
 
@@ -324,7 +327,7 @@ func step(delta: float) -> void:
  if spawn_remaining > 0 and spawn_clock <= 0:
   spawn_enemy()
   spawn_remaining -= 1
-  spawn_clock += maxf(0.065,21.0/maxf(1,8+wave*2.7))
+  spawn_clock += maxf(0.065,21.0/float(wave_size(wave)))
  var rates := income_rates()
  for key in RESOURCE_NAMES: resources[key] = minf(1.0e15,resources[key]+rates[key]*delta)
  for i in deposits.size(): deposits[i] = maxf(0,deposits[i]-delta)
