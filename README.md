@@ -115,6 +115,11 @@ cold save restoration. Set `ANDROID_ADB`, `ANDROID_SERIAL`, and
 On slow emulators, `ANDROID_REUSE_INSTALLED=1` reuses the existing package only
 after confirming its APK SHA-256 matches the local build. `ANDROID_REPORT_NAME`
 selects a separate report directory for each test device.
+`ANDROID_COMMAND_TIMEOUT` can increase the default 60-second ADB command limit
+for software-only emulation; it does not change gameplay timing or assertions.
+`tests/android_back.py` isolates hardware Back handling in a freshly opened
+activity with an existing saved mission. This is useful when diagnosing an
+emulator graphics-surface issue after backgrounding.
 The manually triggered **Verify native Android** workflow builds and exercises
 the APK on a hardware-accelerated Android 15 emulator and prints the check report.
 

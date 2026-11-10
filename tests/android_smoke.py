@@ -18,13 +18,16 @@ OUT.mkdir(parents=True, exist_ok=True)
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
 PORT = os.environ.get("ANDROID_ADB_PORT", "5037")
+COMMAND_TIMEOUT = float(os.environ.get("ANDROID_COMMAND_TIMEOUT", "60"))
 PACKAGE = "com.tabara.lasthearth"
 checks = []
 completed = False
 started = time.monotonic()
 screen_size = (1280, 720)
 
-def adb(*args, timeout=60, binary=False):
+def adb(*args, timeout=None, binary=False):
+    if timeout is None:
+        timeout = COMMAND_TIMEOUT
     result = subprocess.run([ADB, "-P", PORT, "-s", SERIAL, *args],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             timeout=timeout)
