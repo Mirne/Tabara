@@ -17,7 +17,7 @@ func run() -> void:
    sim.step(1)
    sim.events.clear()
    if second%60==0:
-    var saved = Sim.restore(JSON.parse_string(JSON.stringify(sim.snapshot())))
+    var saved = Sim.restore(JSON.parse_string(JSON.stringify(sim.snapshot(),"",true,true)))
     if saved == null:
      printerr("Invalid campaign snapshot at seed ",seed_number," second ",second)
      quit(1)

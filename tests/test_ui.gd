@@ -1,167 +1,253 @@
 extends SceneTree
-
 var game
-var checks := 0
-var failures := 0
-
-func _init() -> void:
+var checks:=0
+var failures:=0
+func _init()->void:
  call_deferred("run")
-
-func check(condition: bool, label: String) -> void:
- checks += 1
+func check(condition:bool,label:String)->void:
+ checks+=1
  if not condition:
-  failures += 1
-  printerr("FAIL UI: "+label)
-
-func frame() -> void:
+  failures+=1
+  printerr("FAIL UI: ",label)
+func frame()->void:
  await process_frame
  await process_frame
  await RenderingServer.frame_post_draw
-
-func capture(name: String) -> void:
+func capture(name:String)->void:
  await frame()
- var image := root.get_texture().get_image()
- image.save_png("res://test-results/"+name+".png")
-
-func tap(point: Vector2) -> void:
- var event := InputEventMouseButton.new()
- event.button_index = MOUSE_BUTTON_LEFT
- event.position = point
- event.pressed = true
- Input.parse_input_event(event)
+ root.get_texture().get_image().save_png("res://test-results/frontier-ui-"+name+".png")
+func mouse_event(at:Vector2,pressed:bool)->void:
+ var e:=InputEventMouseButton.new()
+ e.button_index=MOUSE_BUTTON_LEFT
+ e.position=at
+ e.pressed=pressed
+ Input.parse_input_event(e)
+func tap(at:Vector2)->void:
+ mouse_event(at,true)
  await frame()
- event = InputEventMouseButton.new()
- event.button_index = MOUSE_BUTTON_LEFT
- event.position = point
- event.pressed = false
- Input.parse_input_event(event)
+ mouse_event(at,false)
  await frame()
-
-func run() -> void:
- root.size = Vector2i(1440,810)
- game = load("res://main.tscn").instantiate()
+func action(name:String)->void:
+ await frame()
+ for button in game.buttons:
+  if button.action==name:
+   check(button.enabled,"Enabled control: "+name)
+   await tap(button.rect.get_center())
+   return
+ check(false,"Visible control: "+name)
+func touch(index:int,at:Vector2,pressed:bool)->void:
+ var e:=InputEventScreenTouch.new()
+ e.index=index
+ e.position=at
+ e.pressed=pressed
+ Input.parse_input_event(e)
+func drag_touch(index:int,at:Vector2,relative:Vector2)->void:
+ var e:=InputEventScreenDrag.new()
+ e.index=index
+ e.position=at
+ e.relative=relative
+ Input.parse_input_event(e)
+func run()->void:
+ root.size=Vector2i(1440,810)
+ game=load("res://main.tscn").instantiate()
  root.add_child(game)
+ await create_timer(1).timeout
  await frame()
- check(game.sfx_player!=null and game.music_player!=null,"Scene initialization completes")
- if game.sfx_player==null or game.music_player==null:
-  quit(1)
-  return
- var terrain_image: Image = game.terrain_view.get_texture().get_image()
- check(terrain_image!=null and terrain_image.get_pixel(450,550).a>.9,"Cached terrain actually renders")
- check(game.screen=="menu","Starts at main menu")
- check(game.music_player.stream.loop,"Ambient soundtrack loops")
- await capture("01-menu")
- await tap(Vector2(350,656))
- check(game.screen=="credits","Credits button opens notices")
- check(game.license_label.visible and game.license_label.text.length()>1000,"Licenses are visible and included")
- await capture("11-credits")
- await tap(Vector2(710,615))
- check(game.screen=="menu","Credits returns to main menu")
- # Clean test profile guarantees a new-game action.
- game.save_available = false
+ check(game.screen=="menu","Application starts in menu")
+ check(game.world!=null and game.music_player.stream.loop,"World and looping audio initialize")
+ var ground:Image=game.world.ground_view.get_texture().get_image()
+ check(ground!=null and ground.get_size()==Vector2i(4096,2560),"Large terrain texture actually renders")
+ check(ground.get_pixel(3250,800)!=ground.get_pixel(2400,1400),"Lake and meadow render distinct terrain")
+ await capture("menu")
+ await action("credits")
+ check(game.screen=="credits" and game.license_label.visible and game.license_label.text.length()>1000,"Credits show engine and font notices")
+ await action("back")
+ game.save_available=false
  await frame()
- await tap(Vector2(220,520))
- check(game.screen=="briefing","Begin button opens mission briefing")
- await capture("02-briefing")
- await tap(Vector2(770,635))
- check(game.screen=="mission","Briefing launches mission")
- check(game.sim.enemies.size()>0,"Enemy visible immediately")
- await capture("03-mission-start")
- # Build using the real build bar followed by a map tap.
- await tap(Vector2(220,747))
- check(game.build_kind=="wood","Woodcutter tool selected from build bar")
- await tap(Vector2(335,242))
- check(game.sim.buildings[1]!=null and game.sim.buildings[1].kind=="wood","Touch placement constructs woodcutter")
- await tap(Vector2(440,747))
- await tap(Vector2(817,217))
- check(game.sim.buildings[2]!=null,"Touch placement constructs stonemason")
- await tap(Vector2(640,747))
- await tap(Vector2(425,342))
- check(game.sim.buildings[4]!=null,"Touch placement constructs arrow tower")
- game.sim.step(45)
- game.consume_events()
- game.selected = 4
- await capture("04-settlement")
- # Upgrade through the actual inspector button.
- var old_level: int = game.sim.buildings[4].level
- await tap(Vector2(1270,504))
- check(game.sim.buildings[4].level==old_level+1,"Inspector upgrades tower")
- game.sim.buildings[4].hp = 0
+ await action("new")
+ check(game.screen=="briefing","New settlement opens briefing")
+ await capture("briefing")
+ await action("start")
+ check(game.screen=="mission" and game.sim.enemies.size()>0,"Mission begins with immediate enemies")
+ await capture("initial")
+ game.camera_center=Vector2(4780,3000)
+ game.apply_camera()
+ await action("build:wood")
+ await tap(game.world_to_screen(Vector2(4544,3264)))
+ check(game.sim.buildings.size()==2 and game.sim.buildings[1].kind=="wood","Real pointer input places a woodcutter on free ground")
+ check(game.sim.buildings[1].pos==Vector2(4544,3264),"Building uses chosen world position")
+ await action("build:stone")
+ await tap(game.world_to_screen(Vector2(5280,2880)))
+ check(game.sim.buildings.size()==3 and game.sim.buildings[2].kind=="stone","Pointer places stonemason without a fixed plot")
+ await action("build:arrow")
+ var count:int=game.sim.active_building_count()
+ var before:Vector2=game.camera_center
+ mouse_event(Vector2(750,310),true)
  await frame()
- await capture("05-ruins")
- await tap(Vector2(1260,595))
- check(game.sim.buildings[4].hp>0,"Inspector repairs ruined tower")
- await tap(Vector2(1060,747))
- await capture("12-cannon-preview")
- await tap(Vector2(808,450))
- check(game.sim.buildings[6]!=null and game.sim.buildings[6].kind=="cannon","Cannon can be constructed through touch controls")
- await tap(Vector2(1300,747))
- await tap(Vector2(951,517))
- check(game.sim.buildings[3]!=null and game.sim.buildings[3].kind=="market","Marketplace can be constructed through touch controls")
+ var motion:=InputEventMouseMotion.new()
+ motion.position=Vector2(900,350)
+ motion.relative=Vector2(150,40)
+ Input.parse_input_event(motion)
+ await frame()
+ mouse_event(Vector2(900,350),false)
+ await frame()
+ check(game.camera_center.distance_to(before)>100,"Mouse dragging pans the camera")
+ check(game.sim.active_building_count()==count,"Camera drag never constructs a building")
+ game.act("hall")
+ await frame()
+ await tap(game.world_to_screen(Vector2(4512,2576)))
+ check(game.sim.buildings.size()==4 and game.sim.buildings[3].kind=="arrow","Tower placement follows camera transform")
+ game.act("cancel")
+ game.selected=3
  game.sim.step(30)
  game.consume_events()
  await frame()
- await tap(Vector2(1270,650))
- check(game.screen=="trade","Marketplace opens trade controls")
- var trade_clock: float = game.sim.elapsed
- await create_timer(.2).timeout
- check(game.sim.elapsed==trade_clock,"Marketplace pauses combat while trading")
- var stone_stock: float = game.sim.resources.stone
- var gold_stock: float = game.sim.resources.gold
- await tap(Vector2(885,382))
- check(game.sim.resources.stone==stone_stock+60 and game.sim.resources.gold==gold_stock-60,"Marketplace buy button exchanges exact resources")
- var timber_stock: float = game.sim.resources.wood
- gold_stock = game.sim.resources.gold
- await tap(Vector2(540,455))
- check(game.sim.resources.wood==timber_stock-60 and game.sim.resources.gold==gold_stock+30,"Marketplace sell button exchanges exact resources")
- await capture("13-marketplace")
- await tap(Vector2(700,630))
- check(game.screen=="mission","Marketplace returns to battle")
- var wood_before: float = game.sim.resources.wood
- await tap(Vector2(192,198))
- check(game.sim.resources.wood>wood_before+19,"Touch resource collection adds supplies")
- await tap(Vector2(1320,58))
- check(game.screen=="pause","Pause button works")
- var frozen: float = game.sim.elapsed
- await create_timer(.2).timeout
- check(game.sim.elapsed==frozen,"Pause stops simulation")
- await capture("06-pause")
- await tap(Vector2(510,587))
- check(game.screen=="settings","Pause opens settings")
- await capture("07-settings")
- await tap(Vector2(920,270))
- check(not game.sound_on,"Sound toggle works")
- await tap(Vector2(700,605))
- check(game.screen=="pause","Done returns to pause")
- await tap(Vector2(702,589))
- check(game.screen=="guide","Field guide opens")
- await capture("08-guide")
- game.go_back()
- game.act("resume")
- # Trigger the boundary in the visual app, preserving a valid simulation clock.
- game.sim.elapsed = 899.95
- game.sim.wave = 30
+ var level:int=game.sim.buildings[3].level
+ await action("upgrade")
+ check(game.sim.buildings[3].level==level+1,"Inspector upgrades the selected structure")
+ game.sim.buildings[3].hp=0
+ game.sim.buildings[3].ruined_at=game.sim.elapsed
+ await capture("ruins")
+ await action("repair")
+ check(game.sim.buildings[3].hp>0 and game.sim.buildings[3].level==level+1,"Inspector repairs ruins while retaining upgrades")
+ await action("clear")
+ check(game.screen=="dismantle","Removing a building requires the in-game confirmation")
+ await action("cancel_clear")
+ check(game.sim.buildings[3]!=null,"Cancel keeps the structure")
+ await action("clear")
+ await action("confirm_clear")
+ check(game.sim.buildings[3]==null,"Confirmed dismantle completely frees the ground")
+ await action("build:cannon")
+ await tap(game.world_to_screen(Vector2(4512,2576)))
+ check(game.sim.buildings[3]!=null and game.sim.buildings[3].kind=="cannon","A different building fits on the freed foundation")
+ await action("build:market")
+ await tap(game.world_to_screen(Vector2(4976,2992)))
+ check(game.sim.buildings[4].kind=="market","Marketplace placement works")
+ game.act("cancel")
+ game.selected=4
+ game.sim.step(3)
+ game.sim.resources.gold=500
+ await frame()
+ await action("trade")
+ check(game.screen=="trade","Selected marketplace opens trading")
+ var frozen:float=game.sim.elapsed
+ await create_timer(0.25).timeout
+ check(game.sim.elapsed==frozen,"Trading pauses combat")
+ var stock:float=game.sim.resources.stone
+ var gold:float=game.sim.resources.gold
+ await action("buy_stone")
+ check(game.sim.resources.stone==stock+60 and game.sim.resources.gold==gold-60,"Buy button charges the stated price")
+ stock=game.sim.resources.wood
+ gold=game.sim.resources.gold
+ await action("trade_wood")
+ check(game.sim.resources.wood==stock-60 and game.sim.resources.gold==gold+30,"Sell button pays the stated amount")
+ await capture("marketplace")
+ await action("back")
+ check(game.screen=="mission","Trade returns to the game")
+ stock=game.sim.resources.wood
+ await tap(game.world_to_screen(game.sim.resource_nodes[0].pos))
+ check(game.sim.resources.wood>stock+35,"Tapping a resource deposit gathers supplies")
+ # The minimap routes input before world placement and reaches distant geography.
+ var target:=Vector2(6500,1600)
+ await tap(game.MINIMAP.position+target/game.Map.SIZE*game.MINIMAP.size)
+ check(game.camera_center.distance_to(target)<2,"Minimap tap navigates to the distant lake")
+ await capture("lake")
+ await action("hall")
+ check(game.camera_center.distance_to(game.Map.HALL)<1,"Hall control recenters the settlement")
+ var old_zoom:float=game.zoom
+ await action("zoom_out")
+ check(game.zoom<old_zoom,"Zoom-out control changes the view")
+ await action("zoom_in")
+ check(absf(game.zoom-old_zoom)<0.0001,"Zoom controls round trip")
+ # Actual native-style two-finger events, with mouse emulation disabled.
+ count=game.sim.active_building_count()
+ old_zoom=game.zoom
+ touch(0,Vector2(560,300),true)
+ touch(1,Vector2(880,350),true)
+ await frame()
+ drag_touch(1,Vector2(980,370),Vector2(100,20))
+ await frame()
+ touch(0,Vector2(560,300),false)
+ touch(1,Vector2(980,370),false)
+ await frame()
+ check(game.zoom>old_zoom,"Two-finger pinch zoom works")
+ check(game.sim.active_building_count()==count,"Pinch never creates an accidental building")
+ # One-finger panning must also suppress the release tap.
+ before=game.camera_center
+ touch(0,Vector2(700,350),true)
+ await frame()
+ drag_touch(0,Vector2(800,350),Vector2(100,0))
+ await frame()
+ touch(0,Vector2(800,350),false)
+ await frame()
+ check(game.camera_center.distance_to(before)>30,"One-finger drag pans")
+ # View state and model state both survive actual filesystem persistence.
+ var saved_camera:Vector2=game.camera_center
+ var saved_zoom:float=game.zoom
+ var saved_count:int=game.sim.active_building_count()
+ game.save_game()
+ game.sim=null
+ game.camera_center=Vector2.ZERO
+ game.zoom=0.3
+ game.load_saved_game()
+ check(game.sim!=null and game.sim.active_building_count()==saved_count,"Cold file restore retains free-placed structures")
+ check(game.camera_center==saved_camera and absf(game.zoom-saved_zoom)<0.00001,"Cold restore retains camera and zoom")
+ game.apply_camera()
+ await capture("settlement")
+ await action("pause")
+ frozen=game.sim.elapsed
+ await create_timer(0.25).timeout
+ check(game.sim.elapsed==frozen,"Pause freezes the simulation")
+ check(not get_tree_auto_quit(),"Android Back is handled by the game")
+ game.notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+ await create_timer(0.25).timeout
+ check(game.screen=="mission" and game.sim.elapsed>frozen,"System Back resumes from pause")
+ game.notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+ frozen=game.sim.elapsed
+ await create_timer(0.25).timeout
+ check(game.screen=="pause" and game.sim.elapsed==frozen,"Next system Back pauses")
+ await action("settings")
+ var sound:bool=game.sound_on
+ await action("sound")
+ check(game.sound_on!=sound,"Sound setting toggles")
+ var motion_reduced:bool=game.reduced_motion
+ await action("motion")
+ check(game.reduced_motion!=motion_reduced,"Reduced-motion setting toggles")
+ await capture("settings")
+ await action("back")
+ check(game.screen=="pause","Settings returns to pause")
+ await action("guide")
+ check(game.screen=="guide","Field manual opens")
+ await capture("guide")
+ await action("back")
+ await action("resume")
+ game.sim.elapsed=899.95
+ game.sim.wave=30
  game.sim.enemies.clear()
- game.sim.spawn_remaining = 0
- game.sim.victory = false
- game.sim.victory_seen = false
- game.accumulator = .1
+ game.sim.spawn_remaining=0
+ game.sim.victory=false
+ game.sim.victory_seen=false
+ game.accumulator=0.1
  await frame()
- check(game.screen=="victory","Mission shows 15-minute victory overlay")
- await capture("09-victory")
- await tap(Vector2(730,516))
- check(game.screen=="mission" and game.sim.victory_seen,"Continue enters endless mode")
- game.sim.buildings[0].hp = 0
- game.sim.defeated = true
+ check(game.screen=="victory","Exact mission boundary opens victory screen")
+ await capture("victory")
+ await action("endless")
+ check(game.screen=="mission" and game.sim.victory_seen,"Continue enters endless survival")
+ game.sim.buildings[0].hp=0
+ game.sim.defeated=true
  await frame()
- check(game.screen=="defeat","Main hall defeat shows end screen")
- await capture("10-defeat")
- print("UI RESULT: %d checks, %d failures" % [checks,failures])
+ check(game.screen=="defeat","Destroyed main hall opens defeat screen")
+ await capture("defeat")
  game.music_player.stop()
- game.music_player.stream = null
  game.sfx_player.stop()
- game.sfx_player.stream = null
- await create_timer(.15).timeout
+ game.music_player.stream=null
+ game.sfx_player.stream=null
+ game.sounds.clear()
+ await create_timer(0.25).timeout
  game.queue_free()
  await process_frame
+ await process_frame
+ print("UI RESULT: %d checks, %d failures"%[checks,failures])
  quit(1 if failures>0 else 0)
+func get_tree_auto_quit()->bool:
+ return quit_on_go_back
