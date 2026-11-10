@@ -21,9 +21,13 @@ ore, ridges, scattered vegetation, and a large eastern lake give the valley
 geographic landmarks. Geography is deterministic and shared by rendering,
 placement checks, production bonuses, and the minimap.
 
-Placement snaps to a fine 16-unit grid. Each building has a footprint; collisions,
+Placement snaps to a visible 40-unit grid. Rectangular foundations occupy whole
+grid cells and may meet without overlapping. Each building has a footprint; collisions,
 water, ridges, map boundaries and resource cores reject construction before any
-materials are spent. There are no fixed pads or reserved wall checkpoints.
+materials are spent. There are no fixed defense pads or reserved wall checkpoints. Woodcutters and
+stonemasons require matching deposits, one producer per deposit. Ruins retain
+that claim; clearing releases it. Existing v0.2 producers retain their locations
+and reserve the closest matching site.
 There is one main hall and room for up to 512 structures. Clearing ruins reuses
 storage slots and ground without growing the building array indefinitely.
 
@@ -54,8 +58,9 @@ its destruction ends the mission.
 
 ## Combat
 
-The model uses 0.05-second steps. Enemies are present from the first frame, and
-the hall can attack them immediately. Waves arrive every 30 seconds. The wave
+The model uses 0.05-second steps. The first enemy starts at progress zero on the
+western path entrance; new games have no near-hall vanguard. The hall attacks
+automatically once enemies reach its range. Waves arrive every 30 seconds. The wave
 size grows from 10 toward 220; every fifth wave can reach 300 attackers. Runners,
 armored brutes and occasional siege carts add different speeds and threats.
 
@@ -73,6 +78,9 @@ Spatial indexes limit target searches to nearby cells. Positions are cached
 within each step, idle defenses search less often, and enemy target refreshes run
 at five hertz with immediate invalidation of destroyed or removed targets.
 
+Kills award rounded gold based on wave, with higher rewards for brutes and
+siege carts. Each death is paid once and carries a coin reward visual.
+
 Victory occurs at 900 in-game seconds if the hall survives. The player can
 continue into endless survival. The 1×/2× option changes simulation speed, so
 victory is measured in game time.
@@ -88,6 +96,11 @@ motion without geometric placeholder characters.
 Ground shadows are batched together before units. Interface frames use native
 nine-patch rendering, with a bounded cache of texture styles. The stress fixture
 and renderer instrumentation distinguish simulation cost from draw-command cost.
+
+The construction cards and inspector occupy the right rail. Selecting a card
+shows the grid; a world tap previews a location without spending. The separate
+Build confirmation revalidates resources, the foundation and deposit ownership.
+A successful build exits placement mode. Cancel spends nothing.
 
 One-finger drag or mouse/WASD moves the camera; pinch, wheel or zoom buttons
 change scale. The minimap and Hall button provide navigation. Tap release is

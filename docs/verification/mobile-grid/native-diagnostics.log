@@ -1,0 +1,501 @@
+--------- beginning of main
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44779746 , only wrote 44779680
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44817187 , only wrote 44817120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44817141 , only wrote 44817120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44818080 , only wrote 44817840
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44856352 , only wrote 44856000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44894373 , only wrote 44894160
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44897997 , only wrote 44897760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44897785 , only wrote 44897760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44898891 , only wrote 44898480
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44940307 , only wrote 44940240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44940258 , only wrote 44940240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44941390 , only wrote 44940960
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 44979188 , only wrote 44979120
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45010970 , only wrote 45010800
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45113771 , only wrote 45113760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45113786 , only wrote 45113760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45114898 , only wrote 45114480
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45155294 , only wrote 45154800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45154833 , only wrote 45154800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45188172 , only wrote 45187920
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45187940 , only wrote 45187920
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45188712 , only wrote 45188640
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45224727 , only wrote 45224640
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45257064 , only wrote 45257040
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45368881 , only wrote 45368640
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45404643 , only wrote 45404640
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45406051 , only wrote 45405360
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45406337 , only wrote 45406080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45406555 , only wrote 45406080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45406857 , only wrote 45406800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45443735 , only wrote 45442800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45442825 , only wrote 45442800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45443947 , only wrote 45443520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45463195 , only wrote 45462960
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45462984 , only wrote 45462960
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45463751 , only wrote 45463680
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45563768 , only wrote 45563760
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45564630 , only wrote 45564480
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45611309 , only wrote 45611280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45655928 , only wrote 45655920
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45657545 , only wrote 45657360
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45692680 , only wrote 45692640
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45692668 , only wrote 45692640
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45693633 , only wrote 45693360
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45697137 , only wrote 45696960
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45731737 , only wrote 45731520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45761918 , only wrote 45761760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45761786 , only wrote 45761760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45762692 , only wrote 45762480
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45768339 , only wrote 45768240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45768264 , only wrote 45768240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45768965 , only wrote 45768960
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45808578 , only wrote 45808560
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45823600 , only wrote 45822960
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45822983 , only wrote 45822960
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45823959 , only wrote 45823680
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45834619 , only wrote 45834480
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45843905 , only wrote 45843840
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45843865 , only wrote 45843840
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45851056 , only wrote 45851040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45851064 , only wrote 45851040
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45861243 , only wrote 45861120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45861133 , only wrote 45861120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45862846 , only wrote 45861840
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45900782 , only wrote 45900720
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45900747 , only wrote 45900720
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45901679 , only wrote 45901440
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45919530 , only wrote 45919440
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45919467 , only wrote 45919440
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45920335 , only wrote 45920160
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45953372 , only wrote 45953280
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45976322 , only wrote 45976320
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 45982170 , only wrote 45982080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46043538 , only wrote 46043280
+D/AndroidRuntime( 3154): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+D/AndroidRuntime( 3154): CheckJNI is OFF
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46078788 , only wrote 46072800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46072828 , only wrote 46072800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46075851 , only wrote 46073520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46078026 , only wrote 46077840
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46086566 , only wrote 46086480
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46135476 , only wrote 46134720
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46139860 , only wrote 46139760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46139784 , only wrote 46139760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46140498 , only wrote 46140480
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46188738 , only wrote 46188720
+W/art     ( 3154): Unexpected CPU variant for X86 using defaults: x86_64
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46213629 , only wrote 46213200
+D/ICU     ( 3154): No timezone override file found: /data/misc/zoneinfo/current/icu/icu_tzdata.dat
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46220408 , only wrote 46220400
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46220422 , only wrote 46220400
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46221369 , only wrote 46221120
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46238068 , only wrote 46237680
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46241328 , only wrote 46241280
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+E/memtrack( 3154): Couldn't load memtrack module (No such file or directory)
+E/android.os.Debug( 3154): failed to load memtrack module: -2
+I/Radio-JNI( 3154): register_android_hardware_Radio DONE
+D/AndroidRuntime( 3154): Calling main entry com.android.commands.input.Input
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46296056 , only wrote 46296000
+I/Input   ( 3154): injectKeyEvent: KeyEvent { action=ACTION_DOWN, keyCode=KEYCODE_BACK, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1703692, downTime=1703692, deviceId=-1, source=0x101 }
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46301916 , only wrote 46301760
+I/Input   ( 3154): injectKeyEvent: KeyEvent { action=ACTION_UP, keyCode=KEYCODE_BACK, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1703692, downTime=1703692, deviceId=-1, source=0x101 }
+D/AndroidRuntime( 3154): Shutting down VM
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46310766 , only wrote 46310400
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46401506 , only wrote 46401120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46401142 , only wrote 46401120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46402117 , only wrote 46401840
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46403899 , only wrote 46403280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46410040 , only wrote 46409760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46418076 , only wrote 46417680
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46417708 , only wrote 46417680
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46418419 , only wrote 46418400
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46437971 , only wrote 46437840
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46495511 , only wrote 46495440
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46495851 , only wrote 46495440
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46538722 , only wrote 46538640
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46539368 , only wrote 46539360
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46555999 , only wrote 46555920
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46559628 , only wrote 46559520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46559540 , only wrote 46559520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46560398 , only wrote 46560240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46562006 , only wrote 46561680
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46565405 , only wrote 46564560
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46564581 , only wrote 46564560
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46565312 , only wrote 46565280
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46589867 , only wrote 46589760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46589786 , only wrote 46589760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46590957 , only wrote 46590480
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46594841 , only wrote 46594800
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46602045 , only wrote 46602000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46602012 , only wrote 46602000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46603075 , only wrote 46602720
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46616951 , only wrote 46616400
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46621502 , only wrote 46620720
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46620746 , only wrote 46620720
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46621585 , only wrote 46621440
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46622979 , only wrote 46622880
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46625115 , only wrote 46624320
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46635680 , only wrote 46635120
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46637023 , only wrote 46636560
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46639460 , only wrote 46639440
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46639453 , only wrote 46639440
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46640529 , only wrote 46640160
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46640172 , only wrote 46640160
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46641597 , only wrote 46640880
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46648081 , only wrote 46648080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46649596 , only wrote 46648800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46661152 , only wrote 46661040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46662998 , only wrote 46662480
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46672028 , only wrote 46671840
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46682790 , only wrote 46682640
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46682789 , only wrote 46682640
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46684210 , only wrote 46684080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46704785 , only wrote 46704240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46704349 , only wrote 46704240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46704993 , only wrote 46704960
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46706506 , only wrote 46706400
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46716273 , only wrote 46715760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46715780 , only wrote 46715760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46716714 , only wrote 46716480
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46728190 , only wrote 46728000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46728064 , only wrote 46728000
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46729076 , only wrote 46728720
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46734570 , only wrote 46734480
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46752062 , only wrote 46751760
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46758077 , only wrote 46756800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46757568 , only wrote 46756800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46758338 , only wrote 46757520
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46759110 , only wrote 46758960
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46759758 , only wrote 46759680
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46763058 , only wrote 46760400
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46760406 , only wrote 46760400
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46761496 , only wrote 46761120
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46765850 , only wrote 46761840
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46764726 , only wrote 46763280
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46764857 , only wrote 46764720
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46772565 , only wrote 46767600
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46767612 , only wrote 46767600
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46769061 , only wrote 46769040
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46771373 , only wrote 46770480
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46771509 , only wrote 46771200
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46772188 , only wrote 46771200
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46776150 , only wrote 46774800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46774806 , only wrote 46774800
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46778038 , only wrote 46775520
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46778524 , only wrote 46778400
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46782003 , only wrote 46782000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46782017 , only wrote 46782000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46783269 , only wrote 46782720
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46794143 , only wrote 46793520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46793535 , only wrote 46793520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46794388 , only wrote 46794240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46815181 , only wrote 46815120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46815142 , only wrote 46815120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46816362 , only wrote 46815840
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46823079 , only wrote 46823040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46823056 , only wrote 46823040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46824057 , only wrote 46823760
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46849813 , only wrote 46849680
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46870561 , only wrote 46870560
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46870581 , only wrote 46870560
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46871306 , only wrote 46871280
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46909693 , only wrote 46909440
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46919159 , only wrote 46918800
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 46956592 , only wrote 46956240
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47017133 , only wrote 47016720
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47016738 , only wrote 47016720
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47017467 , only wrote 47017440
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47037048 , only wrote 47036880
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47036900 , only wrote 47036880
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47037826 , only wrote 47037600
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47039083 , only wrote 47039040
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47080345 , only wrote 47080080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47080097 , only wrote 47080080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47080998 , only wrote 47080800
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47085305 , only wrote 47085120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47122320 , only wrote 47121840
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47121856 , only wrote 47121840
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47122727 , only wrote 47122560
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47143306 , only wrote 47140560
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47140581 , only wrote 47140560
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47162985 , only wrote 47162880
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47190920 , only wrote 47190240
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47223552 , only wrote 47223360
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47223380 , only wrote 47223360
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47224141 , only wrote 47224080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47261673 , only wrote 47261520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47261538 , only wrote 47261520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47262669 , only wrote 47262240
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47304469 , only wrote 47304000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47304026 , only wrote 47304000
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47342177 , only wrote 47342160
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47342184 , only wrote 47342160
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47343298 , only wrote 47342880
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47423523 , only wrote 47423520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47448167 , only wrote 47448000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47448023 , only wrote 47448000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47450686 , only wrote 47450160
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47491420 , only wrote 47491200
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47494385 , only wrote 47494080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47494103 , only wrote 47494080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47494969 , only wrote 47494800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47517980 , only wrote 47517840
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47519843 , only wrote 47519280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47526069 , only wrote 47525760
+E/SurfaceFlinger( 1298): ro.sf.lcd_density must be defined as a build property
+D/gralloc_ranchu( 1298): gralloc_alloc: Creating ashmem region of size 3686400
+D/        ( 3173): HostConnection::get() New Host Connection established 0x75bc5482d4e0, tid 3173
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47555288 , only wrote 47555280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47555301 , only wrote 47555280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47588830 , only wrote 47588400
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47588416 , only wrote 47588400
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47589243 , only wrote 47589120
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47671505 , only wrote 47671200
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47765727 , only wrote 47764800
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47909782 , only wrote 47909520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47909545 , only wrote 47909520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47910460 , only wrote 47910240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47922741 , only wrote 47922480
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47922500 , only wrote 47922480
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47923405 , only wrote 47923200
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47936164 , only wrote 47936160
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47937590 , only wrote 47936880
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47978925 , only wrote 47978640
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47978667 , only wrote 47978640
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 47979416 , only wrote 47979360
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 48065918 , only wrote 48065760
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 48087367 , only wrote 48087360
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 48147616 , only wrote 48147120
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames

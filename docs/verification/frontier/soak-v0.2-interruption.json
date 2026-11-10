@@ -1,0 +1,11 @@
+{
+  "utc": "2026-11-10T12:07:09.430766+00:00",
+  "reason": "User requested mobile grid confirmation/right construction panel, stone bug investigation, visible kill gold and removal of initial vanguard. Old-runtime run intentionally stopped; not complete.",
+  "confirmed_seconds": 7251.51400000892,
+  "source_commit": "b97ef79028553b5a02ebc5a419ac48f0510f9ad9",
+  "complete": false,
+  "errors": [],
+  "disk_resumes": 119,
+  "sessions": 2,
+  "victories": 2
+}

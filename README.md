@@ -8,9 +8,9 @@ hold the main hall for **15 in-game minutes**. Victory unlocks endless survival.
 
 ## The frontier revision
 
-Version **0.2.0** replaces the original fixed plots with an **8,192 × 5,120** world,
-about **54 times the original map area**. Buildings use free placement on clear
-land. Pan and zoom around forests, quarries, rocky ridges, a lake, and the single
+Version **0.3.0** replaces the original fixed plots with an **8,192 × 5,120** world,
+about **54 times the original map area**. Defenses use a visible construction grid on clear
+land. Woodcutters and stonemasons occupy matching resource deposits, one per site. Pan and zoom around forests, quarries, rocky ridges, a lake, and the single
 western approach. A minimap provides fast travel across the valley.
 
 The interface uses illustrated resource icons and a textured brass-and-leather
@@ -20,19 +20,26 @@ when killed, and construction clears vegetation around the foundations.
 
 ## Play
 
-Download the [tested Android APK](https://github.com/Mirne/Tabara/raw/54666d5b71476fd2e2249cea967b6cc7b41cee3d/builds/tabara-frontier.apk) from GitHub,
-or install the local `builds/tabara-frontier.apk`. You can also open `project.godot` in Godot 4.6.3 and
+Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/54666d5b71476fd2e2249cea967b6cc7b41cee3d/builds/tabara-frontier-v0.3.apk) from GitHub,
+or install the local `builds/tabara-frontier-v0.3.apk`. You can also open `project.godot` in Godot 4.6.3 and
 press **F5**. Android 7.0/API 24 or later with OpenGL ES 3.0 is required.
 This is a **development-signed test build**. The game is in English and has no
 advertising, analytics, accounts, purchases, or runtime network requirement.
 
-1. Start **The Pinewatch Frontier** from the menu. A vanguard is already near
-   the settlement; the main hall attacks automatically.
+On Android, open the download link in Chrome, then open `tabara-frontier-v0.3.apk`
+from **Downloads** (or Samsung **My Files → Downloads**). The complete file is
+100,755,023 bytes, approximately 96 MB.
+
+1. Start **The Pinewatch Frontier** from the menu. Enemies spawn immediately at
+   the western path entrance. The main hall attacks enemies that reach its range.
 2. Tap the wood, stone, and gold deposits to gather supplies. They refill every
-   12 seconds. Build producers for steady income.
-3. Choose a construction card, then tap clear ground. Buildings are not limited
-   to plots. Drag to pan, pinch or use **+ / −** to zoom, and tap the minimap to
-   travel. **Hall** returns to your headquarters.
+   12 seconds. Build one producer on each forest or quarry for steady income.
+   Killed enemies award gold, shown by a coin reward above the fallen enemy.
+3. Choose a card in the **right-hand construction panel**, then tap the map to
+   preview the building on the visible grid. Move the preview by tapping another
+   location. **Build · Confirm** spends the listed cost; Cancel spends nothing.
+   Drag to pan, pinch or use **+ / −** to zoom, and tap the minimap to travel.
+   **Hall** returns to your headquarters.
 4. Place walls across the approach and cover them with arrow and cannon towers.
    Enemies form a physical crowd rather than occupying identical positions.
    Every fifth wave brings a larger horde.
@@ -41,16 +48,17 @@ advertising, analytics, accounts, purchases, or runtime network requirement.
 6. Hold the hall until **15:00**, then choose endless survival. Losing the hall
    ends the settlement.
 
-Water, rocky ridges, resource cores, and existing foundations cannot be built
-on. New construction takes 2.5 seconds. The world supports 512 structures.
+Water, rocky ridges and occupied grid cells reject construction. Only a
+woodcutter may occupy a forest deposit, and only a stonemason may occupy a quarry.
+Ruined producers keep their resource claim until repaired or cleared. New construction takes 2.5 seconds. The world supports 512 structures.
 
 ### Buildings
 
 | Building | Role |
 | --- | --- |
 | Main hall | Prebuilt headquarters; attacks from the beginning and supplies passive income |
-| Woodcutter | Produces timber; +25% beside a forest resource grove |
-| Stonemason | Produces stone; +25% beside a quarry |
+| Woodcutter | Requires a forest deposit; one per forest; produces timber |
+| Stonemason | Requires a quarry; one per stone deposit; produces stone |
 | Arrow tower | Fast attacks against individual raiders |
 | Wall | Freely placed barrier that attackers must break through |
 | Cannon tower | Slow shells with wide area damage |
@@ -74,6 +82,11 @@ to the menu. Continue restores buildings, ruins, enemies, economy, cleared
 vegetation, camera, and zoom. Returning from another app requires explicit
 resume. Settings include sound, music, and reduced motion.
 
+Version 0.3 retains existing v0.2 frontier saves without moving structures.
+Existing producers reserve their closest matching deposit; new producers must
+be placed directly on an available site. Install the APK as an update to keep
+your settlement.
+
 The expanded map uses a **new frontier save format**. The earlier fixed-plot
 settlement is not migrated or loaded; its original save file is left intact.
 Starting a new frontier requires confirmation when a live frontier save exists.
@@ -87,7 +100,7 @@ Install Godot **4.6.3** and matching export templates, an Android SDK with
 ```sh
 godot --headless --editor --path . --import --quit
 mkdir -p builds
-godot --headless --path . --export-debug Android builds/tabara-frontier.apk
+godot --headless --path . --export-debug Android builds/tabara-frontier-v0.3.apk
 ```
 
 The preset includes ARMv7, ARM64, and x86-64. A local development signing key is
@@ -95,7 +108,7 @@ excluded from source control. A Play Store release needs the owner's release
 keystore and a Gradle AAB export. No production key is included.
 
 ```sh
-godot --headless --path . --export-release Linux builds/tabara-frontier.x86_64
+godot --headless --path . --export-release Linux builds/tabara-frontier-v0.3.x86_64
 ```
 
 ## Verify
