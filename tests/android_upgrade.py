@@ -1,16 +1,18 @@
 """Verify an actual v0.5 -> v0.6 Android update on the disposable emulator.
 
 Run after android_smoke.py. Requires ANDROID_PREVIOUS_APK and ANDROID_BASE_REPORT;
-uses the same adb/device/report variables as android_smoke.py. It replaces only
+uses the same adb/device/report variables as android_smoke.py. Both APKs must
+use the same signing key. It replaces only
 com.tabara.lasthearth on that test emulator and never clears app data.
 """
 from __future__ import annotations
+import base64
 import copy
 import hashlib
 import json
 import os
 from pathlib import Path
-import subprocess
+import shlex
 import sys
 import time
 import android_smoke as native
@@ -19,12 +21,15 @@ PREVIOUS = Path(os.environ['ANDROID_PREVIOUS_APK'])
 BASE_REPORT = Path(os.environ['ANDROID_BASE_REPORT'])
 
 def write_save(data):
-    result = subprocess.run(
-        [native.ADB, '-P', native.PORT, '-s', native.SERIAL, 'exec-in', 'run-as',
-         native.PACKAGE, 'tee', 'files/frontier-settlement.json'],
-        input=json.dumps(data).encode(), capture_output=True, timeout=120)
-    if result.returncode:
-        raise RuntimeError(result.stderr.decode(errors='replace')[-1000:])
+    # Older adbd can acknowledge exec-in without executing its command. Use the
+    # normal shell protocol and verify the app-private file before proceeding.
+    payload = base64.b64encode(json.dumps(data).encode()).decode('ascii')
+    inner = "printf '%s' " + shlex.quote(payload) + " | base64 -d > files/frontier-settlement.json"
+    command = 'run-as ' + shlex.quote(native.PACKAGE) + ' sh -c ' + shlex.quote(inner)
+    native.adb('shell', command, timeout=120)
+    if native.save() != data:
+        raise RuntimeError('Legacy fixture transfer did not preserve the complete save')
+
 
 def signature(data):
     return [(b['kind'], b['pos'], b['level']) if b else None for b in data['buildings']]
@@ -32,7 +37,7 @@ def signature(data):
 def continue_and_pause():
     native.launch()
     native.wait_menu()
-    native.screen()
+    native.screen('current-menu')
     native.tap(260, 462)
     time.sleep(6)
     native.tap(1338, 43)
@@ -58,12 +63,17 @@ def run():
         legacy.pop('terrain_revision', None)
         legacy['mountains_enabled'] = True
         write_save(legacy)
+        injected = native.save()
+        (native.OUT / 'injected-legacy.json').write_text(json.dumps(injected, indent=2))
+        native.check(injected == legacy, 'Legacy fixture is written completely before launching the old app')
         old = continue_and_pause()
+        (native.OUT / 'old-observed.json').write_text(json.dumps(old, indent=2))
+        native.screen('01-old-app-settlement')
+        print('OLD SAVE OBSERVED:', old.get('version'), old.get('mountains_enabled'), old.get('elapsed'), flush=True)
         native.check(old['version'] == 4 and old['mountains_enabled'],
                      'Actual v0.5 app restores and writes its legacy terrain save')
         native.check(signature(old) == signature(original),
                      'Actual old app retains all building positions and levels')
-        native.screen('01-old-app-settlement')
         native.adb('shell', 'am', 'force-stop', native.PACKAGE)
         result = native.adb('install', '--no-incremental', '-r', native.APK, timeout=360)
         native.check('Success' in result, 'New v0.6 APK updates v0.5 without clearing app data')
