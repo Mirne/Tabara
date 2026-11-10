@@ -27,6 +27,7 @@ for directory in ["scripts", "tests"]:
         run(["--headless", "--script", "res://" + script.relative_to(ROOT).as_posix(), "--check-only"])
 run(["--headless", "--script", "res://tests/test_simulation.gd"], "0 failures")
 run(["--headless", "--script", "res://tests/test_authored_world.gd"], "AUTHORED RESULT:")
+run(["--headless", "--script", "res://tests/test_authored_walks.gd"], "AUTHORED WALKS RESULT:")
 if args.ui:
     (ROOT / "test-results").mkdir(exist_ok=True)
     run(["--audio-driver", "Dummy", "--script", "res://tests/test_ui.gd"], "UI RESULT:")
