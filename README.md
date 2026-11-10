@@ -4,6 +4,8 @@ An offline, landscape Android settlement-defense game built with **Godot 4.6.3**
 Build Pinewatch, gather supplies, and defend its single road. Survive **15 in-game
 minutes** to win the first mission, then continue against endless escalating waves.
 
+![Pinewatch gameplay](docs/screenshots/gameplay.png)
+
 ## Play
 
 Open `project.godot` in Godot 4.6.3 and press **F6/F5**, or install the test APK
