@@ -5,6 +5,7 @@ device/server. This script clears ONLY com.tabara.lasthearth on that device.
 """
 import json
 import io
+import hashlib
 import os
 from pathlib import Path
 import subprocess
@@ -98,20 +99,35 @@ try:
     else:
         raise TimeoutError("Android did not finish booting in 45 minutes")
     check(True, "Android finished booting")
-    installed = ""
-    for attempt in range(3):
-        try:
-            installed = adb("install", "--no-incremental", "-r", str(ROOT / "builds/tabara-last-hearth.apk"), timeout=240)
-            break
-        except RuntimeError as error:
-            transient = any(message in str(error) for message in ["Can't find service: package", "PackageManagerInternal", "DeadObjectException"])
-            if not transient or attempt == 2:
-                raise
-            print("Android package service restarted; waiting before retrying installation.", flush=True)
-            time.sleep(10)
-    check("Success" in installed, "APK installs on Android")
+    if os.environ.get("ANDROID_REUSE_INSTALLED") == "1":
+        apk_path = adb("shell", "pm", "path", PACKAGE).splitlines()[0].removeprefix("package:")
+        # Older Android images do not provide a sha256sum command.
+        device_hash = hashlib.sha256(adb("exec-out", "cat", apk_path, timeout=240, binary=True)).hexdigest()
+        with (ROOT / "builds/tabara-last-hearth.apk").open("rb") as source:
+            local_hash = hashlib.file_digest(source, "sha256").hexdigest()
+        check(device_hash == local_hash, "Installed Android APK matches build SHA-256")
+    else:
+        installed = ""
+        for attempt in range(3):
+            try:
+                installed = adb("install", "--no-incremental", "-r", str(ROOT / "builds/tabara-last-hearth.apk"), timeout=240)
+                break
+            except RuntimeError as error:
+                transient = any(message in str(error) for message in ["Can't find service: package", "PackageManagerInternal", "DeadObjectException"])
+                if not transient or attempt == 2:
+                    raise
+                print("Android package service restarted; waiting before retrying installation.", flush=True)
+                time.sleep(10)
+        check("Success" in installed, "APK installs on Android")
     adb("shell", "pm", "clear", PACKAGE)
-    adb("logcat", "-c")
+    try:
+        adb("logcat", "-c")
+    except RuntimeError as error:
+        print("Could not clear the device diagnostic log:", str(error)[:300], flush=True)
+    try:
+        adb("shell", "settings", "put", "secure", "immersive_mode_confirmations", "confirmed")
+    except RuntimeError as error:
+        print("Could not pre-confirm the system fullscreen tip:", str(error)[:300], flush=True)
     launch()
     wait_menu()
     capture("01-menu")
@@ -184,13 +200,13 @@ try:
     time.sleep(3)
     check(read_save()["elapsed"] == paused_time, "Android Back pauses combat")
     capture("08-hardware-back-paused")
-    log = adb("logcat", "-d", "-v", "brief", timeout=60)
+    log = adb("logcat", "-d", "-t", "500", "-v", "brief", timeout=60)
     (OUT / "logcat.txt").write_text(log)
     check("FATAL EXCEPTION" not in log and "SCRIPT ERROR:" not in log, "No Android crash or script error")
     completed = True
 finally:
     try:
-        log = adb("logcat", "-d", "-v", "brief", timeout=60)
+        log = adb("logcat", "-d", "-t", "500", "-v", "brief", timeout=60)
         (OUT / "logcat.txt").write_text(log)
         relevant = [line for line in log.splitlines() if any(word in line.lower() for word in ["godot", "fatal", "script error", "com.tabara", "exception"])]
         print("NATIVE DIAGNOSTICS", flush=True)

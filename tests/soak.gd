@@ -48,6 +48,8 @@ func run() -> void:
    steps = int(previous.get("action_cycles",0))
    max_memory = int(previous.get("max_static_memory_bytes",0))
  if prior_seconds > 0 and game.sim != null and not game.sim.defeated:
+  # A fresh attempt may have started after the last report but before shutdown.
+  if game.sim.seed_value == 1000+sessions+1: sessions += 1
   game.screen = "mission"
   game.selected = 0
   game.accumulator = 0
@@ -131,7 +133,7 @@ func validate() -> void:
 func report(finished: bool = false) -> void:
  if finished: game.save_game()
  var segment_seconds := (Time.get_ticks_msec()-started)/1000.0
- var data := {"complete":finished,"requested_real_seconds":duration,"actual_real_seconds":prior_seconds+segment_seconds,"current_segment_real_seconds":segment_seconds,"prior_confirmed_real_seconds":prior_seconds,"segments":segments,"sessions":sessions,"victories":wins,"disk_resumes":resumes,"action_cycles":steps,"max_static_memory_bytes":max_memory,"current_static_memory_bytes":int(Performance.get_monitor(Performance.MEMORY_STATIC)),"fps":Performance.get_monitor(Performance.TIME_FPS),"current_mission_seconds":game.sim.elapsed if game.sim!=null else -1,"errors":errors}
+ var data := {"complete":finished,"requested_real_seconds":duration,"actual_real_seconds":prior_seconds+segment_seconds,"current_segment_real_seconds":segment_seconds,"prior_confirmed_real_seconds":prior_seconds,"segments":segments,"sessions":sessions,"current_session_seed":game.sim.seed_value if game.sim!=null else -1,"victories":wins,"disk_resumes":resumes,"action_cycles":steps,"max_static_memory_bytes":max_memory,"current_static_memory_bytes":int(Performance.get_monitor(Performance.MEMORY_STATIC)),"fps":Performance.get_monitor(Performance.TIME_FPS),"current_mission_seconds":game.sim.elapsed if game.sim!=null else -1,"errors":errors}
  var file := FileAccess.open(report_path,FileAccess.WRITE)
  if file != null:
   file.store_string(JSON.stringify(data,"  "))

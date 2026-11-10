@@ -6,5 +6,7 @@ builds/*
 *.aab
 *.tmp
 .DS_Store
+__pycache__/
+*.pyc
 android/build/
 test-results/
