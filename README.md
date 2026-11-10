@@ -99,6 +99,11 @@ and save test settlements. On Linux, set `XDG_DATA_HOME` to a temporary director
 The soak report is written to `test-results/soak.json`, which is excluded from
 exports and Git. A short smoke run can use `--seconds=65`.
 
+After an infrastructure interruption, pass `--resume` with the same report name
+and user-data directory. The harness restores the saved settlement and counts
+only previously confirmed running time plus the new segment. Its report records
+the segment count and excludes downtime.
+
 `python3 tools/verify.py --ui` runs syntax, simulation, and rendered checks and
 fails on engine script errors even if the engine returns a zero exit code.
 The GitHub verification workflow runs this suite and retains screenshots.

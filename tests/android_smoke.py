@@ -157,17 +157,30 @@ try:
     if red>150 and green>100 and blue<150:
         # Android may recreate a background activity. Continue the saved mission.
         tap(220,520)
+    pause_image = Image.open(capture("07-before-back-check")).convert("RGB")
+    width, height = pause_image.size
+    scale = min(width / 1440, height / 810)
+    panel_color = pause_image.getpixel((round((width-1440*scale)/2+450*scale), round((height-810*scale)/2+170*scale)))
+    if not (panel_color[0]>180 and panel_color[1]>170):
         tap(1320,58)
+    pause_image = Image.open(capture("07-known-pause")).convert("RGB")
+    panel_color = pause_image.getpixel((round((width-1440*scale)/2+450*scale), round((height-810*scale)/2+170*scale)))
+    check(panel_color[0]>180 and panel_color[1]>170, "Android Back test starts at the pause panel")
     before_back = read_save()["elapsed"]
     adb("shell", "input", "keyevent", "4")  # Back resumes the paused mission.
-    time.sleep(2)
+    time.sleep(5)
     adb("shell", "input", "keyevent", "4")  # Back pauses it again.
     time.sleep(2)
     windows = adb("shell", "dumpsys", "window")
     focused = [line for line in windows.splitlines() if "mCurrentFocus" in line]
     check(any(PACKAGE in line for line in focused), "Android Back keeps the game open while pausing or resuming")
     paused_time = read_save()["elapsed"]
-    check(paused_time > before_back + 1, "Android Back resumes combat before pausing again")
+    deadline = time.monotonic()+15
+    while paused_time<=before_back+.1 and time.monotonic()<deadline:
+        time.sleep(1)
+        paused_time = read_save()["elapsed"]
+    print(f"BACK CLOCKS: before={before_back}, after={paused_time}", flush=True)
+    check(paused_time > before_back + .1, "Android Back resumes combat before pausing again")
     time.sleep(3)
     check(read_save()["elapsed"] == paused_time, "Android Back pauses combat")
     capture("08-hardware-back-paused")

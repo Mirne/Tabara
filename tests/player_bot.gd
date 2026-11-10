@@ -10,6 +10,8 @@ func _init(settlement: Settlement) -> void:
  sim.build_at(1,"wood")
  sim.build_at(2,"stone")
  sim.build_at(4,"arrow")
+ while next < PLAN.size() and sim.buildings[PLAN[next][0]] != null:
+  next += 1
 
 func act() -> void:
  for i in 3: sim.collect(i)

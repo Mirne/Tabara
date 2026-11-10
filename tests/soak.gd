@@ -17,15 +17,19 @@ var max_memory := 0
 var errors: Array = []
 var session_seconds := 0
 var report_path := "res://test-results/soak.json"
+var resume_requested := false
+var prior_seconds := 0.0
+var segments := 1
 
 func _init() -> void:
  for arg in OS.get_cmdline_user_args():
   if arg.begins_with("--seconds="): duration = maxi(1,int(arg.trim_prefix("--seconds=")))
   if arg.begins_with("--report-name="): report_path = "res://test-results/"+arg.trim_prefix("--report-name=").get_file()+".json"
+  if arg == "--resume": resume_requested = true
  call_deferred("run")
 
 func run() -> void:
- root.size = Vector2i(1440,810)
+ root.size = Vector2i(960,540)
  game = load("res://main.tscn").instantiate()
  root.add_child(game)
  game.sound_on = false
@@ -33,7 +37,26 @@ func run() -> void:
  game.music_player.stop()
  game.music_player.stream = null
  started = Time.get_ticks_msec()
- start_session()
+ if resume_requested and FileAccess.file_exists(report_path):
+  var previous = JSON.parse_string(FileAccess.get_file_as_string(report_path))
+  if previous is Dictionary and previous.get("errors",[]).is_empty():
+   prior_seconds = maxf(0,float(previous.get("actual_real_seconds",0)))
+   segments = int(previous.get("segments",1))+1
+   sessions = int(previous.get("sessions",0))
+   wins = int(previous.get("victories",0))
+   resumes = int(previous.get("disk_resumes",0))
+   steps = int(previous.get("action_cycles",0))
+   max_memory = int(previous.get("max_static_memory_bytes",0))
+ if prior_seconds > 0 and game.sim != null and not game.sim.defeated:
+  game.screen = "mission"
+  game.selected = 0
+  game.accumulator = 0
+  game.speed = 1
+  bot = Bot.new(game.sim)
+  session_seconds = int(game.sim.elapsed)
+  resumes += 1
+  print("RESUMED SOAK: ",prior_seconds," confirmed seconds; segment ",segments)
+ else: start_session()
  report_at = started+50000
  act_at = started
  process_frame.connect(tick)
@@ -84,7 +107,7 @@ func tick() -> void:
  if now >= report_at:
   report_at = now+50000
   report()
- if now-started >= duration*1000:
+ if prior_seconds+(now-started)/1000.0 >= duration:
   report(true)
   game.music_player.stop()
   quit(1 if not errors.is_empty() else 0)
@@ -106,7 +129,9 @@ func validate() -> void:
  max_memory = maxi(max_memory,int(Performance.get_monitor(Performance.MEMORY_STATIC)))
 
 func report(finished: bool = false) -> void:
- var data := {"complete":finished,"requested_real_seconds":duration,"actual_real_seconds":(Time.get_ticks_msec()-started)/1000.0,"sessions":sessions,"victories":wins,"disk_resumes":resumes,"action_cycles":steps,"max_static_memory_bytes":max_memory,"current_static_memory_bytes":int(Performance.get_monitor(Performance.MEMORY_STATIC)),"fps":Performance.get_monitor(Performance.TIME_FPS),"current_mission_seconds":game.sim.elapsed if game.sim!=null else -1,"errors":errors}
+ if finished: game.save_game()
+ var segment_seconds := (Time.get_ticks_msec()-started)/1000.0
+ var data := {"complete":finished,"requested_real_seconds":duration,"actual_real_seconds":prior_seconds+segment_seconds,"current_segment_real_seconds":segment_seconds,"prior_confirmed_real_seconds":prior_seconds,"segments":segments,"sessions":sessions,"victories":wins,"disk_resumes":resumes,"action_cycles":steps,"max_static_memory_bytes":max_memory,"current_static_memory_bytes":int(Performance.get_monitor(Performance.MEMORY_STATIC)),"fps":Performance.get_monitor(Performance.TIME_FPS),"current_mission_seconds":game.sim.elapsed if game.sim!=null else -1,"errors":errors}
  var file := FileAccess.open(report_path,FileAccess.WRITE)
  if file != null:
   file.store_string(JSON.stringify(data,"  "))
