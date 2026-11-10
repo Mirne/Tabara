@@ -1,30 +1,49 @@
-# Assets and credits
+# Art, audio and credits
 
-## Building atlas
+## Original raster art
 
-`assets/art/buildings.png` was generated specifically for Tabara using OpenAI
-image generation on 2026-11-09. It contains seven isometric buildings and a pine
-cluster, in a 4×2 transparent atlas. Rendering uses atlas regions directly;
-the original generated image is preserved in the working environment.
+The building atlas was generated specifically for Tabara with OpenAI image
+generation on **9 November 2026**. Its seven buildings remain part of the frontier
+revision. Eight additional images were generated for the new presentation on
+**10 November 2026**. Original generated files remain in the working environment;
+repository assets are copies of those outputs, sampled through atlas regions.
 
-Grid order: main hall, woodcutter, stonemason, arrow tower, wall, cannon tower,
-marketplace, pines. Terrain, enemies, worker animation, shadows, smoke,
-projectiles, gathering effects, icons, and interface panels are drawn by code.
+| File | Contents and use |
+| --- | --- |
+| `assets/art/buildings.png` | Main hall, woodcutter, stonemason, arrow tower, wall, cannon tower, marketplace, original pine cluster |
+| `assets/frontier/terrain.png` | Four raster ground materials: meadow, dirt, limestone, forest floor |
+| `assets/frontier/props.png` | Twelve transparent woodland, quarry, timber, ruin, cart and vegetation sprites |
+| `assets/frontier/units.png` | Four walking frames each for raider, runner, brute, siege cart and worker |
+| `assets/frontier/panel.png` | Blank textured iron, brass and leather nine-patch interface frame |
+| `assets/frontier/icons.png` | Timber, stone, coins, tools, shield, clock, torch and map icons |
+| `assets/frontier/menu.png` | Original illustrated frontier-valley menu landscape |
+| `assets/frontier/water.png` | Tileable lake material used by the terrain and animated surface |
+| `assets/frontier/earth.png` | Transparent irregular compacted-earth foundation decal |
 
-## Audio and icon
+The gameplay reference **They Are Billions** informed the settlement-defense
+structure, not the graphics. No art or screenshots from that game are included.
 
-All audio was synthesized for this project with the reproducible
-`tools/generate_audio.py` script. No sampled commercial audio or external music
-is included. `assets/icon.svg` is original vector artwork for this game.
+Animation, sprite transforms, terrain composition, soft shadows, smoke,
+projectiles, deaths and collapse are implemented in code using these raster
+assets. Interface text, health bars, selection/range guides and minimap markers
+remain functional drawing primitives; the world and command deck do not use
+geometric placeholder characters or flat vector terrain.
+
+## Audio and app icon
+
+Audio was synthesized for this project using the reproducible
+`tools/generate_audio.py` script. No commercial samples or external music are
+included. `assets/icon.svg` is the original Tabara app icon; it is distinct from
+the raster game interface.
 
 ## Fonts
 
-The body font is **Noto Sans Regular**. The display font is **Noto Serif Display
-Bold**. Both are distributed under the **SIL Open Font License 1.1**. See
-`assets/fonts/OFL.txt` for the supplied license and copyright information.
+The fonts are **Noto Sans** and **Noto Serif Display**, distributed under the
+**SIL Open Font License 1.1**. The supplied license and copyright information are
+in `assets/fonts/OFL.txt` and the in-app credits.
 
 ## Engine
 
-Godot is distributed under the MIT license. Exported binaries include Godot and
-its third-party dependencies. Godot's license and third-party notices are
-available at https://godotengine.org/license/ .
+Godot is distributed under the MIT license. Exported binaries contain Godot and
+its third-party dependencies. Engine and third-party notices are accessible in
+the in-app credits and at <https://godotengine.org/license/>.

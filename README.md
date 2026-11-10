@@ -1,138 +1,155 @@
-# Tabara: Last Hearth
+# Tabara: Last Hearth — The Pinewatch Frontier
 
-An offline, landscape Android settlement-defense game built with **Godot 4.6.3**.
-Build Pinewatch, gather supplies, and defend its single road. Survive **15 in-game
-minutes** to win the first mission, then continue against endless escalating waves.
+An offline Android settlement-defense game built in **Godot 4.6.3**. Establish a
+foothold in a large wooded valley, gather supplies, place your own defenses, and
+hold the main hall for **15 in-game minutes**. Victory unlocks endless survival.
 
-![Pinewatch gameplay](docs/screenshots/gameplay.png)
+![The Pinewatch Frontier](docs/screenshots/gameplay.png)
+
+## The frontier revision
+
+Version **0.2.0** replaces the original fixed plots with an **8,192 × 5,120** world,
+about **54 times the original map area**. Buildings use free placement on clear
+land. Pan and zoom around forests, quarries, rocky ridges, a lake, and the single
+western approach. A minimap provides fast travel across the valley.
+
+The interface uses illustrated resource icons and a textured brass-and-leather
+command deck. Terrain, woodland props, four-frame enemy sprites, workers, and
+water use original raster art. Buildings collapse into rubble, enemies fall
+when killed, and construction clears vegetation around the foundations.
 
 ## Play
 
-Open `project.godot` in Godot 4.6.3 and press **F6/F5**, or install the test APK
-from the build output. Android 7.0/API 24 or later with OpenGL ES 3.0 is required.
-The build has no advertising, analytics, accounts, purchases, or runtime network
-requirement. The game is in English.
+Download the APK from [GitHub Releases](https://github.com/Mirne/Tabara/releases),
+or install the local `builds/tabara-frontier.apk`. You can also open `project.godot` in Godot 4.6.3 and
+press **F5**. Android 7.0/API 24 or later with OpenGL ES 3.0 is required.
+This is a **development-signed test build**. The game is in English and has no
+advertising, analytics, accounts, purchases, or runtime network requirement.
 
-1. Start the mission from the main menu. Enemies enter the western road immediately.
-2. Tap the round resource caches to gather **wood, stone, and gold**. Caches refill
-   every 12 seconds. The main hall supplies a modest passive income.
-3. Select a building in the bottom bar, then tap an empty plot. You can also
-   select a plot first. Walls can only occupy the two road checkpoints.
-4. Select a building to **upgrade** or **repair** it. Every building supports
-   levels **1–100**, with scaled health, attacks, or production and rising costs.
-5. Keep the main hall standing until **15:00**. Choose **Continue in endless
-   survival** after victory. Losing the hall ends the run.
+[Watch the 40-second gameplay preview](builds/tabara-frontier-preview.mp4).
+It shows an established settlement, paid construction and demolition, and a
+camera tour of the wider valley. The recording is from the desktop renderer;
+the Android build is verified separately.
 
-The game saves every 10 seconds, when paused, and when you return to the menu.
-Switching apps pauses gameplay. **Continue settlement** restores the current run.
-Starting over requires confirmation while a live save exists. Best survival time
-and settings persist across runs.
+1. Start **The Pinewatch Frontier** from the menu. A vanguard is already near
+   the settlement; the main hall attacks automatically.
+2. Tap the wood, stone, and gold deposits to gather supplies. They refill every
+   12 seconds. Build producers for steady income.
+3. Choose a construction card, then tap clear ground. Buildings are not limited
+   to plots. Drag to pan, pinch or use **+ / −** to zoom, and tap the minimap to
+   travel. **Hall** returns to your headquarters.
+4. Place walls across the approach and cover them with arrow and cannon towers.
+   Enemies form a physical crowd rather than occupying identical positions.
+   Every fifth wave brings a larger horde.
+5. Select a structure to upgrade or repair it. Every structure reaches **level
+   100**, with increasing health, output or damage and construction costs.
+6. Hold the hall until **15:00**, then choose endless survival. Losing the hall
+   ends the settlement.
+
+Water, rocky ridges, resource cores, and existing foundations cannot be built
+on. New construction takes 2.5 seconds. The world supports 512 structures.
 
 ### Buildings
 
 | Building | Role |
 | --- | --- |
-| Main hall | Starts built; automatically attacks enemies and anchors the settlement |
-| Woodcutter | Produces wood; +25% production on the pine-grove plot |
-| Stonemason | Produces stone; +25% production on the quarry plot |
-| Arrow tower | Fast single-target arrows |
-| Wall | Stops enemies at a road checkpoint until ruined |
-| Cannon tower | Slow shells that damage all enemies in the blast area |
-| Marketplace | Produces gold; buy supplies or sell surplus wood and stone |
+| Main hall | Prebuilt headquarters; attacks from the beginning and supplies passive income |
+| Woodcutter | Produces timber; +25% beside a forest resource grove |
+| Stonemason | Produces stone; +25% beside a quarry |
+| Arrow tower | Fast attacks against individual raiders |
+| Wall | Freely placed barrier that attackers must break through |
+| Cannon tower | Slow shells with wide area damage |
+| Marketplace | Produces gold and permits buying or selling supplies |
 
-Ruined buildings retain their plot and upgrade level. They stop operating until
-repaired. Repairs restore full health and cost wood and stone; you can repair
-during combat. A ruined main hall ends the mission rather than disappearing.
+Destroyed structures lose their building sprite and leave rubble. They retain
+levels and can be repaired. **Dismantle / Clear ruins** completely removes the
+foundation after confirmation, allowing a different building on the same ground.
+Dismantling a standing structure returns 25% of its original construction price;
+upgrade costs are not refunded. Trees cleared by construction remain cleared.
 
-New waves begin every 30 seconds. Raiders are followed by fast runners, armored
-brutes, and occasional siege engines. Siege engines can bombard buildings from
-farther along the same road. Enemy health, damage, and numbers increase over time.
+### Controls and saves
 
-### Controls
+Android: tap to interact, one-finger drag to pan, two-finger pinch to zoom. Back
+cancels construction or toggles pause. Desktop: mouse drag or **WASD / arrows**
+pans; the wheel zooms; **1–6** select construction, **U** upgrades, **R** repairs,
+**F** finds the hall, **Space** pauses, and **Esc** goes back.
 
-Android: tap to interact; system Back cancels construction or opens/closes pause.
-Desktop: mouse; **1–6** choose buildings, **U** upgrades, **R** repairs,
-**Space** pauses/resumes, and **Esc** goes back. The **1×/2×** button changes game
-speed. Victory uses in-game time. Music, effects, and reduced motion are configurable.
+The game saves every 10 real seconds, on pause, when backgrounded, and on return
+to the menu. Continue restores buildings, ruins, enemies, economy, cleared
+vegetation, camera, and zoom. Returning from another app requires explicit
+resume. Settings include sound, music, and reduced motion.
 
-## Build Android
+The expanded map uses a **new frontier save format**. The earlier fixed-plot
+settlement is not migrated or loaded; its original save file is left intact.
+Starting a new frontier requires confirmation when a live frontier save exists.
 
-Install Godot **4.6.3** and its matching export templates. Install an Android SDK
-with platform-tools and **build-tools 36.0.0**; use OpenJDK 17 or 21. Configure
-the SDK and Java directories in Godot's **Editor Settings → Export → Android**.
-Enable ETC2/ASTC texture imports (already set in `project.godot`).
+## Build
+
+Install Godot **4.6.3** and matching export templates, an Android SDK with
+**build-tools 36.0.0**, and OpenJDK 17 or 21. Set SDK and Java paths in Godot's
+**Editor Settings → Export → Android**. ETC2/ASTC imports are already enabled.
 
 ```sh
 godot --headless --editor --path . --import --quit
 mkdir -p builds
-godot --headless --path . --export-debug Android builds/tabara-last-hearth.apk
+godot --headless --path . --export-debug Android builds/tabara-frontier.apk
 ```
 
-The Android preset includes ARMv7, ARM64, and x86-64. Debug exports use a local
-development signing key, which is intentionally excluded from source control.
-For a Play Store release, configure your own release keystore and a Gradle AAB
-export. No production signing key is included in this repository.
-
-A Linux preset is also included for local testing:
+The preset includes ARMv7, ARM64, and x86-64. A local development signing key is
+excluded from source control. A Play Store release needs the owner's release
+keystore and a Gradle AAB export. No production key is included.
 
 ```sh
-godot --headless --path . --export-release Linux builds/tabara-last-hearth.x86_64
+godot --headless --path . --export-release Linux builds/tabara-frontier.x86_64
 ```
 
 ## Verify
 
+Use a separate `XDG_DATA_HOME` for automated tests: they save test settlements.
+
 ```sh
-# Economy, construction, combat, level 100, repair, saves, victory, and campaign.
-godot --headless --path . --script res://tests/test_simulation.gd
+# Syntax, free placement, economy, combat, level 100, ruins, saves and campaign.
+python3 tools/verify.py
 
-# Actual rendered menus and pointer interactions; needs a graphical display.
-mkdir -p test-results
-godot --path . --script res://tests/test_ui.gd
+# Real rendered menu, mouse/touch, gestures, camera and lifecycle interactions.
+python3 tools/verify.py --ui
 
-# Six actual hours of rendered gameplay, normal-cost bot actions, autosaves,
-# repeated cold restores, pause/settings cycles, and bounded-state checks.
-godot --path . --max-fps 30 --script res://tests/soak.gd -- --seconds=21600
+# Normal-cost player bot, rendered world tours, saves and cold restoration.
+godot --path . --max-fps 30 --script res://tests/soak.gd -- --seconds=14400
+
+# Explicit extreme-load fixture: 512 structures and 1,000 high-health enemies.
+# This fixture grants resources; it is not a campaign balance test.
+godot --path . --max-fps 30 --script res://tests/stress.gd
 ```
 
-Use a separate Godot user-data directory for automated UI/soak tests: they start
-and save test settlements. On Linux, set `XDG_DATA_HOME` to a temporary directory.
-The soak report is written to `test-results/soak.json`, which is excluded from
-exports and Git. A short smoke run can use `--seconds=65`.
-
-After an infrastructure interruption, pass `--resume` with the same report name
-and user-data directory. The harness restores the saved settlement and counts
-only previously confirmed running time plus the new segment. Its report records
-the segment count and excludes downtime.
-
-`python3 tools/verify.py --ui` runs syntax, simulation, and rendered checks and
-fails on engine script errors even if the engine returns a zero exit code.
-The GitHub verification workflow runs this suite and retains screenshots.
+The soak report records confirmed running time, excludes frame gaps over two
+seconds, and records excluded stalls separately. `--resume` restores the last
+saved settlement and adds only previously confirmed time; `--report-name=name`
+selects another report. A short check can use `--seconds=65`.
 
 `tests/android_smoke.py` installs the APK on a disposable emulator and checks
-native launcher startup, real touch construction, pause, app switching, and
-cold save restoration. Set `ANDROID_ADB`, `ANDROID_SERIAL`, and
-`ANDROID_ADB_PORT` if needed. It clears the game's data on that test device.
-On slow emulators, `ANDROID_REUSE_INSTALLED=1` reuses the existing package only
-after confirming its APK SHA-256 matches the local build. `ANDROID_REPORT_NAME`
-selects a separate report directory for each test device.
-`ANDROID_COMMAND_TIMEOUT` can increase the default 60-second ADB command limit
-for software-only emulation; it does not change gameplay timing or assertions.
-`tests/android_back.py` isolates hardware Back handling in a freshly opened
-activity with an existing saved mission. This is useful when diagnosing an
-emulator graphics-surface issue after backgrounding.
-The manually triggered **Verify native Android** workflow builds and exercises
-the APK on a hardware-accelerated Android 15 emulator and prints the check report.
+actual touch construction, save coordinates, pause, Back, cold restart, camera
+dragging, and background/foreground behavior. Set `ANDROID_ADB`, `ANDROID_SERIAL`,
+`ANDROID_ADB_PORT`, `ANDROID_APK`, and `ANDROID_REPORT_NAME` as needed. It clears
+only this game's data on that test emulator. `tests/android_back.py` provides a
+fresh-activity Back check using an existing saved frontier.
+
+The manually triggered native Android GitHub workflow uses an accelerated
+emulator. Local results and device limitations are in the [QA record](docs/QA.md).
 
 ## Project structure
 
-- `scripts/simulation.gd`: deterministic settlement model, waves, combat, economy,
-  progression, validation, and versioned snapshots.
-- `scripts/game.gd`: animated 2.5D canvas, touch/mouse controls, all screens, audio,
-  atomic local saves, lifecycle handling, and settings.
-- `assets/art/buildings.png`: original image-generated isometric sprite atlas.
-- `assets/audio/`: original synthesized sound effects and a looping ambient track.
-- `tests/`: simulation, rendered UI, fair-cost player bot, and stability harness.
-- `tools/generate_audio.py`: reproducible audio synthesis; uses Python and FFmpeg.
+- `scripts/simulation.gd`: deterministic fixed-step economy, combat, crowd
+  spacing, free placement, progression, spatial indexes, and save validation.
+- `scripts/world_data.gd`: shared geography, deposits, scenery, and terrain rules.
+- `scripts/frontier_game.gd`: screens, illustrated HUD, input, camera, saves,
+  audio, and Android lifecycle handling.
+- `scripts/frontier_view.gd`: culled, depth-sorted raster world and combat effects.
+- `scripts/frontier_art.gd`: sprite regions and native nine-patch interface skins.
+- `scripts/frontier_ground.gdshader`: cached terrain material composition.
+- `scripts/frontier_water.gdshader`: animated lake surface.
+- `assets/frontier/`: original raster materials, props, units, icons and menu art.
+- `tests/`: model, rendered UI, native Android, normal-cost bot, soak and stress.
 
-See [asset credits](docs/ASSETS.md), [design/balance notes](docs/DESIGN.md), and
-the [verification record and device limitations](docs/QA.md).
+See [art credits](docs/ASSETS.md), [rules and architecture](docs/DESIGN.md), and
+[verification evidence and limitations](docs/QA.md).

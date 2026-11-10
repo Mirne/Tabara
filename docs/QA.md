@@ -1,106 +1,140 @@
-# Verification record
+# Frontier revision verification
 
-This record applies to the development-signed Android build of **Tabara: Last
-Hearth 0.1.0**. The game is playable offline; a store release still needs the
-owner's release signing key and an Android App Bundle export.
+This record covers **Tabara: Last Hearth 0.2.0**, the large-world frontier revision.
+The previous prototype's results are kept separately in [QA-v0.1.md](QA-v0.1.md)
+and do not certify this revision.
 
 ## Build identity
 
+- Runtime commit: `b97ef79028553b5a02ebc5a419ac48f0510f9ad9`.
 - Godot: **4.6.3 stable**, Compatibility renderer.
-- Package: `com.tabara.lasthearth`.
-- Android: minimum API 24, target API 36; ARMv7, ARM64, and x86-64.
-- APK SHA-256: `bd9d6f1f84f6a44530c9e62ced604ba0f1318cd26b5f714a26ad366a982728b6`.
-- Runtime source commit: `7a400293e65cba2051ce6c634273d04644e2b298`.
+- Package: `com.tabara.lasthearth`, version code **2**, version **0.2.0**.
+- Android: minimum API **24**, target API **36**; ARMv7, ARM64 and x86-64.
+- APK SHA-256: `fe0b8a6fe5540247735c6be329b57c78412b1c705991e02c215f02b2a3d5fd14`.
+- APK signatures: **v2 and v3 verified**; the manifest requests no permissions.
 
-Later source commits improve the test harness and documentation; the delivered
-APK's runtime scripts, assets, scene, and project configuration are unchanged.
-The APK's signatures were verified, and its manifest requests no permissions.
+The APK is signed with a local development key. The owner must configure a
+release key and AAB export before a store submission. Private signing keys are
+not included in the source archive.
 
-## Model, interface, and balance
+The exported standalone Linux executable also completed a headless startup and
+clean shutdown. Native Android verification passed as recorded below.
 
-The final `python3 tools/verify.py --ui` run passed **1,464 simulation checks**
-and **33 rendered interface checks**, with no engine script errors. Coverage
-includes construction, production, combat, level-100 upgrades, repairable ruins,
-save validation, the 15-minute victory, endless continuation, menus, and pointer
-interactions. The verifier treats engine script errors as failures even when
-Godot exits with status zero.
+## Functional checks
 
-The normal-cost player bot completed the first mission in **12 of 12 seeded
-campaigns**. Each campaign then continued until defeat, between **17.7 and 22.9
-in-game minutes** (median **19.95 minutes**). These are automated balance samples,
-not a guarantee that every player strategy will win.
+The final `python3 tools/verify.py --ui` run passed **2,860 model checks** and
+**77 rendered interface checks**, with no script/shader errors or shutdown
+resource errors. Model coverage includes free placement, collisions, terrain
+restrictions, all level-100 upgrades, injury-preserving upgrades, destroyed and
+repaired buildings, clearing/reusing ground, persistent vegetation clearings,
+market prices, save validation, crowd headway, invalidated cached targets,
+15-minute victory, endless continuation and hall defeat.
 
-## Six-hour gameplay test
+Rendered checks use actual pointer and native-style touch events. They exercise
+construction, camera transforms, drag suppression of placement, two-finger
+pinch, minimap navigation, repair, confirmed demolition, replacing a foundation,
+trading, resource gathering, settings, camera/model disk restoration, Android
+Back notification handling, victory and defeat. Captures are inspected as part
+of visual review; the verifier also rejects engine errors when exit status is 0.
 
-Completed on **10 November 2026**: **21,600.018 confirmed real seconds**,
-**21,322 bot action cycles**, **18 observed victory events**, and **347 disk
-save/restorations**, with **zero invariant failures**. The final report records
-`complete: true` and an empty `errors` array.
+## Campaign balance
 
-Maximum engine-reported static allocation was **41,445,714 bytes (39.53 MiB)**.
-This is Godot's static allocation metric, not total process resident memory.
+All **12 of 12 seeded campaigns** reached the 15-minute victory and remained
+alive at the **25-minute test cutoff** on the corrected runtime. This cutoff
+is not a measured defeat time. The model suite also ran a normal-cost campaign
+through 18.3 in-game minutes, with 17 structures and 2,420 defeated raiders.
 
-This test uses the Linux game runtime on a virtual display, the Compatibility
-renderer, and a 30 FPS cap. Native Android checks are recorded separately below.
+The player bot gathers only nearby deposits, pays the public construction,
+upgrade and repair prices, and performs at most one paid action per second.
+It does not receive the stress fixture's resource grants.
 
-The harness buys buildings and upgrades at normal prices, gathers resources,
-repairs damage, accepts victory and continues into endless survival. It checks
-resources, buildings, enemies, and bounded transient state; it also exercises
-settings, pause, autosaves, and repeated disk save/restoration.
+## Extreme-load measurement
 
-An infrastructure reconnect interrupted the first test segment. The resumed
-test counts only **3,451.302 confirmed seconds** from that segment plus actual
-running time in the second segment. Reconnect downtime is excluded. This is a
-test across **two segments**, not an uninterrupted six-hour process. The raw
-session counter can undercount one mission attempt at the interruption, so it
-is not used as a campaign-count result.
+The final 90-second fixture simulated **512 structures and 1,000 enemies** at
+1280 × 720 with a 30 FPS cap on a Linux virtual display using Mesa llvmpipe
+software rendering. It grants resources and gives enemies very high health and
+low damage; it is deliberately separate from campaign balance.
 
-Evidence: [final report](verification/soak-final.json),
-[first-segment checkpoint](verification/soak-first-segment.json),
-[first-segment log](verification/soak-first-segment.log), and
-[resumed-segment log](verification/soak-resumed-segment.log).
+After the ten-second warmup, sampled FPS averaged **21.08**, with a minimum of
+**11**. The final view drew **763 entities**; all 1,000 enemies remained in the
+simulation. Mean measured simulation CPU time was **10.33 ms per rendered
+frame**, and world draw-command generation averaged **8.23 ms**. These are host
+measurements, not physical Android performance figures.
 
-## Native Android evidence
+Earlier runs of the same extreme counts averaged 7.07 FPS, then 17.61 FPS after
+spatial-target caching, batched ground shadows and native nine-patch UI drawing.
+Physical crowd spacing then removed coincident piles of bodies. The earlier
+reports are retained rather than claiming all runs rendered identical scenes.
+Normal gameplay reached the 30 FPS cap in the initial 65-second soak, which also
+performed one actual disk restoration. The long soak shares the host with build
+and software-emulator work, so its timing counters include that contention.
 
-The Android 15/API 35 emulator in [this GitHub verification run](https://github.com/Mirne/Tabara/actions/runs/42730688110)
-passed **22 core checks**: installation, launcher and menu rendering, real touch
-construction, advancing and paused mission time, cold restart with retained
-buildings and elapsed time, background save, and captured crash/script-error
-diagnostics. A later dedicated Back-navigation check prompted the current
-explicit Android Back handling; the core run predates that final change.
+## Extended stability run
 
-The exact delivered APK was also installed on a software-only Android 7/API 24
-emulator using ANGLE. All **28 recorded functional steps** completed in one run,
-including construction, save restoration, pause, and hardware Back. That full
-harness run did **not** report an overall pass: its final unbounded log dump
-timed out. A separate bounded diagnostic capture contained no script error or
-fatal exception. The helper now bounds that capture.
+The four-hour rendered run is **in progress** on the committed runtime. An
+earlier 18-minute run is archived separately and is not added to this duration.
+A wave-dispatch audit found that doubled hordes could leave attackers
+undispatched at the next boundary; the corrected regression now dispatches all
+42 attackers in wave 5 within 23 seconds, and the long test restarted on that
+correction. The current test is pinned to the runtime commit above.
 
-A separate fresh-activity Back test passed **all five checks** on the delivered
-APK. It confirmed visible menu/pause screens, a game-clock advance from **9.70
-to 10.75 seconds** after hardware Back, a frozen clock after the next Back,
-and clean captured native diagnostics.
+The harness plays normal-cost campaigns, accepts victory and continues endlessly,
+restarts after defeat, tours the large map at different zoom levels, exercises
+settings/pause, and restores the actual disk save every minute. Invariants cover
+resources, health, levels, world positions, enemy progress, entity bounds,
+clearing-grid size, effects, zoom and the interface-style cache.
 
-Repeated unified runs on the software-only API 24 emulator sometimes stalled
-the graphics surface after the app was backgrounded. Cold restart, persistence,
-touch construction, and foreground Back were verified separately. The
-background graphics-resume issue remains a compatibility limitation observed
-in that emulator; it has not been certified or resolved on a physical device.
-No claim is made that one unified API 24 smoke run passed end to end.
+Confirmed time adds observed frame gaps capped at two seconds. Longer stalls
+are excluded and recorded separately; process restarts can resume only from the
+last confirmed report. This avoids counting infrastructure downtime as testing.
+Final duration, segment count, victory events, disk restores and raw evidence
+will be attached after completion. Engine static allocations are not total
+process resident memory; final host RSS evidence is recorded separately.
 
-See the [native evidence summary](verification/native-summary.json),
-[API 35 core report](verification/android-api35-core.json),
-[API 24 functional report](verification/android-api24-functional.json),
-[API 24 background-limit report](verification/android-api24-background-limitation.json),
-[isolated Back report](verification/android-api24-back.json), and
-[balance samples](verification/balance.json). The source includes reproducible
-simulation, UI, soak, and native Android test scripts. Raw temporary test outputs
-remain in the workspace's ignored `test-results/` directory.
+## Native Android
 
-## Delivery checks
+The **exact delivered APK hash above** passed **all 28 checks** in one unified
+run on a disposable **Android 7/API 24 x86-64** emulator using software ANGLE
+(`swangle`), without KVM acceleration. The run took **996.15 real seconds**.
+It verified the illustrated menu, real touch placement, stored world coordinates,
+advancing and paused clocks, hardware Back, cold restart, camera dragging without
+construction, background persistence and successful foreground resumption.
+Captured diagnostics contained no script error, shader error or fatal exception.
 
-The full source archive is generated from the final local Git commit, includes
-the image-generated art and source tests, and excludes private signing keys and
-generated build directories. Its ZIP CRC and required project entries are
-checked. `builds/SHA256SUMS.txt` identifies the delivered APK, Linux executable,
-and source ZIP; `builds/BUILD_INFO.json` connects them to source and test evidence.
+The second Back/foreground sequence advanced the saved clock from **47.15 to
+52.10 seconds** and then held it fixed. This revision's observed native result
+is a complete pass, rather than a combination of partial runs. A preliminary
+pre-wave-correction APK also passed 28 checks, but that separate hash is not used
+to certify the delivered file. See [native report](verification/frontier/native-android.json)
+and [actual Android capture](screenshots/android.png).
+
+This emulator is intentionally slow; its virtual-device timing is not a
+physical-phone performance benchmark. Only the x86-64 runtime was executed here;
+ARMv7 and ARM64 were packaged and signing/manifest-checked.
+
+There is no physical handset certification at this stage.
+
+## Gameplay recording
+
+`builds/tabara-frontier-preview.mp4` is a silent 40-second, 1280 × 720 H.264
+desktop recording. It was visually reviewed at construction, demolition and
+battle stages. It uses a saved normal-cost campaign at 24:12.95, followed by a
+30-second normal-cost warmup and ordinary paid construction, upgrade and
+demolition. No stress-fixture supplies or enemy statistics are used. The fixture
+and reproducible tour helper are in `tests/fixtures/` and
+`tests/record_preview.gd`; neither is included in the installed game.
+
+The video's 30 FPS capture rate is a recording setting, not a physical Android
+performance measurement.
+
+## Reproduction and packaging
+
+See the README for the model, rendered, soak, stress and native commands.
+`tools/verify.py` fails on engine errors even if Godot returns exit code 0.
+Raw temporary outputs live in the ignored `test-results/` directory; compact
+final reports are copied into `docs/verification/frontier/` for the source ZIP.
+
+The final source ZIP is generated from the final local Git commit, validated for
+CRC and required project/art/evidence entries, and checked for excluded private
+keys. `builds/FRONTIER_SHA256SUMS.txt` and `builds/FRONTIER_BUILD_INFO.json` identify
+all delivered artifacts and their source.
