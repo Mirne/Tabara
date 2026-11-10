@@ -17,7 +17,7 @@ from PIL import Image, ImageChops, ImageStat
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "com.tabara.lasthearth"
-APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier.apk"))
+APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.3.apk"))
 OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android-frontier")).name
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
@@ -149,16 +149,24 @@ def native_checks(back_only=False):
             tap(805, 650)
             time.sleep(5)
             screen("03-initial-mission")
-            # Initial camera is (4680,2800), zoom .85; chosen sites are all free ground.
-            tap(446, 705)
-            tap(496, 398)  # Timber producer at (4416,2848).
-            tap(574, 705)
-            tap(1230, 425)  # Stone producer at (5280,2880).
-            tap(702, 705)
-            tap(577, 167)  # Arrow tower at (4512,2576).
-            adb("shell", "input", "keyevent", "4")  # Cancel construction tool.
-            time.sleep(3)
-            tap(465, 553)  # Gather from the timber grove.
+            # Right construction rail; map taps preview, confirmation is separate.
+            tap(1226, 183)
+            tap(321, 643)  # Forest at (4380,3030), snapped to (4400,3040).
+            screen("03a-grid-preview")
+            tap(1338, 43)  # Pause forces a save, cancelling the unconfirmed preview.
+            preview_save = save()
+            check(len(preview_save["buildings"]) == 1, "Native preview never constructs before confirmation")
+            adb("shell", "input", "keyevent", "4")
+            time.sleep(4)
+            tap(1226, 183)
+            tap(321, 643)
+            tap(1294, 704)  # Confirm Build.
+            tap(1359, 183)
+            tap(976, 711)  # Quarry at (5150,3110), snapped to (5160,3120).
+            tap(1294, 704)
+            tap(1226, 311)
+            tap(433, 257)  # Tower on free grid ground, snapped to (4520,2560).
+            tap(1294, 704)
         tap(1338, 43)  # Explicit known pause.
         screen("04-built-and-paused")
         data = wait_saved_structure(3, "arrow")
@@ -166,6 +174,9 @@ def native_checks(back_only=False):
         for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow")]:
             check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
             check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")
+        expected = [(4400,3040),(5160,3120),(4520,2560)]
+        for index, position in enumerate(expected, 1):
+            check(tuple(data["buildings"][index]["pos"]) == position, "Native confirmed building follows the grid at " + str(position))
         check(data["elapsed"] > 0 and data["wave"] >= 1, "Native mission advances")
         before = data["elapsed"]
         time.sleep(12)

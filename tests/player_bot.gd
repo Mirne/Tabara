@@ -2,10 +2,10 @@ extends RefCounted
 ## Normal costs, nearby gathering, and at most one paid action per second.
 const Sim=preload("res://scripts/simulation.gd")
 const PLAN=[
- [Vector2(4544,3264),"wood"],[Vector2(5280,2880),"stone"],[Vector2(4512,2576),"arrow"],
+ [Vector2(4380,3030),"wood"],[Vector2(5150,3110),"stone"],[Vector2(4512,2576),"arrow"],
  [Vector2(4976,2992),"market"],[Vector2(4384,2640),"wall"],[Vector2(4400,2720),"wall"],[Vector2(4368,2560),"wall"],
  [Vector2(4720,3056),"cannon"],[Vector2(4656,2528),"arrow"],[Vector2(4464,2864),"cannon"],
- [Vector2(4240,3232),"wood"],[Vector2(5296,3296),"stone"],[Vector2(4912,2528),"arrow"],
+ [Vector2(5110,2420),"wood"],[Vector2(3760,2080),"stone"],[Vector2(4912,2528),"arrow"],
  [Vector2(5010,3200),"market"],[Vector2(4736,2400),"cannon"],[Vector2(4160,2784),"arrow"]
 ]
 var sim
@@ -15,13 +15,28 @@ func _init(settlement)->void:
  sim=settlement
  for i in sim.resource_nodes.size():
   if sim.resource_nodes[i].pos.distance_to(sim.World.HALL)<650: nearby_nodes.append(i)
- # Resume the plan from existing, paid-for structures rather than duplicating them.
+ # Recover a plan prefix by paid building counts, including adjusted grid sites.
+ var present:Dictionary={}
+ for b in sim.buildings:
+  if b!=null: present[b.kind]=present.get(b.kind,0)+1
+ var needed:Dictionary={}
  while next<PLAN.size():
-  var present:=false
-  for b in sim.buildings:
-   if b!=null and b.pos==sim.snap_position(PLAN[next][0]) and b.kind==PLAN[next][1]: present=true
-  if not present: break
+  var kind:String=PLAN[next][1]
+  needed[kind]=needed.get(kind,0)+1
+  if present.get(kind,0)<needed[kind]: break
   next+=1
+
+func planned_site(position:Vector2,kind:String)->Vector2:
+ var center:Vector2=sim.snap_position(position,kind)
+ if sim.placement_error(center,kind)=="" or kind in ["wood","stone"]: return center
+ for ring in range(1,11):
+  for y in range(-ring,ring+1):
+   for x in range(-ring,ring+1):
+    if absi(x)!=ring and absi(y)!=ring: continue
+    var site:Vector2=center+Vector2(x,y)*sim.GRID_SIZE
+    if sim.placement_error(site,kind)=="": return site
+ return center
+
 func act()->void:
  for i in nearby_nodes:
   if sim.collect(i): break
@@ -40,7 +55,7 @@ func act()->void:
  if sim.resources.stone<100 and sim.resources.gold>260:
   if sim.buy("stone"): return
  if next<PLAN.size() and sim.can_afford(Sim.DEFINITIONS[PLAN[next][1]].cost):
-  if sim.build_at(PLAN[next][0],PLAN[next][1])=="":
+  if sim.build_at(planned_site(PLAN[next][0],PLAN[next][1]),PLAN[next][1])=="":
    next+=1
    return
  var choices:Array=[]

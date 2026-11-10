@@ -8,7 +8,7 @@ var started:=0
 var stage:=-1
 var paid_at:=0
 var finished:=false
-const SITE=Vector2(4624,2896)
+const SITE=Vector2(4720,3440)
 func _init()->void:
  call_deferred("run")
 func run()->void:
@@ -30,7 +30,7 @@ func run()->void:
  game.selected=-1
  game.toast_left=0
  game.zoom=0.48
- game.camera_center=Vector2(4750,2850)
+ game.camera_center=Vector2(4750,3100)
  game.apply_camera()
  bot=Bot.new(game.sim)
  # Warm up through ordinary paid actions so the next horde is in view.
@@ -54,17 +54,17 @@ func tick()->void:
  var t:float=(now-started)/1000.0
  if t<5:
   game.zoom=0.48
-  game.camera_center=Vector2(4750,2850)
+  game.camera_center=Vector2(4750,3100)
  elif t<10:
   game.zoom=lerpf(0.48,0.72,clampf((t-5)/2,0,1))
-  game.camera_center=Vector2(4750,2850)
+  game.camera_center=Vector2(4750,3100)
  elif t<17:
   game.zoom=0.72
-  game.camera_center=Vector2(4750,2850)
+  game.camera_center=Vector2(4750,3100)
  elif t<25:
   var p:float=clampf((t-17)/4,0,1)
   game.zoom=lerpf(0.72,0.28,p)
-  game.camera_center=Vector2(4750,2850).lerp(Vector2(2700,2400),p)
+  game.camera_center=Vector2(4750,3100).lerp(Vector2(2700,2400),p)
  elif t<31:
   var p:float=clampf((t-25)/3,0,1)
   game.zoom=lerpf(0.28,0.55,p)
@@ -80,7 +80,7 @@ func tick()->void:
   stage=0
  if stage==0 and t>=7:
   game.click_world(game.world_to_screen(SITE))
-  game.act("cancel")
+  game.act("confirm_build")
   stage=1
  if stage==1 and t>=10:
   game.act("upgrade")

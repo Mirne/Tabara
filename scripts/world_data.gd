@@ -19,16 +19,20 @@ static func rock_at(p: Vector2) -> bool:
   if ((p-c)/Vector2(370,210)).length_squared()<1.0: return true
  return false
 
-static func terrain_error(p: Vector2, radius: float) -> String:
+static func terrain_error(p: Vector2, radius: float, own_deposit: int = -1) -> String:
  if not Rect2(Vector2(100,100),SIZE-Vector2(200,200)).encloses(Rect2(p-Vector2.ONE*radius,Vector2.ONE*radius*2)):
   return "Stay inside the frontier boundary."
- for offset in [Vector2.ZERO,Vector2(radius,0),Vector2(-radius,0),Vector2(0,radius),Vector2(0,-radius)]:
+ for offset in [Vector2.ZERO,Vector2(radius,0),Vector2(-radius,0),Vector2(0,radius),Vector2(0,-radius),Vector2(radius,radius),Vector2(radius,-radius),Vector2(-radius,radius),Vector2(-radius,-radius)]:
   if water_at(p+offset): return "Build on dry ground."
   if rock_at(p+offset): return "This rocky ridge cannot support foundations."
- for c in GROVES:
-  if p.distance_to(c)<105+radius: return "Choose a clearing beside the trees."
- for c in QUARRIES+ORES:
-  if p.distance_to(c)<65+radius: return "Leave room around the resource deposit."
+ var foundation:=Rect2(p-Vector2.ONE*radius,Vector2.ONE*radius*2)
+ var nodes:=resource_nodes()
+ for i in nodes.size():
+  if i==own_deposit: continue
+  var c:Vector2=nodes[i].pos
+  var closest:=c.clamp(foundation.position,foundation.end)
+  var reserved:float=150.0 if nodes[i].kind=="wood" else 110.0
+  if c.distance_to(closest)<reserved: return "Leave this resource deposit clear, or build its matching producer on it."
  return ""
 
 static func road_distance(p: Vector2) -> float:
@@ -42,6 +46,11 @@ static func resource_nodes() -> Array:
  for group in [[GROVES,"wood",36.0],[QUARRIES,"stone",30.0],[ORES,"gold",24.0]]:
   for p in group[0]: out.append({"pos":p,"kind":group[1],"amount":group[2]})
  return out
+
+static func protected_resource_scenery(p: Vector2) -> bool:
+ for center in GROVES:
+  if center.distance_to(p)<180: return true
+ return false
 
 static func scenery() -> Array:
  var out: Array=[]

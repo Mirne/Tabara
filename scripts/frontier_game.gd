@@ -11,8 +11,8 @@ const GOLD=Color("d5b775")
 const MUTED=Color("b2af9a")
 const GREEN=Color("aabd7c")
 const RED=Color("df9573")
-const VIEW=Rect2(0,84,1440,546)
-const MINIMAP=Rect2(1183,642,226,140)
+const VIEW=Rect2(0,84,1152,726)
+const MINIMAP=Rect2(22,648,226,140)
 const ORDER=["wood","stone","arrow","wall","cannon","market"]
 const SAVE_PATH="user://frontier-settlement.json"
 const SETTINGS_PATH="user://settings.json"
@@ -21,6 +21,7 @@ var screen:="menu"
 var return_screen:="menu"
 var selected:=0
 var build_kind:=""
+var placement_ready:=false
 var ghost:=Map.HALL-Vector2(220,0)
 var camera_center:=Map.HALL-Vector2(110,0)
 var zoom:=0.85
@@ -172,7 +173,7 @@ func _input(event:InputEvent)->void:
    if dragged:
     camera_center-=event.relative/zoom
     apply_camera()
-  elif screen=="mission" and VIEW.has_point(mouse): ghost=sim.snap_position(screen_to_world(mouse))
+  elif screen=="mission" and VIEW.has_point(mouse): ghost=sim.snap_position(screen_to_world(mouse),build_kind) if not placement_ready else ghost
  if event is InputEventMouseButton:
   mouse=event.position
   if event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN] and screen=="mission" and VIEW.has_point(mouse):
@@ -269,15 +270,14 @@ func click_world(point:Vector2)->void:
  if screen!="mission" or sim==null: return
  var at:=screen_to_world(point)
  if build_kind!="":
-  ghost=sim.snap_position(at)
-  var error:String=sim.build_at(ghost,build_kind)
-  if error!="": notify(error)
-  else:
-   for i in sim.buildings.size():
-    if sim.buildings[i]!=null and sim.buildings[i].pos==ghost: selected=i
-   play_sound("build")
-   consume_events()
+  ghost=sim.snap_position(at,build_kind)
+  placement_ready=true
   return
+ # Deposit markers remain usable when a canopy or producer overlaps them.
+ for i in sim.resource_nodes.size():
+  if Rect2(sim.resource_nodes[i].pos+Vector2(-28,2),Vector2(56,48)).has_point(at):
+   interact_deposit(i)
+   return
  var candidates:Array=[]
  for i in sim.buildings.size():
   var b=sim.buildings[i]
@@ -292,21 +292,46 @@ func click_world(point:Vector2)->void:
   return
  for i in sim.resource_nodes.size():
   if at.distance_to(sim.resource_nodes[i].pos)<75:
-   if sim.collect(i):
-    play_sound("gather")
-    consume_events()
-   else: notify("This deposit replenishes in %ds."%ceili(sim.deposits[i]))
+   interact_deposit(i)
    return
  selected=-1
+
+func interact_deposit(index:int)->void:
+ var owner:int=sim.deposit_owner(index)
+ if owner>=0:
+  selected=owner
+  return
+ if sim.collect(index):
+  play_sound("gather")
+  consume_events()
+ else: notify("This deposit replenishes in %ds."%ceili(sim.deposits[index]))
+
+func confirm_placement()->void:
+ if not placement_ready or build_kind=="": return
+ if not VIEW.has_point(world_to_screen(ghost)):
+  notify("Bring the building preview back into view before confirming.")
+  return
+ var error:String=sim.build_at(ghost,build_kind)
+ if error!="":
+  notify(error)
+  return
+ for i in sim.buildings.size():
+  if sim.buildings[i]!=null and sim.buildings[i].pos==ghost: selected=i
+ build_kind=""
+ placement_ready=false
+ play_sound("build")
+ consume_events()
 
 func act(action:String)->void:
  if action.begins_with("build:"):
   var kind:String=action.trim_prefix("build:")
   build_kind="" if build_kind==kind else kind
-  ghost=sim.snap_position(camera_center)
-  if build_kind!="": notify("Choose open ground. Drag to move the camera. Back cancels construction.")
+  placement_ready=false
+  ghost=sim.snap_position(camera_center,kind)
+  if build_kind!="": notify("Tap a grid location to preview. Confirm with Build; Cancel spends nothing.")
   return
  match action:
+  "confirm_build": confirm_placement()
   "new": screen="confirm" if save_available else "briefing"
   "confirm_new": screen="briefing"
   "start": start_mission()
@@ -402,7 +427,7 @@ func start_mission()->void:
  accumulator=0
  autosave=0
  save_available=true
- notify("Raiders are already approaching. The main hall will fire. Establish your economy.")
+ notify("Raiders enter from the western road. Establish producers on resource deposits.")
  save_game()
 
 func consume_events()->void:
@@ -535,7 +560,7 @@ func _draw()->void:
   button(Rect2(720,495,270,55),"Clear the ground","confirm_clear",true)
  if toast_left>0 and screen=="mission":
   var w:float=minf(1040,Body.get_string_size(toast,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x+48)
-  var rect:=Rect2((1440-w)/2,96,w,40)
+  var rect:=Rect2((VIEW.size.x-w)/2,96,w,40)
   Art.skin(self,rect,Color(0.8,0.85,0.78),8)
   centered(toast,rect,16,IVORY)
 
@@ -577,64 +602,67 @@ func draw_hud()->void:
  button(Rect2(1066,15,69,55),"%d×"%speed,"speed",false,true,18)
  button(Rect2(1145,15,101,55),"Guide","guide",false,true,16)
  button(Rect2(1257,15,162,55),"Ⅱ  Pause","pause",false,true,18)
- # Compact, persistent command deck leaves the landscape unobstructed.
- Art.skin(self,Rect2(-4,629,1448,187),Color(0.83,0.89,0.82),14)
- draw_inspector()
+ # A dedicated right-hand construction rail keeps mobile actions together.
+ Art.skin(self,Rect2(1150,82,294,732),Color(0.83,0.89,0.82),14)
+ label("CONSTRUCTION",Vector2(1171,110),14,GOLD,true)
  for i in ORDER.size():
   var kind:String=ORDER[i]
   var definition:Dictionary=Sim.DEFINITIONS[kind]
-  var rect:=Rect2(385+i*128,640,122,155)
+  var rect:=Rect2(1164+(i%2)*133,123+(i/2)*128,124,121)
   var active:bool=build_kind==kind
-  Art.skin(self,rect,Color(1.4,1.22,0.86) if active else (Color(1.08,1.08,0.96) if rect.has_point(mouse) else Color(0.8,0.86,0.8)),8)
-  var art_scale:float=0.29 if kind not in ["arrow","cannon"] else 0.25
-  Art.building(self,definition.art,Vector2(rect.position.x+61,rect.position.y+78),art_scale)
-  label(str(i+1),rect.position+Vector2(10,19),11,MUTED)
-  centered(definition.name,Rect2(rect.position.x,rect.position.y+91,122,28),14,GOLD if active else IVORY)
+  Art.skin(self,rect,Color(1.4,1.22,0.86) if active else Color(0.8,0.86,0.8),8)
+  var art_scale:float=0.22 if kind not in ["arrow","cannon"] else 0.2
+  Art.building(self,definition.art,Vector2(rect.position.x+62,rect.position.y+63),art_scale)
+  centered(definition.name,Rect2(rect.position.x,rect.position.y+67,124,23),13,GOLD if active else IVORY)
   for r in 3:
-   Art.icon(self,r,Rect2(rect.position.x+7+r*39,rect.position.y+129,14,14))
-   label(pretty(definition.cost[r]),rect.position+Vector2(21+r*39,141),13,IVORY if sim.resources[Sim.RESOURCE_NAMES[r]]>=definition.cost[r] else RED)
+   Art.icon(self,r,Rect2(rect.position.x+7+r*39,rect.position.y+99,14,14))
+   label(pretty(definition.cost[r]),rect.position+Vector2(21+r*39,111),12,IVORY if sim.resources[Sim.RESOURCE_NAMES[r]]>=definition.cost[r] else RED)
   buttons.append({"rect":rect,"action":"build:"+kind,"enabled":true})
+ draw_inspector()
  draw_minimap()
- button(Rect2(1194,570,56,48),"−","zoom_out",false,true,24)
- button(Rect2(1256,570,56,48),"+","zoom_in",false,true,24)
- button(Rect2(1318,570,91,48),"Hall","hall",false,true,16)
- if build_kind!="":
-  button(Rect2(19,574,213,46),"Cancel construction","cancel",false,true,15)
-  var error:String=sim.placement_error(ghost,build_kind)
-  if error!="": label(error,Vector2(249,605),14,RED)
+ button(Rect2(939,742,52,48),"−","zoom_out",false,true,24)
+ button(Rect2(997,742,52,48),"+","zoom_in",false,true,24)
+ button(Rect2(1055,742,81,48),"Hall","hall",false,true,16)
 
 func draw_inspector()->void:
+ Art.skin(self,Rect2(1161,516,267,283),Color(0.85,0.9,0.82),9)
  if build_kind!="":
   var d:Dictionary=Sim.DEFINITIONS[build_kind]
-  label(d.name,Vector2(24,668),24,IVORY,true)
-  wrapped(d.desc,Vector2(25,697),322,14,MUTED,22)
-  cost_row(d.cost,Vector2(25,780),16)
+  label(d.name,Vector2(1177,546),21,IVORY,true)
+  wrapped(d.desc,Vector2(1177,572),234,13,MUTED,19)
+  var error:String=sim.placement_error(ghost,build_kind)
+  var ready:bool=placement_ready and error=="" and sim.can_afford(d.cost) and VIEW.has_point(world_to_screen(ghost))
+  var status:String="Tap a grid location to preview."
+  if placement_ready:
+   status=error if error!="" else ("Ready to build." if sim.can_afford(d.cost) else "Not enough supplies.")
+   if not VIEW.has_point(world_to_screen(ghost)): status="Bring the preview into view."
+  wrapped(status,Vector2(1177,625),234,13,GREEN if ready else GOLD,19)
+  button(Rect2(1176,680,237,48),"Build · Confirm","confirm_build",true,ready,17)
+  button(Rect2(1176,739,237,45),"Cancel","cancel",false,true,16)
   return
  if selected<0 or selected>=sim.buildings.size() or sim.buildings[selected]==null:
-  label("THE PINEWATCH FRONTIER",Vector2(24,669),18,GOLD,true)
-  wrapped("Expand into the valley. Select a structure to upgrade, repair or dismantle it.",Vector2(25,700),322,16,MUTED,26)
+  label("THE FRONTIER",Vector2(1177,547),19,GOLD,true)
+  wrapped("Select a building above, tap the map to preview its grid location, then confirm Build.",Vector2(1177,580),233,15,MUTED,23)
   return
  var b:Dictionary=sim.buildings[selected]
  var d:Dictionary=Sim.DEFINITIONS[b.kind]
- label(d.name,Vector2(24,669),23,IVORY,true)
- label("Lv. %d / 100"%b.level,Vector2(255,668),14,GOLD)
+ label(d.name,Vector2(1177,546),21,IVORY,true)
+ label("LEVEL %d / 100"%b.level,Vector2(1177,568),12,GOLD)
  var status:String="RUINS · REPAIR TO RESTORE" if b.hp<=0 else "%s / %s HP"%[pretty(b.hp),pretty(sim.stat(b,"hp"))]
- if b.hp>0 and d.has("income"): status+="  ·  +%.1f %s/s"%[sim.stat(b,"income")*sim.production_bonus(b),d.resource]
+ if b.hp>0 and d.has("income"): status+="\n+%.1f %s / sec"%[sim.stat(b,"income")*sim.production_bonus(b),d.resource]
  elif b.hp>0 and d.has("damage"): status+="  ·  %s damage"%pretty(sim.stat(b,"damage"))
- if b.hp>0 and b.age<Sim.BUILD_TIME: status="CONSTRUCTION  ·  %.1fs remaining"%(Sim.BUILD_TIME-b.age)
- label(status,Vector2(25,695),13,RED if b.hp<=0 else MUTED)
+ if b.hp>0 and b.age<Sim.BUILD_TIME: status="CONSTRUCTION · %.1fs"%(Sim.BUILD_TIME-b.age)
+ wrapped(status,Vector2(1177,590),233,12,RED if b.hp<=0 else MUTED,18)
  var upgrade:Array=sim.upgrade_cost(b) if b.level<100 else [0,0,0]
  var show_repair:bool=b.hp<sim.stat(b,"hp")*0.7
- var shown_cost:Array=sim.repair_cost(b) if show_repair else upgrade
- cost_row(shown_cost,Vector2(25,723),14)
- label("REPAIR" if show_repair else "UPGRADE",Vector2(285,723),10,MUTED)
- button(Rect2(22,739,112,56),"Upgrade ↑","upgrade",true,b.hp>0 and b.level<100 and sim.can_afford(upgrade),15)
- button(Rect2(141,739,105,56),"Repair","repair",false,b.hp<sim.stat(b,"hp")-0.01 and sim.can_afford(sim.repair_cost(b)),15)
- button(Rect2(253,739,104,56),"Clear ruins" if b.hp<=0 else "Dismantle","clear",false,selected>0,13)
- if b.kind=="market" and b.hp>0: button(Rect2(24,570,240,48),"Open marketplace","trade",true,true,17)
+ cost_row(sim.repair_cost(b) if show_repair else upgrade,Vector2(1177,645),12)
+ button(Rect2(1176,662,115,46),"Upgrade ↑","upgrade",true,b.hp>0 and b.age>=Sim.BUILD_TIME and b.level<100 and sim.can_afford(upgrade),14)
+ button(Rect2(1298,662,115,46),"Repair","repair",false,b.hp<sim.stat(b,"hp")-0.01 and sim.can_afford(sim.repair_cost(b)),14)
+ button(Rect2(1176,718,237,42),"Clear ruins" if b.hp<=0 else "Dismantle","clear",false,selected>0,14)
+ if b.kind=="market" and b.hp>0: button(Rect2(1176,766,237,30),"Open marketplace","trade",true,true,13)
 
 func draw_minimap()->void:
- Art.skin(self,Rect2(1170,630,253,166),Color(0.9,0.93,0.86),10)
+ Art.skin(self,Rect2(10,635,251,165),Color(0.9,0.93,0.86),10)
  if world.ground_view!=null: draw_texture_rect(world.ground_view.get_texture(),MINIMAP,false,Color(0.79,0.88,0.75))
  var path:=PackedVector2Array()
  for p in Map.ROAD: path.append(MINIMAP.position+p/Map.SIZE*MINIMAP.size)
@@ -658,7 +686,7 @@ func overlay(rect:Rect2,tag:String,title:String,description:String="")->void:
 
 func draw_briefing()->void:
  overlay(Rect2(355,105,730,600),"MISSION 01  /  THE PINEWATCH FRONTIER","Carve a foothold in the valley.","The western road carries the first raiders. Keep your main hall standing for fifteen minutes, then continue the endless siege.")
- var rows:=[["01","Expand freely","Place buildings on any clear ground. A woodcutter near trees and a stonemason near a quarry earn a production bonus."],["02","Build a defensive line","Walls, arrow towers and cannons can be placed wherever your strategy needs them. Great hordes arrive every fifth wave."],["03","Recover from destruction","Collapsed buildings leave ruins. Repair them to keep their upgrades, or clear the ground and rebuild."]]
+ var rows:=[["01","Expand freely","Preview buildings on the grid, then confirm. Woodcutters require forests and stonemasons require quarries, with one producer per deposit."],["02","Build a defensive line","Walls, arrow towers and cannons can be placed wherever your strategy needs them. Great hordes arrive every fifth wave."],["03","Recover from destruction","Collapsed buildings leave ruins. Repair them to keep their upgrades, or clear the ground and rebuild."]]
  for i in 3:
   var y:float=343+i*88
   label(rows[i][0],Vector2(395,y),27,GOLD,true)
@@ -703,7 +731,7 @@ func draw_settings()->void:
 
 func draw_guide()->void:
  overlay(Rect2(235,65,970,680),"FIELD MANUAL","Build a settlement worth defending.")
- var entries:=[["Explore the frontier","Drag the landscape to pan. Pinch or use the + / − buttons to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a construction card, then tap clear ground. Water, ridges, deposits and existing foundations cannot be built over."],["Gather and produce","Tap timber, stone or gold deposits. They replenish in 12 seconds. Place producers near their resource for a 25% income bonus."],["Hold the western approach","Raiders follow one road. Place walls in their way and cover them with towers. Your main hall attacks from the beginning."],["Upgrade, repair or clear","All seven structures reach level 100. Destroyed buildings leave repairable ruins. Dismantling frees the ground but loses the upgrades."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
+ var entries:=[["Explore the frontier","Drag the landscape to pan. Pinch or use the + / − buttons to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Tap timber, stone or gold deposits. They replenish in 12 seconds. Build one producer directly on each forest or quarry. Defeated raiders also award gold."],["Hold the western approach","Raiders follow one road. Place walls in their way and cover them with towers. Your main hall attacks from the beginning."],["Upgrade, repair or clear","All seven structures reach level 100. Destroyed buildings leave repairable ruins. Dismantling frees the ground but loses the upgrades."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
  for i in entries.size():
   var p:=Vector2(274+(i%2)*462,245+(i/2)*141)
   label("0%d  %s"%[i+1,entries[i][0]],p,19,IVORY,true)

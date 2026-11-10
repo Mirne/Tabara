@@ -12,12 +12,14 @@ const PATH = World.ROAD
 const MAX_BUILDINGS := 512
 const MAX_ENEMIES := 2400
 const BUILD_TIME := 2.5
+const GRID_SIZE := 40.0
+const FOUNDATION_WIDTHS := {"hall":240.0,"wood":160.0,"stone":160.0,"arrow":80.0,"wall":80.0,"cannon":160.0,"market":160.0}
 const FOOTPRINTS := {"hall":100.0,"wood":65.0,"stone":68.0,"arrow":45.0,"wall":34.0,"cannon":52.0,"market":76.0}
 const BODY_GAPS := {"raider":30.0,"runner":28.0,"brute":43.0,"siege":60.0}
 const DEFINITIONS := {
  "hall": {"name":"Main hall", "tag":"THE HEART OF TABARA", "desc":"Your last line of defense. Fires arrows and provides a small steady income.", "cost":[0,0,0], "upgrade":[65,45,25], "hp":4200.0, "damage":50.0, "range":560.0, "period":0.9, "art":0},
- "wood": {"name":"Woodcutter", "tag":"WOOD PRODUCTION", "desc":"Harvests timber automatically. Build beside a pine grove for a 25% bonus.", "cost":[60,20,10], "upgrade":[50,25,15], "hp":300.0, "income":4.0, "resource":"wood", "art":1},
- "stone": {"name":"Stonemason", "tag":"STONE PRODUCTION", "desc":"Quarries stone automatically. Build beside a quarry for a 25% bonus.", "cost":[70,15,15], "upgrade":[45,40,15], "hp":380.0, "income":3.0, "resource":"stone", "art":2},
+ "wood": {"name":"Woodcutter", "tag":"WOOD PRODUCTION", "desc":"Harvests timber automatically. Must be built on a forest deposit. One woodcutter per forest.", "cost":[60,20,10], "upgrade":[50,25,15], "hp":300.0, "income":4.0, "resource":"wood", "art":1},
+ "stone": {"name":"Stonemason", "tag":"STONE PRODUCTION", "desc":"Quarries stone automatically. Must be built on a stone deposit. One stonemason per quarry.", "cost":[70,15,15], "upgrade":[45,40,15], "hp":380.0, "income":3.0, "resource":"stone", "art":2},
  "arrow": {"name":"Arrow tower", "tag":"FAST SINGLE TARGET", "desc":"Accurate, rapid arrows. Best against scouts and lone raiders.", "cost":[75,40,20], "upgrade":[55,35,20], "hp":500.0, "damage":24.0, "range":460.0, "period":0.85, "art":3},
  "wall": {"name":"Wall", "tag":"HOLD THE LINE", "desc":"Build freely to form a defensive line. Enemies attack walls in their way.", "cost":[25,65,10], "upgrade":[20,55,10], "hp":1250.0, "art":4},
  "cannon": {"name":"Cannon tower", "tag":"AREA DAMAGE", "desc":"Explosive shells damage every enemy in a wide blast. Strong against groups.", "cost":[100,100,55], "upgrade":[65,75,35], "hp":650.0, "damage":88.0, "range":590.0, "period":2.7, "splash":140.0, "art":5},
@@ -60,9 +62,9 @@ func _init(seed_number: int = 2026) -> void:
  deposits.fill(0.0)
  rebuild_building_grid()
  begin_wave()
- for j in 4:
-  spawn_enemy(maxf(0,total_length-400-j*85))
-  spawn_remaining=maxi(0,spawn_remaining-1)
+ spawn_enemy()
+ spawn_remaining=maxi(0,spawn_remaining-1)
+ spawn_clock=1.0
 
 func make_building(kind: String, position: Vector2 = Vector2.ZERO) -> Dictionary:
  return {"kind":kind,"pos":position,"level":1,"hp":float(DEFINITIONS[kind].hp),"cooldown":0.15,"age":0.0,"ruined_at":-1.0}
@@ -70,19 +72,54 @@ func make_building(kind: String, position: Vector2 = Vector2.ZERO) -> Dictionary
 func footprint(kind: String) -> float:
  return FOOTPRINTS.get(kind,65.0)
 
-func snap_position(position: Vector2) -> Vector2:
- return position.snapped(Vector2(16,16))
+func snap_position(position: Vector2, kind: String = "") -> Vector2:
+ if kind in ["wood","stone"]:
+  var node:=deposit_near(position,kind)
+  if node>=0: return resource_nodes[node].pos.snapped(Vector2.ONE*GRID_SIZE)
+ return position.snapped(Vector2.ONE*GRID_SIZE)
+
+func foundation_rect(position: Vector2, kind: String) -> Rect2:
+ var width:float=FOUNDATION_WIDTHS.get(kind,160.0)
+ return Rect2(position-Vector2.ONE*width/2,Vector2.ONE*width)
+
+func deposit_near(position: Vector2, kind: String, distance_limit: float = 200.0) -> int:
+ var nearest:=-1
+ var distance:=distance_limit
+ for i in resource_nodes.size():
+  if resource_nodes[i].kind!=kind: continue
+  var current:float=position.distance_to(resource_nodes[i].pos)
+  if current<distance:
+   nearest=i
+   distance=current
+ return nearest
+
+func producer_deposit(building: Dictionary) -> int:
+ if building.kind not in ["wood","stone"]: return -1
+ # Existing v2 settlements retain their buildings and reserve their closest site.
+ return deposit_near(building.pos,building.kind,520.0)
+
+func deposit_owner(index: int) -> int:
+ for i in buildings.size():
+  if buildings[i]!=null and producer_deposit(buildings[i])==index: return i
+ return -1
 
 func placement_error(position: Vector2, kind: String) -> String:
  if defeated: return "The main hall has fallen. Start a new settlement."
  if not DEFINITIONS.has(kind) or kind=="hall": return "Choose a construction tool."
- var radius:=footprint(kind)
- var terrain:String=World.terrain_error(position,radius)
+ var foundation:=foundation_rect(position,kind)
+ var radius:float=foundation.size.x/2
+ var own_deposit:=-1
+ if kind in ["wood","stone"]:
+  own_deposit=deposit_near(position,kind,45.0)
+  if own_deposit<0: return "Place this producer on a %s deposit."%("forest" if kind=="wood" else "stone")
+  if deposit_owner(own_deposit)>=0: return "This deposit already has a producer. Repair or clear its building."
+ var terrain:String=World.terrain_error(position,radius,own_deposit)
  if terrain!="": return terrain
- for i in nearby_buildings(position,radius+130):
+ for i in nearby_buildings(position,radius+180):
   var b=buildings[i]
   if b==null: continue
-  if position.distance_to(b.pos)<radius+footprint(b.kind)+8: return "Leave space between foundations. Clear ruins to reuse their ground."
+  if foundation.intersects(foundation_rect(b.pos,b.kind)):
+   return "These grid cells are occupied. Clear ruins to reuse their ground."
  if active_building_count()>=MAX_BUILDINGS: return "The frontier supports up to 512 structures."
  return ""
 
@@ -115,7 +152,7 @@ func nearby_enemies(position: Vector2, radius: float) -> Array:
  return out
 
 func build_at(position: Vector2, kind: String) -> String:
- position=snap_position(position)
+ position=snap_position(position,kind)
  var error:=placement_error(position,kind)
  if error!="": return error
  if not spend(DEFINITIONS[kind].cost): return "Not enough supplies. Gather resources or grow production."
@@ -123,7 +160,7 @@ func build_at(position: Vector2, kind: String) -> String:
  var b:=make_building(kind,position)
  if index<0: buildings.append(b)
  else: buildings[index]=b
- clear_vegetation(position,footprint(kind)+150)
+ clear_vegetation(position,footprint(kind)+45)
  rebuild_building_grid()
  events.append({"type":"build","pos":position,"text":"Construction started"})
  return ""
@@ -210,7 +247,7 @@ func repair_at(index: int) -> String:
  return ""
 
 func collect(index: int) -> bool:
- if defeated or index < 0 or index >= deposits.size() or deposits[index] > 0: return false
+ if defeated or index < 0 or index >= deposits.size() or deposits[index] > 0 or deposit_owner(index)>=0: return false
  var d: Dictionary = resource_nodes[index]
  # Modest scaling keeps hand-gathering useful alongside the economy.
  var amount: float = d.amount*(1.0+elapsed/600.0)
@@ -425,8 +462,9 @@ func step(delta: float) -> void:
   var e: Dictionary = enemies[i]
   if e.hp <= 0:
    kills += 1
-   resources.gold += (3.0+wave*0.45)*(2.5 if e.kind == "siege" else 1.0)
-   events.append({"type":"kill","pos":enemy_position(e),"text":"","kind":e.kind,"phase":e.phase})
+   var reward:float=ceilf((3.0+wave*0.45)*(2.5 if e.kind == "siege" else (1.5 if e.kind=="brute" else 1.0)))
+   resources.gold = minf(1.0e15,resources.gold+reward)
+   events.append({"type":"kill","gold":reward,"pos":enemy_position(e),"text":"","kind":e.kind,"phase":e.phase})
    enemies.remove_at(i)
  # Bound event memory even in non-visual simulations.
  if events.size() > 250: events = events.slice(-150)

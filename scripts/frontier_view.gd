@@ -17,6 +17,8 @@ var last_draw_us:=0
 
 func _ready()->void:
  scenery=Map.scenery()
+ for prop in scenery:
+  prop.protected=prop.art==4 or Map.protected_resource_scenery(prop.pos)
  ground_view=SubViewport.new()
  ground_view.size=Vector2i(4096,2560)
  ground_view.disable_3d=true
@@ -75,8 +77,9 @@ func _draw()->void:
  var sim=game.sim
  visible_world=Rect2(game.camera_center-game.VIEW.size/(game.zoom*2),game.VIEW.size/game.zoom).grow(300)
  var entities:Array=[]
+ if game.build_kind!="": draw_grid()
  for prop in scenery:
-  if sim.vegetation_cleared(prop.pos): continue
+  if not scenery_visible(prop): continue
   if visible_world.has_point(prop.pos): entities.append({"y":prop.pos.y,"prop":prop})
  for i in sim.resource_nodes.size():
   var d:Dictionary=sim.resource_nodes[i]
@@ -120,10 +123,36 @@ func _draw()->void:
   var error:String=sim.placement_error(game.ghost,game.build_kind)
   var tint:=Color(0.8,1,0.73,0.6) if error=="" and sim.can_afford(sim.DEFINITIONS[game.build_kind].cost) else Color(1,0.38,0.26,0.6)
   var radius:float=sim.footprint(game.build_kind)
+  var foundation:Rect2=sim.foundation_rect(game.ghost,game.build_kind)
+  draw_rect(foundation,Color(tint,0.17))
+  draw_rect(foundation,tint,false,2/game.zoom)
   draw_texture_rect(shadow,Rect2(game.ghost-Vector2(radius,radius*0.5),Vector2(radius*2,radius)),false,Color(1,1,1,0.6))
   Art.building(self,sim.DEFINITIONS[game.build_kind].art,game.ghost,1,tint)
   ground_ring(game.ghost,radius,tint)
  last_draw_us=Time.get_ticks_usec()-draw_started
+
+func scenery_visible(prop:Dictionary)->bool:
+ if not game.sim.vegetation_cleared(prop.pos): return true
+ if not prop.protected: return false
+ if prop.art==4: return true
+ for i in game.sim.nearby_buildings(prop.pos,160):
+  if game.sim.buildings[i].kind=="wood" and game.sim.foundation_rect(game.sim.buildings[i].pos,"wood").has_point(prop.pos): return false
+ return true
+
+func draw_grid()->void:
+ var grid:float=game.sim.GRID_SIZE
+ var area:=Rect2(game.camera_center-game.VIEW.size/(game.zoom*2),game.VIEW.size/game.zoom)
+ for x in range(maxi(0,floori(area.position.x/grid)),mini(int(Map.SIZE.x/grid),ceili(area.end.x/grid))+1):
+  draw_line(Vector2(x*grid,maxf(0,area.position.y)),Vector2(x*grid,minf(Map.SIZE.y,area.end.y)),Color(0.91,0.86,0.65,0.16 if x%2 else 0.28),1/game.zoom)
+ for y in range(maxi(0,floori(area.position.y/grid)),mini(int(Map.SIZE.y/grid),ceili(area.end.y/grid))+1):
+  draw_line(Vector2(maxf(0,area.position.x),y*grid),Vector2(minf(Map.SIZE.x,area.end.x),y*grid),Color(0.91,0.86,0.65,0.16 if y%2 else 0.28),1/game.zoom)
+ if game.build_kind in ["wood","stone"]:
+  for i in game.sim.resource_nodes.size():
+   var node:Dictionary=game.sim.resource_nodes[i]
+   if node.kind!=game.build_kind or not area.grow(180).has_point(node.pos): continue
+   var site:Rect2=game.sim.foundation_rect(game.sim.snap_position(node.pos,game.build_kind),game.build_kind)
+   draw_rect(site,Color(0.91,0.72,0.34,0.18))
+   draw_rect(site,Color("b59455") if game.sim.deposit_owner(i)>=0 else Color("c4d295"),false,2/game.zoom)
 
 func draw_building(index:int)->void:
  var sim=game.sim
@@ -173,7 +202,12 @@ func draw_deposit_marker(index:int)->void:
  var anchor:Vector2=d.pos+Vector2(0,24)
  Art.skin(self,Rect2(anchor-Vector2(23,22),Vector2(46,42)),Color(0.82,0.88,0.8),7)
  Art.icon(self,["wood","stone","gold"].find(d.kind),Rect2(anchor-Vector2(15,16),Vector2(30,30)),Color(1,1,1,0.5 if game.sim.deposits[index]>0 else 1))
- if game.sim.deposits[index]>0:
+ var owner:int=game.sim.deposit_owner(index)
+ if owner>=0:
+  var b:Dictionary=game.sim.buildings[owner]
+  var state:String="REPAIR" if b.hp<=0 else ("BUILDING" if b.age<game.sim.BUILD_TIME else "WORKING")
+  draw_string(Body,anchor+Vector2(29,5),state,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("cdbb7e") if b.hp>0 else Color("df9573"))
+ elif game.sim.deposits[index]>0:
   draw_string(Body,anchor+Vector2(27,5),"%ds"%ceili(game.sim.deposits[index]),HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("e3d7b7"))
 
 func smoke(p:Vector2,scale_value:float)->void:
@@ -203,6 +237,10 @@ func draw_effects()->void:
     draw_set_transform(e.pos+Vector2(fall*14,0),fall*1.25,Vector2.ONE)
     Art.unit(self,UNIT_ROWS.get(e.get("kind","raider"),0),int(e.get("phase",0))%4,Vector2.ZERO,1,false,Color(0.92-fall*0.3,0.89-fall*0.3,0.8-fall*0.3,1-fall))
     draw_set_transform(Vector2.ZERO)
+   if e.has("gold"):
+    var at:Vector2=e.pos+Vector2(-23,-110-t*30)
+    Art.icon(self,2,Rect2(at,Vector2(20,20)),Color(1,1,1,1-t))
+    draw_string(Body,at+Vector2(24,17),"+%d"%int(e.gold),HORIZONTAL_ALIGNMENT_LEFT,-1,18,Color(0.99,0.85,0.43,1-t))
    if elapsed>0.24:
     var size:float=25+fall*55
     draw_texture_rect(cloud,Rect2(e.pos-Vector2.ONE*size/2,Vector2.ONE*size),false,Color(0.7,0.56,0.37,1-fall))

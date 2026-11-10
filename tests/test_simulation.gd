@@ -35,12 +35,13 @@ func run()->void:
  var s=Sim.new(17)
  check(Map.SIZE.x*Map.SIZE.y>50*1120*690,"Frontier is over fifty times the original area")
  check(s.buildings.size()==1 and s.buildings[0].kind=="hall","Only the main hall is prebuilt")
- check(s.enemies.size()==4,"Vanguard is present immediately")
- var first_hp:float=s.enemies[0].hp
+ check(s.enemies.size()==1 and s.enemies[0].progress==0,"Initial enemy starts at the path entrance")
+ s.spawn_enemy(s.total_length-200)
+ var first_hp:float=s.enemies[-1].hp
  s.step(0.2)
- check(s.kills>0 or s.enemies[0].hp<first_hp,"Main hall fires immediately")
+ check(s.kills>0 or s.enemies[-1].hp<first_hp,"Main hall fires immediately")
  check(s.build_at(Vector2(6101,3702),"arrow")=="","Free placement works far beyond the old plots")
- check(s.buildings[1].pos==Vector2(6096,3696),"Free placement snaps to a fine grid")
+ check(s.buildings[1].pos==Vector2(6120,3720),"Placement snaps to the visible forty-unit grid")
  var before:Dictionary=s.resources.duplicate()
  check(s.build_at(Vector2(6101,3702),"wall")!="" and s.resources==before,"Overlapping foundations are rejected without spending")
  check(s.build_at(Map.LAKE_CENTER,"wood")!="","Water placement is rejected")
@@ -59,6 +60,42 @@ func run()->void:
  check(s.collect(node),"Deposits replenish after twelve seconds")
  check(s.build_at(Vector2(7000,4000),"hall")!="","Only one main hall is allowed")
  check(not s.buy("stone") and not s.trade("wood"),"Trading requires a marketplace")
+ var tiles=rich()
+ check(tiles.build_at(Vector2(6400,4000),"wall")=="" and tiles.build_at(Vector2(6480,4000),"wall")=="","Adjacent wall foundations meet cleanly on the grid")
+ var tile_stock:Dictionary=tiles.resources.duplicate()
+ check(tiles.build_at(Vector2(6440,4000),"wall")!="" and tiles.resources==tile_stock,"Partly overlapping grid footprints spend nothing")
+ var old_save=Sim.restore(JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/frontier-preview.json")))
+ check(old_save!=null and old_save.buildings[1].pos==Vector2(4544,3264),"Existing v0.2 free-position settlements keep their progress")
+ if old_save!=null:
+  check(old_save.producer_deposit(old_save.buildings[1])==0 and old_save.build_at(Map.GROVES[0],"wood")!="","Existing producers reserve their nearby resource site")
+ # Resource sites limit producers, retain their identity and survive clear/repair.
+ var limited=rich()
+ var deposit_count:int=limited.resource_nodes.size()
+ check(limited.build_at(Vector2(6100,3700),"stone")!="","Stonemasons cannot be built on empty ground")
+ check(limited.build_at(Map.QUARRIES[0],"wood")!="","A woodcutter requires a forest, not a quarry")
+ check(limited.build_at(Map.QUARRIES[0],"stone")=="","Stonemason snaps onto its quarry")
+ var stone_site:Vector2=limited.buildings[1].pos
+ var paid:Dictionary=limited.resources.duplicate()
+ check(limited.build_at(Map.QUARRIES[0]+Vector2(40,0),"stone")!="" and limited.resources==paid,"One producer per deposit; duplicate spends nothing")
+ check(limited.resource_nodes.size()==deposit_count and limited.resource_nodes[Map.GROVES.size()].pos==Map.QUARRIES[0],"Construction never removes the resource node")
+ limited.buildings[1].hp=0
+ check(limited.build_at(stone_site,"stone")!="","A ruined producer still reserves its deposit")
+ check(limited.repair_at(1)=="" and limited.deposit_owner(Map.GROVES.size())==1,"Repair preserves deposit ownership")
+ limited.clear_at(1)
+ check(limited.deposit_owner(Map.GROVES.size())==-1 and limited.build_at(Map.QUARRIES[0],"stone")=="","Clearing releases the same deposit for rebuilding")
+ var legacy=roundtrip(limited)
+ check(legacy!=null and legacy.deposit_owner(Map.GROVES.size())==1,"Deposit ownership survives the existing v2 save format")
+ var reward_test=Sim.new(9)
+ reward_test.spawn_remaining=0
+ reward_test.enemies[0].hp=0
+ var before_gold:float=reward_test.resources.gold
+ reward_test.step(0.05)
+ check(reward_test.kills==1 and reward_test.resources.gold>before_gold+3.99,"Each killed raider awards gold")
+ var kill_events:Array=reward_test.events.filter(func(e):return e.type=="kill")
+ check(kill_events.size()==1 and kill_events[0].gold==4,"Kill event carries its visible gold amount")
+ before_gold=reward_test.resources.gold
+ reward_test.step(0.05)
+ check(reward_test.resources.gold-before_gold<1,"A removed enemy cannot pay gold twice")
  # A great horde must dispatch fully rather than being overwritten by the next wave.
  var horde=Sim.new(1)
  horde.elapsed=120.0
@@ -74,7 +111,8 @@ func run()->void:
   s=rich()
   var index:=0
   if kind!="hall":
-   check(s.build_at(Vector2(6100,3700),kind)=="","Construct "+kind)
+   var site:Vector2=Map.GROVES[0] if kind=="wood" else (Map.QUARRIES[0] if kind=="stone" else Vector2(6100,3700))
+   check(s.build_at(site,kind)=="","Construct "+kind)
    index=1
   var b:Dictionary=s.buildings[index]
   b.hp=s.stat(b,"hp")*0.4
@@ -94,7 +132,7 @@ func run()->void:
   var saved=roundtrip(s)
   check(saved!=null and saved.buildings[index].level==100,kind+" level 100 survives JSON disk representation")
  s=rich()
- check(s.build_at(Vector2(4544,3264),"wood")=="","Woodcutter beside grove")
+ check(s.build_at(Map.GROVES[0],"wood")=="","Woodcutter occupies its forest deposit")
  check(s.production_bonus(s.buildings[1])==1.25,"Nearby forest production bonus")
  check(s.income_rates().wood==1.5,"Construction does not produce immediately")
  s.step(3)
@@ -104,7 +142,7 @@ func run()->void:
  var clearing=s.cleared_ground.duplicate()
  check(s.clear_at(1)=="" and s.buildings[1]==null,"Ruins can be completely removed")
  check(s.cleared_ground==clearing,"Cleared trees do not regrow after demolition")
- check(s.build_at(Vector2(4544,3264),"market")=="","Cleared ground accepts a different building")
+ check(s.build_at(Vector2(4544,3264),"market")=="","Other clear ground accepts a marketplace")
  check(s.buildings.size()==2,"Cleared storage slots are reused")
  s.step(3)
  var gold:float=s.resources.gold
@@ -122,8 +160,10 @@ func run()->void:
  # Unattended raiders physically ruin a structure, which remains repairable.
  s=rich()
  s.buildings[0].cooldown=10000
+ s.enemies.clear()
+ s.spawn_enemy(s.total_length-400)
  var p:Vector2=s.enemy_position(s.enemies[0])
- var candidate:=p.snapped(Vector2(16,16))
+ var candidate:=s.snap_position(p)
  check(s.build_at(candidate,"wall")=="","Wall may be placed directly across the current approach")
  var wall:Dictionary=s.buildings[1]
  wall.hp=1
@@ -144,6 +184,8 @@ func run()->void:
  check(leader.progress-follower.progress>=29.99,"Crowds keep physical headway in their approach lane")
  # A removed target's reused index must not damage a new, distant structure.
  s=rich()
+ s.enemies.clear()
+ s.spawn_enemy(s.total_length-400)
  var enemy:Dictionary=s.enemies[0]
  check(s.build_at(s.enemy_position(enemy),"wall")=="","Build target for reused-index regression")
  enemy.target=1
