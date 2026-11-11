@@ -1,0 +1,442 @@
+{
+  "actual_seconds": 0.824,
+  "failures": 0,
+  "fixture": "One durable raider per stratified origin, hall fire and wave spawns suppressed; actual fixed-step movement",
+  "longest_game_seconds": 31.3500000000003,
+  "position_samples": 15407,
+  "results": [
+    {
+      "arrived": true,
+      "origin": [
+        400.0,
+        400.0
+      ],
+      "seconds": 31.3500000000003,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        1400.0,
+        400.0
+      ],
+      "seconds": 26.6000000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        2400.0,
+        400.0
+      ],
+      "seconds": 22.0000000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        3400.0,
+        400.0
+      ],
+      "seconds": 19.2500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        4400.0,
+        400.0
+      ],
+      "seconds": 14.3000000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        5400.0,
+        400.0
+      ],
+      "seconds": 14.5500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        6400.0,
+        400.0
+      ],
+      "seconds": 17.6500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        7400.0,
+        400.0
+      ],
+      "seconds": 23.8000000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        400.0,
+        1200.0
+      ],
+      "seconds": 28.7000000000003,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        1400.0,
+        1200.0
+      ],
+      "seconds": 23.2000000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        2400.0,
+        1200.0
+      ],
+      "seconds": 17.6500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        3400.0,
+        1200.0
+      ],
+      "seconds": 14.2500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        4400.0,
+        1200.0
+      ],
+      "seconds": 9.4,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        5400.0,
+        1200.0
+      ],
+      "seconds": 9.75,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        6100.0,
+        900.0
+      ],
+      "seconds": 14.5000000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        7500.0,
+        1140.0
+      ],
+      "seconds": 22.7500000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        400.0,
+        2000.0
+      ],
+      "seconds": 27.6500000000003,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        1400.0,
+        2000.0
+      ],
+      "seconds": 20.9500000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        2400.0,
+        2000.0
+      ],
+      "seconds": 15.0000000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        3400.0,
+        2000.0
+      ],
+      "seconds": 9.45,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        4400.0,
+        2000.0
+      ],
+      "seconds": 4.74999999999999,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        5400.0,
+        2000.0
+      ],
+      "seconds": 5.39999999999999,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        6260.0,
+        2140.0
+      ],
+      "seconds": 9.04999999999999,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        7400.0,
+        2000.0
+      ],
+      "seconds": 16.6000000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        400.0,
+        2800.0
+      ],
+      "seconds": 26.7500000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        1400.0,
+        2800.0
+      ],
+      "seconds": 20.5000000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        2400.0,
+        2800.0
+      ],
+      "seconds": 14.2500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        3380.0,
+        2740.0
+      ],
+      "seconds": 7.99999999999998,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        4400.0,
+        2800.0
+      ],
+      "seconds": 1.6,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        5400.0,
+        2800.0
+      ],
+      "seconds": 2.85,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        6400.0,
+        2800.0
+      ],
+      "seconds": 9.09999999999999,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        7400.0,
+        2800.0
+      ],
+      "seconds": 15.3500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        400.0,
+        3600.0
+      ],
+      "seconds": 27.0500000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        1400.0,
+        3600.0
+      ],
+      "seconds": 21.1500000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        2400.0,
+        3600.0
+      ],
+      "seconds": 15.1500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        3400.0,
+        3600.0
+      ],
+      "seconds": 9.7,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        4400.0,
+        3600.0
+      ],
+      "seconds": 4.59999999999999,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        5400.0,
+        3600.0
+      ],
+      "seconds": 5.24999999999999,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        6400.0,
+        3600.0
+      ],
+      "seconds": 10.3,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        7400.0,
+        3600.0
+      ],
+      "seconds": 16.8000000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        400.0,
+        4400.0
+      ],
+      "seconds": 29.4000000000003,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        1400.0,
+        4400.0
+      ],
+      "seconds": 23.3500000000002,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        2400.0,
+        4400.0
+      ],
+      "seconds": 17.8500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        3340.0,
+        4540.0
+      ],
+      "seconds": 16.5500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        4460.0,
+        4460.0
+      ],
+      "seconds": 14.6500000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        5400.0,
+        4400.0
+      ],
+      "seconds": 9.75,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        6400.0,
+        4400.0
+      ],
+      "seconds": 13.4000000000001,
+      "stayed_open": true
+    },
+    {
+      "arrived": true,
+      "origin": [
+        7400.0,
+        4400.0
+      ],
+      "seconds": 18.4500000000001,
+      "stayed_open": true
+    }
+  ],
+  "traces": 48
+}

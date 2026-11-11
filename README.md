@@ -1,37 +1,42 @@
-# Tabara: Last Hearth — The Pinewatch Frontier
+# Tabara: Last Hearth — Hearthvale Basin
 
 An offline Android settlement-defense game built in **Godot 4.6.3**. Establish a
 foothold in a large wooded valley, gather supplies, place your own defenses, and
 hold the main hall for **15 in-game minutes**. Victory unlocks endless survival.
 
-![The Pinewatch Frontier](docs/screenshots/gameplay.png)
+![Hearthvale Basin](docs/screenshots/gameplay.png)
 
-## The mountain pass revision
+## The authored world revision
 
-Version **0.5.0** replaces the original fixed plots with an **8,192 × 5,120** world,
+Version **0.6.0** replaces the original fixed plots with an **8,192 × 5,120** world,
 about **54 times the original map area**. Defenses use a visible construction grid on clear
 land. Woodcutters and stonemasons occupy matching resource deposits, one per site. Pan and zoom around forests, quarries, rocky ridges, a lake, and the single
 western entry. New mountain spines form a 480-unit pass that can be sealed with walls. Attackers route around impassable forests, rocks, mountains and water, then break through standing buildings in their way. A minimap provides fast travel across the valley.
 
-The interface uses illustrated resource icons and a textured brass-and-leather
-command deck. Terrain, woodland props, four-frame enemy sprites, workers, and
-water use original raster art. Compact resource sites and connected stone walls
-use generated raster atlases with clean transparent edges. Buildings and dirt patches share a ground-centred anchor. Buildings collapse into rubble, enemies fall
-when killed, and construction clears vegetation around the foundations.
+The landscape has **41 individually assigned major objects**: four bespoke mountain
+formations, 28 different forest/quarry/ore sites, three cliff formations, and six
+landmarks. The ruined watchfort, chapel, windmill, stone arch, broken wagon and
+lakeside jetty each appear once. A painted terrain composition, sharp ground
+materials, authored trails and an irregular lake replace the repeated scenery
+scatter. The minimap is baked from the actual world.
+
+Walls use textured stone faces, raised wooden walkways, crenellated parapets,
+and reinforced end/corner piers. Connected sections share their boundaries;
+wall runs are drawn as fortification geometry rather than cropped wall strips.
 
 ## Play
 
-Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/e305183f7f50abff12f915dd4fec821609841983/builds/tabara-frontier-v0.5.apk) from GitHub,
-or install the local `builds/tabara-frontier-v0.5.apk`. You can also open `project.godot` in Godot 4.6.3 and
-press **F5**. Android 7.0/API 24 or later with OpenGL ES 3.0 is required.
+Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/d50a83b473b8f34223fb9a9db1fc8ba5d09e45ea/builds/tabara-frontier-v0.6.apk) from GitHub,
+or install the local `builds/tabara-frontier-v0.6.apk`. You can also open `project.godot` in Godot 4.6.3 and
+press **F5**. A 64-bit Android 7.0/API 24 or later device with OpenGL ES 3.0 is required. ARM64 phones, including the Samsung S23 Ultra, are supported.
 This is a **development-signed test build**. The game is in English and has no
 advertising, analytics, accounts, purchases, or runtime network requirement.
 
-On Android, open the download link in Chrome, then open `tabara-frontier-v0.5.apk`
+On Android, open the download link in Chrome, then open `tabara-frontier-v0.6.apk`
 from **Downloads** (or Samsung **My Files → Downloads**). The complete file is
-102,123,893 bytes, approximately 97.4 MiB.
+101,443,481 bytes, approximately 96.7 MiB.
 
-1. Start **The Pinewatch Frontier** from the menu. Enemies spawn immediately at
+1. Start **Hearthvale Basin** from the menu. Enemies spawn immediately at
    the western path entrance. The main hall attacks enemies that reach its range.
 2. Resource sites are scenery and cannot be tapped to collect supplies. Build
    one producer on each forest or quarry for steady income. The hall also
@@ -40,7 +45,7 @@ from **Downloads** (or Samsung **My Files → Downloads**). The complete file is
 3. Choose a card in the **right-hand construction panel**, then tap the map to
    preview the building on the visible grid. Move the preview by tapping another
    location. **Build · Confirm** spends the listed cost; Cancel spends nothing.
-   Drag to pan, pinch or use **+ / −** to zoom, and tap the minimap to travel.
+   Drag to pan, pinch to zoom, and tap the minimap to travel.
    **Hall**, in the top bar, returns to your headquarters. Arrow and cannon
    previews show their attack range before construction.
 4. Select **Wall**, then drag a line on the map. Release to preview the whole
@@ -77,7 +82,7 @@ Destroyed structures lose their building sprite and leave rubble. They retain
 levels and can be repaired. **Dismantle / Clear ruins** completely removes the
 foundation after confirmation, allowing a different building on the same ground.
 Dismantling a standing structure returns 25% of its original construction price;
-upgrade costs are not refunded. Trees cleared by construction remain cleared.
+upgrade costs are not refunded. Older clearing data remains in saved settlements.
 
 ### Controls and saves
 
@@ -93,18 +98,16 @@ to the menu. Continue restores buildings, ruins, enemies, economy, cleared
 vegetation, camera, and zoom. Returning from another app requires explicit
 resume. Settings include sound, music, and reduced motion.
 
-Version 0.5 migrates v0.2–v0.4 frontier saves to save format 4 without moving
-structures or losing economy and mission progress. Existing settlements receive
-the mountain pass unless an existing building crosses a new ridge; those
-settlements retain the earlier mountain layout. Enemies caught inside an old
-resource footprint are moved to the closest open terrain cell.
-Existing producers reserve their closest matching deposit; new producers must
-be placed directly on an available site. Install the APK as an update to keep
-your settlement.
+Version 0.6 loads v0.2–v0.5 frontier saves into save format 5 while preserving
+building positions, economy, enemies, mission progress, and their original
+terrain layout. **Start a new settlement to play the redesigned Hearthvale map.**
+Existing settlements receive the improved resource artwork and walls; their
+terrain remains compatible with their saved foundations. New settlements use
+the authored map. Install the APK as an update to keep your settlement.
 
 The expanded map uses a **new frontier save format**. The earlier fixed-plot
 settlement is not migrated or loaded; its original save file is left intact.
-Starting a new frontier requires confirmation when a live frontier save exists.
+Starting a new frontier replaces the active frontier after confirmation when a live save exists.
 
 ## Build
 
@@ -115,15 +118,15 @@ Install Godot **4.6.3** and matching export templates, an Android SDK with
 ```sh
 godot --headless --editor --path . --import --quit
 mkdir -p builds
-godot --headless --path . --export-debug Android builds/tabara-frontier-v0.5.apk
+godot --headless --path . --export-debug Android builds/tabara-frontier-v0.6.apk
 ```
 
-The preset includes ARMv7, ARM64, and x86-64. A local development signing key is
+The preset includes ARM64 and x86-64. Removing the obsolete 32-bit ARM runtime keeps the richer artwork within the direct GitHub download size limit. A local development signing key is
 excluded from source control. A Play Store release needs the owner's release
 keystore and a Gradle AAB export. No production key is included.
 
 ```sh
-godot --headless --path . --export-release Linux builds/tabara-frontier-v0.5.x86_64
+godot --headless --path . --export-release Linux builds/tabara-frontier-v0.6.x86_64
 ```
 
 ## Verify
@@ -131,7 +134,8 @@ godot --headless --path . --export-release Linux builds/tabara-frontier-v0.5.x86
 Use a separate `XDG_DATA_HOME` for automated tests: they save test settlements.
 
 ```sh
-# Syntax, terrain movement, wall strokes, economy, level 100, saves and campaign.
+# Syntax, terrain movement, wall strokes, economy, level 100, saves, campaign,
+# and exact offline terrain/navigation bake equivalence across all layouts.
 python3 tools/verify.py
 
 # Real rendered menu, mouse/touch, gestures, camera and lifecycle interactions.
@@ -156,6 +160,9 @@ dragging, and background/foreground behavior. Set `ANDROID_ADB`, `ANDROID_SERIAL
 `ANDROID_ADB_PORT`, `ANDROID_APK`, and `ANDROID_REPORT_NAME` as needed. It clears
 only this game's data on that test emulator. `tests/android_back.py` provides a
 fresh-activity Back check using an existing saved frontier.
+`tests/android_upgrade.py` additionally exercises an actual v0.5-to-v0.6 APK
+update on that disposable emulator, using `ANDROID_PREVIOUS_APK` and
+`ANDROID_BASE_REPORT` after the main native checks pass.
 
 The manually triggered native Android GitHub workflow uses an accelerated
 emulator. Local results and device limitations are in the [QA record](docs/QA.md).
@@ -170,8 +177,13 @@ emulator. Local results and device limitations are in the [QA record](docs/QA.md
   audio, and Android lifecycle handling.
 - `scripts/frontier_view.gd`: culled, depth-sorted raster world and combat effects.
 - `scripts/frontier_art.gd`: sprite regions and native nine-patch interface skins.
-- `scripts/frontier_ground.gdshader`: cached terrain material composition.
-- `scripts/frontier_water.gdshader`: animated lake surface.
+- `scripts/authored_ground.gdshader`: painted macro terrain and sharp ground materials.
+- `scripts/wall_art.gd`: textured continuous fortification geometry.
+- `assets/world/hearthvale.json`: authored layout and reproducible terrain/navigation bakes.
+- `tools/bake_world.gd`: rebuild static collision, shortest-path fields and surface masks.
+- `tools/capture_authored.gd`: render the matching minimap and wall construction icon.
+- `scripts/authored_water.gdshader`: animated irregular lake surface.
+- `assets/world/`: distinct generated scenery, ground painting and masonry materials.
 - `assets/frontier/`: original raster materials, props, units, icons and menu art.
 - `tests/`: model, rendered UI, native Android, normal-cost bot, soak and stress.
 

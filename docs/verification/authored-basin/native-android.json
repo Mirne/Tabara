@@ -1,0 +1,157 @@
+{
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "label": "Android boot and package service are ready",
+      "passed": true
+    },
+    {
+      "label": "Frontier APK installs",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native preview never constructs before confirmation",
+      "passed": true
+    },
+    {
+      "label": "Native initial grid buildings are stored before wall dragging",
+      "passed": true
+    },
+    {
+      "label": "Native wall drag previews without constructing",
+      "passed": true
+    },
+    {
+      "label": "Native app writes the world-position save format",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs wood",
+      "passed": true
+    },
+    {
+      "label": "Native save retains wood world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs stone",
+      "passed": true
+    },
+    {
+      "label": "Native save retains stone world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs arrow",
+      "passed": true
+    },
+    {
+      "label": "Native save retains arrow world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4400, 3040)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (5160, 3120)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4520, 2560)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4200, 2720)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4200, 2800)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4200, 2880)",
+      "passed": true
+    },
+    {
+      "label": "Native mission advances",
+      "passed": true
+    },
+    {
+      "label": "Native pause freezes the saved clock beyond autosave interval",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back resumes the clock before pausing again",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back then keeps combat paused",
+      "passed": true
+    },
+    {
+      "label": "Back handling retains the native game activity",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Cold restart retains elapsed time",
+      "passed": true
+    },
+    {
+      "label": "Cold restart retains free-placed kinds, coordinates, and upgrades",
+      "passed": true
+    },
+    {
+      "label": "Native one-finger drag moves the camera",
+      "passed": true
+    },
+    {
+      "label": "Native drag creates no accidental building",
+      "passed": true
+    },
+    {
+      "label": "Backgrounding persists the current settlement",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back resumes the clock before pausing again",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back then keeps combat paused",
+      "passed": true
+    },
+    {
+      "label": "Back handling retains the native game activity",
+      "passed": true
+    },
+    {
+      "label": "Captured native diagnostics contain no script, shader, or fatal error",
+      "passed": true
+    }
+  ],
+  "actual_seconds": 1628.5940916520049,
+  "apk_sha256": "2014b3a0d4d4dc14784a94c6ddd17bd43e9bff605fd3f4772f489901be041afa",
+  "mode": "full-native"
+}

@@ -1,4 +1,4 @@
-# The Pinewatch Frontier
+# Hearthvale Basin
 
 ## Direction
 
@@ -15,12 +15,13 @@ rounded dashboard panels.
 
 ## World and placement
 
-The world is 8,192 × 5,120 units. The headquarters is at (4,800, 2,800), and one
-decorative winding road connects the western boundary to it. Two mountain spines touch
+The world is 8,192 × 5,120 units. The headquarters is at (4,800, 2,800), and an
+authored trail network crosses the valley. The original road data remains for
+legacy saves and the western spawn. Two mountain spines touch
 the map boundaries and leave a 480-unit pass at y=2,560–3,040. Six wall
 sections centred at x=4,160 can seal the pass. Attackers choose
 a direct land route to the hall. Forest groves, quarries, gold
-ore, ridges, scattered vegetation, and a large eastern lake give the valley
+ore, four custom ridge formations, six unique landmarks, and an irregular eastern lake give the valley
 geographic landmarks. Geography is deterministic and shared by rendering,
 placement checks, production bonuses, and the minimap.
 
@@ -43,8 +44,10 @@ Each forest and quarry is a compact, single raster image with no pale base mat. 
 interaction, collection button or floating refill timer. A matching producer
 occupies each site; resource cores remain protected from unrelated buildings.
 
-Construction clears nearby decorative vegetation. A bounded 128 × 80 grid stores
-those clearings, including after demolition and across save restoration.
+The authored layout uses no random scenery scatter. Its 41 major objects have
+deliberate positions and distinct atlas frames: 28 resource sites, four ridges,
+three cliffs, and six landmarks. Old clearing cells remain bounded and preserved
+for save compatibility. Every forest and quarry uses one compact custom object.
 
 ## Economy and progression
 
@@ -91,6 +94,11 @@ foundation test finds the first blocking structure and attackers destroy it
 before advancing through its ruins. Nearby structures outside the route are
 ignored. Siege carts attack from farther away.
 
+Static terrain and Hall route fields are baked into `assets/world/hearthvale.json`
+by `tools/bake_world.gd`. A terrain fingerprint guards the navigation cache. A
+custom Hall destination or invalid cache falls back to a fresh search. Tests
+compare baked and computed terrain, links and costs for every supported layout.
+
 Local crowd separation is cached at five hertz and bounded to 40 nearby bodies
 per search. Spatial indexes cache expanded building rectangles and attack
 candidates. Stationary attackers reuse their target for 0.2 seconds while
@@ -100,8 +108,11 @@ threats near the hall; cannons damage groups.
 Walls use 80-unit segments on the construction grid. A drag previews a Manhattan
 stroke, with a maximum of 64 sections per confirmation. Existing live endpoints
 are reused without charging twice. The complete stroke is validated before any
-materials are spent. Cardinal neighbors render joined raster courses; straight
-interiors have no repeated end piers. Corners and junctions have shared posts.
+materials are spent. Cardinal neighbors share a textured prism footprint. Stone front/side faces,
+wooden walkways, parapets and crenels produce the raised fortification. Hidden
+internal end faces are omitted; straight interiors have no repeated end piers.
+Corners and junctions have reinforced piers. Original masonry and plank textures
+are sampled with continuous world-coordinate UVs instead of cropping wall strips.
 Destroyed sections leave a breach; repairing them reconnects the course. Each
 section retains its own health, level, upgrade and repair actions.
 
@@ -109,13 +120,17 @@ Kills award rounded gold based on wave, with higher rewards for brutes and
 siege carts. Each death is paid once and carries a coin reward visual.
 
 Victory occurs at 900 in-game seconds if the hall survives. The player can
-continue into endless survival. The 1×/2× option changes simulation speed, so
+continue into endless survival. The 1×/2×/5×/10× cycle changes simulation speed, so
 victory is measured in game time.
 
 ## Rendering and controls
 
-Ground materials are composed once into a 4,096 × 2,560 cached texture. The lake
-has a separate animated raster material. Scenery and entities are culled against
+An original ground painting sets broad geography and color. Sharp raster ground
+materials follow an offline surface mask for trails, meadow, rocky ground, wet
+shore and the drier southwest. They are composed once into a 4,096 × 2,560 cached
+texture. The irregular lake has a separate animated raster material clipped to
+its bounds. The minimap is rendered from the actual authored world. Large
+formations use unique images, each placed once. Scenery and entities are culled against
 the camera and depth sorted by foot position. Four-frame character sprites,
 workers, smoke, projectiles, brief death animations and building collapse provide
 motion without geometric placeholder characters.
@@ -142,15 +157,18 @@ suppresses tap placement. Desktop and Android use the same logical canvas.
 
 ## Saves and lifecycle
 
-Save version 4 stores free building positions, ruins, levels, health, enemy
-world positions, cached movement/attack state and mountain-layout selection,
+Save version 5 stores free building positions, ruins, levels, health, enemy
+world positions, cached movement/attack state and explicit terrain revision,
 wave state, random-generator state, resource cooldowns, cleared vegetation,
 camera and zoom. Full-precision JSON reduces rounding; restoration validates
-all fields before accepting the settlement. Version-2 and version-3 frontier files retain buildings, economy and mission
-time. Version 2 converts road progress into actual enemy positions. The new
-mountain pass is used unless it conflicts with an existing foundation; those
-old settlements retain the previous layout. Enemies inside newly blocked
-resource cells recover to the nearest open cell on their next step. JSON numeric version values are normalized before validation. Files are atomically renamed over
+all fields before accepting the settlement. Versions 2–4 retain their compatible
+terrain layout (0 or 1); existing buildings and enemies are not moved to the
+new map. Version 2 converts road progress into actual enemy positions. Legacy
+buildings crossing the old mountain pass retain the earlier ridge-free layout.
+New settlements use revision 2, the authored basin. A new settlement is therefore
+required to see the new geography. Enemies caught in an old blocked resource
+cell recover to the nearest open cell on their next step. JSON numeric version
+values are normalized before validation. Files are atomically renamed over
 the previous save. JSON round trips are compared within floating-point precision.
 
 The frontier uses `frontier-settlement.json`; version-1 fixed-plot saves are left

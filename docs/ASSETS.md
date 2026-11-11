@@ -23,12 +23,43 @@ repository assets are copies of those outputs, sampled through atlas regions.
 | `assets/frontier/wall-kit.png` | Complete short horizontal/north–south modules and junction pier; no angled sprite crop |
 | `assets/frontier/mountains.png` | Transparent rugged mountain cluster used along impassable spines |
 
-Version 0.5 regenerated the resource sites without pale ground mats, replaced
-the wall atlas with complete orthographic short modules, and added mountains.
-Repository PNGs are unchanged copies of the generated outputs. Runtime regions
-include each complete wall sprite. Their mobile imports are limited to 1,024
-pixels on the longest axis. Building pivots align visible ground footprints
-with dirt-patch centres.
+## Authored world artwork (v0.6)
+
+New scenery and materials were generated specifically for this revision on
+10 November 2026. These PNGs are unchanged copies of the original generated
+outputs. Atlas regions select whole objects, with transparent padding.
+
+| File | Contents and use |
+| --- | --- |
+| `assets/world/resources-a.png` through `resources-d.png` | Four different woodland objects and two quarries per sheet; 14 woodland and eight quarry frames are used, each once |
+| `assets/world/ores.png` | Six different ore formations, each assigned once |
+| `assets/world/landmarks.png` | Six complete objects in a 3-column × 2-row atlas: ruined watchfort, broken wagon, jetty/boat, chapel, windmill and stone arch |
+| `assets/world/cliffs.png` | Three distinct cliff formations, one per cliff site |
+| `assets/world/north_crown.png` | One northern boundary ridge |
+| `assets/world/north_gate.png` | One mountain formation overlooking the north side of the pass |
+| `assets/world/south_gate.png` | One southern pass formation |
+| `assets/world/south_buttress.png` | One southern boundary formation |
+| `assets/world/ground.png` | Full-map ground painting guided by the authored geography and paths |
+| `assets/world/wall-stone.png` | Tileable granite masonry for textured wall faces and parapets |
+| `assets/world/wall-walk.png` | Tileable weathered oak planks for wall walkways |
+
+The renderer places 41 individually assigned major objects. It does not scatter
+the old repeated vegetation and rock stamps over the new map. Resource sites
+remain compact, noninteractive scenery. Mountain images are drawn once each,
+with shared authored collision polygons behind the red construction grid.
+
+`assets/world/overview.png` and `wall-icon.png` are **game-engine renders**, not
+additional generated paintings: `tools/capture_authored.gd` renders the actual
+world and the textured wall geometry. The minimap therefore follows the same
+layout as the game. The original ground-material atlas supplies sharp close-up
+detail over the macro painting. Original generated PNGs have not been retouched
+with image-processing scripts.
+
+New mobile art uses VRAM compression and mipmaps, with a 2,048-pixel import limit.
+Runtime atlas regions include each complete selected object. Transparent-corner
+checks and actual-game views were reviewed for opaque pale background patches.
+Building pivots and centered dirt decals retain the v0.5 ground alignment.
+Legacy mountain artwork remains for existing save layouts.
 
 The gameplay reference **They Are Billions** informed the settlement-defense
 structure, not the graphics. No art or screenshots from that game are included.

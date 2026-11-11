@@ -1,149 +1,128 @@
-# Mountain pass and mobile HUD verification
+# Hearthvale Basin v0.6 verification
 
-This record covers Tabara: Last Hearth **0.5.0**, Android version code **5**.
-[Version 0.4](QA-v0.4.md) and earlier QA records are historical. Their measured
-durations and prototype results do not certify this revision.
+This record applies to the authored-map and textured-rampart revision. Earlier
+release evidence is archived in [QA-v0.5.md](QA-v0.5.md).
 
-## Final runtime and package
+## Build identity
 
-- Runtime commit: `60185b7466be142ba1fdf2f396f7da2858630c8d`.
-- Godot 4.6.3 Compatibility renderer; package `com.tabara.lasthearth`.
-- Android API 24 minimum, API 36 target; ARMv7, ARM64 and x86-64 packaged.
-- APK: `builds/tabara-frontier-v0.5.apk`, **102,123,893 bytes**.
-- SHA-256: `583c6ae49ffe8dfe8f92ba760ed9559cc3bcd8c8fd97e21d1447b730465b3355`.
-- ZIP CRC and APK v2/v3 signatures verified; no requested permissions.
-- Same development signing certificate as v0.4, with a higher version code.
-- Private signing keys are excluded from source and package contents.
+- Runtime: `939adaae7443afbf2dc7a1101d5bd473d14ec0f5`.
+- Godot 4.6.3, app 0.6.0, Android version code 6, save format 5.
+- Android API 24 minimum, API 36 target; ARM64 and x86-64 packaged.
+- APK: `tabara-frontier-v0.6.apk`, **101,443,481 bytes**.
+- SHA-256: `2014b3a0d4d4dc14784a94c6ddd17bd43e9bff605fd3f4772f489901be041afa`.
+- Development certificate unchanged from v0.5: SHA-256
+  `dbd0f5f2a2a56082d36b733d6467f28dc7dc166e82ffe41d0dc2c2fe42cd6ebb`.
 
-See [signature](verification/mountain-pass/apk-signature.txt) and
-[package inspection](verification/mountain-pass/apk-package.txt).
+## Functional and map checks
 
-## Functional and rendered checks
+`python3 tools/verify.py --ui` completed with:
 
-The final model passed **3,240 checks with zero failures**. New tests compare
-all terrain grid cells against navigation, route actual enemies around a
-forest, check standing walls stop movement, and verify attackers advance after
-breaking a wall. A flood-fill test proves that the mountain spines plus a
-six-section pass wall separate the western entry from the main hall: attackers
-cannot bypass the sealed pass around the map edges. Existing combat, economy,
-level 100, repair/ruins, save, victory/endless/defeat and campaign checks pass.
-The seed-11 normal-cost campaign reached 1,100 game seconds with 17 structures
-and 2,445 kills.
+- **3,287 simulation checks**, zero failures.
+- **82 authored-world checks**, zero failures.
+- **119 rendered interface checks**, zero failures.
 
-The rendered interface passed **118 checks with zero failures**. Coverage
-includes footprint/dirt centring, passive resource images, both tower range
-previews, wall dragging and corners, red invalid placement, permanent separate
-cost rows, and actual simulation-clock advancement at 1×, 2×, 5× and 10×.
-Taking damage leaves the rendered upgrade-price row unchanged. Hall is in the
-top bar; HUD branding, Guide and +/− controls are absent. Pinch, camera movement,
-confirmation/cancellation, trading, repairs and lifecycle checks still pass.
-See [combined verification log](verification/mountain-pass/functional.log).
+The authored-world suite compares every cell in all three supported terrain
+layouts with a fresh bake. It compares every shortest-path cost and successor
+with a fresh Dijkstra search, verifies safe descending routes with no diagonal
+corner cutting, and checks every producer site. All 28 resource atlas assignments
+are different. Four mountain images and six landmark frames are each assigned
+once. Landmark foundations block both placement and enemy movement.
 
-[Source CI](https://github.com/Mirne/Tabara/actions/runs/42853543736): passed on the final runtime commit.
+The other suites cover the complete mountain-pass barrier with a flood-fill
+proof; actual forest avoidance and building destruction; mobile tap-preview
+and separate confirmation; dragged wall strokes, endpoint reuse and corners;
+independent repair/upgrade prices; tower attack ranges; all levels through 100;
+gold rewards; immediate western spawning; victory/endless continuation;
+1×/2×/5×/10× clocks; pinch; Hall navigation; Back and lifecycle behavior.
 
-## Terrain and save compatibility
+A further actual-movement fixture sent raiders from **48 stratified map origins**
+to the Hall. All arrived, and all **15,407 sampled positions** remained on open
+terrain. This exercises the production movement code around the irregular
+geography; Hall fire and additional wave spawning are suppressed for the routing
+fixture. It is not a balance measurement. See
+[movement.json](verification/authored-basin/movement.json).
 
-Construction and enemy movement use one cached **40-unit terrain mask**.
-Resource cores, water, ridges, mountains and boundaries are impassable. A
-producer may be built on its matching resource site; this does not make the
-resource core traversable. Standing buildings are red and must be destroyed
-before passage; traversable ruins are amber. Type-specific placement errors or
-an unaffordable preview do not create new physical obstacles on clear ground.
+New settlements select terrain revision 2. Version-four saves retain revision
+0/1, building and enemy positions, and resources. Version-five round trips
+retain all three terrain revisions. Malformed revisions are rejected. The old
+free-position fixture is still exercised by the main suite.
 
-Save version 4 preserves building positions, levels, economy and mission time
-from version-2/3 frontier saves. Existing settlements receive the pass unless
-a foundation intersects a new ridge; those settlements keep the earlier
-mountain layout. Legacy enemies inside blocked resource cells recover to the
-nearest open cell when movement resumes. Both layout choices survive saving.
+An isolated workspace rebuild also reproduced the complete terrain, navigation
+and surface-mask JSON data exactly using the checked-in bake tool.
 
-## Campaign balance
-
-All **6 of 6 normal-cost seeded campaigns** reached the 15-minute victory and
-remained alive at the **25-minute cutoff**. This cutoff is not a measured defeat
-time. The bot uses the public prices, at most one paid action per second, no
-resource grants and no manual resource gathering. It builds matching producers,
-repairs and upgrades. See [report](verification/mountain-pass/balance.json) and
-[log](verification/mountain-pass/balance.log).
+Visual review caught and corrected a landmark atlas grid mismatch before the
+runtime was frozen. Reviewed actual-game captures include the pass, confirmed
+wall line, L-shaped corner, blocked mountain preview, watchfort, chapel, and
+irregular lake with its single jetty. The settlement capture uses normal costs:
+seed 11, 93 game seconds, 12 structures, no resource grants.
 
 ## Native Android
 
-The existing [Android 15/API 35 workflow](https://github.com/Mirne/Tabara/actions/runs/42853546058)
-passed all **37 native checks** on the final runtime source in **279.25 seconds**.
-This accelerated x86-64 emulator built its own APK. Its report hash belongs to
-that CI build, rather than the downloadable package. See
-[CI report](verification/mountain-pass/native-api35-ci.json).
+The **exact download APK** passed all **37 native checks** on Android 7/API 24
+in 1,628.594 real seconds. This covers confirmed resource/tower/wall construction,
+saved grid positions, paused clocks, Back, cold restart, camera dragging and
+background/foreground behavior. Captured diagnostics contained no script,
+shader or fatal error. See the [exact-APK report](verification/authored-basin/native-android.json)
+and [actual Android wall](screenshots/android-hearthvale-wall-built.png).
 
-The **exact downloadable APK hash above passed all 37 checks** in one local
-Android 7/API 24 x86-64 software-emulator run, lasting **1301.38 real seconds**.
-Actual Android input confirmed producer/tower grid positions and a three-piece
-wall stroke. Releasing a drag preview spent nothing; a separate confirmation
-created all sections. Cold restart kept positions and upgrades. Camera dragging
-created no accidental building. Back, Home/background save and foreground
-resumption passed. The final Back sequence advanced the saved clock from
-80.60 to 88.20 game seconds, then held it fixed. Captured diagnostics contained
-no script, shader or fatal error.
+The local setup used software CPU emulation with swangle. Emulator boot raised
+a system-process “Wait” dialog; after dismissing it, the complete test passed.
 
-See [exact-APK report](verification/mountain-pass/native-android.json),
-[engine/test log](verification/mountain-pass/native-android.log),
-[actual wall preview](screenshots/android-wall-preview.png) and
-[confirmed wall](screenshots/android-wall-built.png).
+The independent [Android 15/API 35 workflow](https://github.com/Mirne/Tabara/actions/runs/42919555486)
+built a second APK from the same runtime source and passed all **37 native
+checks** in 269.193 seconds. That CI APK has SHA-256
+`9a65b1086d9f1dc6b2c9c06d3eaaef45adea606a814973b779647c8fcbdf6c4e`.
 
-ARMv7 and ARM64 are packaged; the executed native ABI here is x86-64.
-These emulator results do not certify physical S23 performance. The signature
-and higher version code allow an in-place update; model tests cover legacy
-save migration.
+The [source verification workflow](https://github.com/Mirne/Tabara/actions/runs/42927436525)
+passed all **3,287 + 82 + 119** checks and the **48 actual movement routes** on a
+clean checkout. Its test-tool commit is
+`3263a3bcbe2fe55373d48d94e76b69a16d60f965`; application scripts, assets and export
+settings match the runtime identified above.
 
-## Rendered endurance
+An **actual v0.5-to-v0.6 installation test** then passed **16 checks** in
+514.596 seconds. The published v0.5 APK loaded and wrote its version-four save;
+v0.6 was installed over it without clearing app data. The complete save file
+survived installation. Loading it migrated the format to version five while
+preserving terrain revision 1, every building kind/position/level, resources,
+mission time and kills. The test restored its authored-map fixture afterward.
+Filtered Godot diagnostics contained no script, shader or fatal error. See the
+[upgrade report](verification/authored-basin/native-upgrade.json) and
+[updated legacy settlement](screenshots/android-updated-legacy.png).
 
-The final committed runtime completed **1200.031 confirmed real
-seconds** (20 minutes), in 1 uninterrupted segment. It recorded **19 actual disk
-restorations**, **49 camera tours**, 1 campaign and 1 victory, followed by
-endless play. The final mission clock was 1194.65 game seconds.
-Resource, building, actual enemy-position, world-boundary, level, health,
-camera and transient-state invariants remained valid. The full engine log has
-no script/shader errors or shutdown resource errors.
+## Campaign, endurance and stress
 
-The report excludes **0.000 seconds** of frame gaps over two seconds;
-these are not counted toward the 20 minutes. The run used Linux llvmpipe
-software rendering at 1280 × 720 with a 30 FPS cap, sharing CPU time with native
-emulation, export and campaign sampling. Minimum sampled FPS after warm-up
-was 2; peak engine static allocation was 39,401,002 bytes.
-These measurements are not physical S23 benchmarks or total OS memory usage.
-See [report](verification/mountain-pass/endurance.json) and
-[engine log](verification/mountain-pass/endurance.log).
+The extreme fixture completed 60.286 real seconds with all **512 structures and
+1,000 high-health enemies** present. It grants unlimited supplies and does not
+measure campaign balance. On shared Linux llvmpipe software rendering, the mean
+sampled frame rate was 5.113 FPS (minimum 3); mean model CPU time was 63.585 ms
+and mean world draw-command CPU time 28.151 ms. This is an extreme shared-host
+measurement, not a phone benchmark. The report is in
+[verification/authored-basin/stress.json](verification/authored-basin/stress.json).
 
-An earlier prototype segment was intentionally stopped for the final short-wall
-art and terrain-check changes. Its duration is not added to this final result.
+All **six normal-cost campaigns** reached the 15-minute victory and survived
+the 25-minute cutoff (wave 50), with 4,344–4,353 kills. No resources were granted.
+The six-seed run took 445.076 real seconds; each campaign also exercised
+periodic save round trips. See [balance.json](verification/authored-basin/balance.json).
 
-## Extreme fixture and limits
+The rendered endurance test completed **70.000 actual
+minutes** across two game processes: a continuous 65-minute run followed by a
+fresh-process load of its saved settlement and five more minutes of play. Both
+segments use the same frozen runtime. The test exercised **3 settlements,
+2 victories, endless continuation and defeat**, with **68 disk restorations**,
+**4150 normal-cost action cycles**, and **173 camera tours**. No invariant,
+script, shader or shutdown-resource errors were recorded.
 
-The explicit stress scene retains **512 structures and 1,000 high-health,
-low-damage enemies**, with unlimited supplies and a live simulation. The final
-60.166-second sample used Linux llvmpipe software rendering on the shared host
-while Android emulation, export and campaign checks also used CPU time.
-Mean sampled FPS after warm-up was **4.379**, minimum 1. Mean sampled model CPU
-cost was **72.39 ms/frame** and world draw CPU cost **31.96 ms/frame**. It rendered
-1,188 entities and peaked at 47,056,353 bytes of engine static allocation.
-These figures are an extreme software-rendered fixture, not a physical S23
-benchmark or a smooth-1,000-enemy claim. They are not directly comparable to
-v0.4's different terrain and art workload. See [report](verification/mountain-pass/stress.json)
-and [engine log](verification/mountain-pass/stress.log).
+The active-time counter excludes frame gaps beyond two seconds; total excluded
+stall time was 0.000 seconds. Peak Godot-tracked static allocation was
+44.21 MiB; this excludes driver/GPU allocations and is not total application
+memory. The [first segment](verification/authored-basin/endurance-initial.json)
+and [combined report](verification/authored-basin/endurance.json) preserve the
+actual time and fresh-process resume evidence.
 
-## Art and distribution
+## Limits
 
-Resource-site sprites were regenerated without the pale base mats. Horizontal
-and vertical wall modules retain their complete silhouettes; the renderer no
-longer shears a slice from an oblique wall image. Building sprites and dirt
-patches share a ground-centred pivot. A normal-cost seed-11 capture at 93 game
-seconds shows 12 paid/prebuilt structures and the sealed mountain pass. It is
-a visual check, not extra endurance time. See [settlement](screenshots/gameplay.png),
-[blocked mountain and range preview](screenshots/blocked-terrain.png),
-[separate costs](screenshots/separate-action-costs.png) and
-[joined corner](screenshots/joined-walls.png).
-
-The owner approved publishing the game source and APK to Mirne/Tabara. The
-isolated `downloads/frontier-v0.5.0` branch contains only the APK and checksum.
-A fresh public HTTPS download returned status 200 and all 102,123,893 bytes.
-Its SHA-256 matched the exact native-tested APK before handoff.
-Local videos, private keys, standalone build metadata and optional publication
-automation are not uploaded.
+The local host and emulator use software rendering. Their frame rates do not
+measure the S23 Ultra. No physical handset was available for verification.
+The APK is a development-signed sideload build, not a Play Store release.
+The richer build requires a 64-bit device. Existing settlements preserve their
+old terrain; start a new settlement to see the authored map.
