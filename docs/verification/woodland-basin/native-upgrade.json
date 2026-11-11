@@ -1,0 +1,74 @@
+{
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "label": "Upgrade test begins after the exact current APK passes native checks",
+      "passed": true
+    },
+    {
+      "label": "Current native settlement uses the authored map",
+      "passed": true
+    },
+    {
+      "label": "Previous signed v0.6 APK installs on the disposable emulator",
+      "passed": true
+    },
+    {
+      "label": "Legacy fixture is written completely before launching the old app",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Actual v0.6 app restores and writes its legacy terrain save",
+      "passed": true
+    },
+    {
+      "label": "Actual old app retains all building positions and levels",
+      "passed": true
+    },
+    {
+      "label": "New v0.7 APK updates v0.6 without clearing app data",
+      "passed": true
+    },
+    {
+      "label": "Android update retains the complete legacy save file",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "New app migrates the actual old save while retaining its terrain",
+      "passed": true
+    },
+    {
+      "label": "Upgrade preserves every building kind, position and level",
+      "passed": true
+    },
+    {
+      "label": "Upgrade preserves mission progress and kills",
+      "passed": true
+    },
+    {
+      "label": "Upgrade retains the legacy economy",
+      "passed": true
+    }
+  ],
+  "actual_seconds": 349.77593196999806,
+  "apk_sha256": "950159db7817c55c61074a113be02b9c1eb61fcb76db013a62200822710832fa",
+  "previous_apk_sha256": "2014b3a0d4d4dc14784a94c6ddd17bd43e9bff605fd3f4772f489901be041afa",
+  "mode": "actual-native-version-update"
+}

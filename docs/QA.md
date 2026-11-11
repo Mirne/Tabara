@@ -1,128 +1,76 @@
-# Hearthvale Basin v0.6 verification
+# Woodland Basin v0.7 verification
 
-This record applies to the authored-map and textured-rampart revision. Earlier
-release evidence is archived in [QA-v0.5.md](QA-v0.5.md).
+This revision rebuilds the environment as one woodland basin. Connected pine and
+oak canopy belts enclose meadow, the quarry and ridge artwork share mossy grey
+limestone, and the eastern forest follows the lake. The unrelated landmark gallery
+is absent from new settlements. Actual full-map and play-scale captures were
+reviewed; the composition study is not used as a substitute for game screenshots.
 
 ## Build identity
 
-- Runtime: `939adaae7443afbf2dc7a1101d5bd473d14ec0f5`.
-- Godot 4.6.3, app 0.6.0, Android version code 6, save format 5.
-- Android API 24 minimum, API 36 target; ARM64 and x86-64 packaged.
-- APK: `tabara-frontier-v0.6.apk`, **101,443,481 bytes**.
-- SHA-256: `2014b3a0d4d4dc14784a94c6ddd17bd43e9bff605fd3f4772f489901be041afa`.
-- Development certificate unchanged from v0.5: SHA-256
-  `dbd0f5f2a2a56082d36b733d6467f28dc7dc166e82ffe41d0dc2c2fe42cd6ebb`.
+Runtime source: `ec493311cb94bfa7568a3874dc3f20e378274df2`.
+Godot 4.6.3, app 0.7.0/code 7, save format 6, new terrain revision 3.
+ARM64 and x86-64, Android API 24 minimum. Existing saves retain layouts 0–2.
 
-## Functional and map checks
+APK: `tabara-frontier-v0.7.apk`, 92,946,314 bytes (88.6 MiB).
+SHA-256: `950159db7817c55c61074a113be02b9c1eb61fcb76db013a62200822710832fa`.
+Certificate SHA-256: `dbd0f5f2a2a56082d36b733d6467f28dc7dc166e82ffe41d0dc2c2fe42cd6ebb`.
+Previous release evidence remains in [QA-v0.6.md](QA-v0.6.md).
 
-`python3 tools/verify.py --ui` completed with:
-
-- **3,287 simulation checks**, zero failures.
-- **82 authored-world checks**, zero failures.
-- **119 rendered interface checks**, zero failures.
-
-The authored-world suite compares every cell in all three supported terrain
-layouts with a fresh bake. It compares every shortest-path cost and successor
-with a fresh Dijkstra search, verifies safe descending routes with no diagonal
-corner cutting, and checks every producer site. All 28 resource atlas assignments
-are different. Four mountain images and six landmark frames are each assigned
-once. Landmark foundations block both placement and enemy movement.
-
-The other suites cover the complete mountain-pass barrier with a flood-fill
-proof; actual forest avoidance and building destruction; mobile tap-preview
-and separate confirmation; dragged wall strokes, endpoint reuse and corners;
-independent repair/upgrade prices; tower attack ranges; all levels through 100;
-gold rewards; immediate western spawning; victory/endless continuation;
-1×/2×/5×/10× clocks; pinch; Hall navigation; Back and lifecycle behavior.
-
-A further actual-movement fixture sent raiders from **48 stratified map origins**
-to the Hall. All arrived, and all **15,407 sampled positions** remained on open
-terrain. This exercises the production movement code around the irregular
-geography; Hall fire and additional wave spawning are suppressed for the routing
-fixture. It is not a balance measurement. See
-[movement.json](verification/authored-basin/movement.json).
-
-New settlements select terrain revision 2. Version-four saves retain revision
-0/1, building and enemy positions, and resources. Version-five round trips
-retain all three terrain revisions. Malformed revisions are rejected. The old
-free-position fixture is still exercised by the main suite.
-
-An isolated workspace rebuild also reproduced the complete terrain, navigation
-and surface-mask JSON data exactly using the checked-in bake tool.
-
-Visual review caught and corrected a landmark atlas grid mismatch before the
-runtime was frozen. Reviewed actual-game captures include the pass, confirmed
-wall line, L-shaped corner, blocked mountain preview, watchfort, chapel, and
-irregular lake with its single jetty. The settlement capture uses normal costs:
-seed 11, 93 game seconds, 12 structures, no resource grants.
-
-## Native Android
-
+Local verification completed with 3,314 model checks, 68 world checks and 119
+rendered interface checks, zero failures. Actual movement completed 29 routes
+and sampled 7,941 open positions, without a blocked-cell entry or failed arrival.
+The [source CI run](https://github.com/Mirne/Tabara/actions/runs/42992139290)
+passed on the frozen runtime. Independent [Android 15/API 35 CI](https://github.com/Mirne/Tabara/actions/runs/42992179412)
+passed all 37 native checks in 281.878 seconds. Its separately signed CI APK has
+SHA-256 `f00b6c211e8df90fe7d6349bf9bc611378ff9ba576c50e811bb787819f5e091b`.
 The **exact download APK** passed all **37 native checks** on Android 7/API 24
-in 1,628.594 real seconds. This covers confirmed resource/tower/wall construction,
-saved grid positions, paused clocks, Back, cold restart, camera dragging and
-background/foreground behavior. Captured diagnostics contained no script,
-shader or fatal error. See the [exact-APK report](verification/authored-basin/native-android.json)
-and [actual Android wall](screenshots/android-hearthvale-wall-built.png).
+in 963.572 real seconds. Confirmed structures, three joined wall pieces, pause,
+Back, cold restart, camera dragging and app switching passed. Captured Godot
+logs contained no script, shader or fatal error. See [native report](verification/woodland-basin/native-android.json)
+and the [actual Android wall](screenshots/android-woodland-wall.png).
+The local emulator used software CPU emulation with swangle; this is not a phone
+performance measurement.
 
-The local setup used software CPU emulation with swangle. Emulator boot raised
-a system-process “Wait” dialog; after dismissing it, the complete test passed.
+## Map and interaction verification
 
-The independent [Android 15/API 35 workflow](https://github.com/Mirne/Tabara/actions/runs/42919555486)
-built a second APK from the same runtime source and passed all **37 native
-checks** in 269.193 seconds. That CI APK has SHA-256
-`9a65b1086d9f1dc6b2c9c06d3eaaef45adea606a814973b779647c8fcbdf6c4e`.
+The terrain suite compares all four cached collision fields with fresh geography
+and all four navigation fields with fresh Dijkstra searches. It verifies producer
+sites, the western approach, mountain pass, expansion meadow and eastern shore.
+Canopy collision comes from source-image alpha analysis followed by the shared
+terrain bake. No source PNG is modified by the analysis tool.
 
-The [source verification workflow](https://github.com/Mirne/Tabara/actions/runs/42927436525)
-passed all **3,287 + 82 + 119** checks and the **48 actual movement routes** on a
-clean checkout. Its test-tool commit is
-`3263a3bcbe2fe55373d48d94e76b69a16d60f965`; application scripts, assets and export
-settings match the runtime identified above.
+The construction and movement masks share the same authoritative cells. Actual
+raider walks exercise the movement code around forests, water and rock. Enclosed
+logging hollows and small gaps between trees are not all reachable from the Hall;
+the playable approach, pass and main meadows are connected. This is a designed
+single-entry mission, not a procedurally generated map.
 
-An **actual v0.5-to-v0.6 installation test** then passed **16 checks** in
-514.596 seconds. The published v0.5 APK loaded and wrote its version-four save;
-v0.6 was installed over it without clearing app data. The complete save file
-survived installation. Loading it migrated the format to version five while
-preserving terrain revision 1, every building kind/position/level, resources,
-mission time and kills. The test restored its authored-map fixture afterward.
-Filtered Godot diagnostics contained no script, shader or fatal error. See the
-[upgrade report](verification/authored-basin/native-upgrade.json) and
-[updated legacy settlement](screenshots/android-updated-legacy.png).
+Rendered interface checks cover tap-preview/confirmation, wall dragging and joined
+corners, tower range, independent repair and upgrade prices, speed controls, Hall
+navigation, pinch, Back and saves. All three normal-cost campaigns reached victory at fifteen minutes and survived the twenty-five-minute cutoff (wave 50), without resource grants.
 
-## Campaign, endurance and stress
+## Actual update compatibility
 
-The extreme fixture completed 60.286 real seconds with all **512 structures and
-1,000 high-health enemies** present. It grants unlimited supplies and does not
-measure campaign balance. On shared Linux llvmpipe software rendering, the mean
-sampled frame rate was 5.113 FPS (minimum 3); mean model CPU time was 63.585 ms
-and mean world draw-command CPU time 28.151 ms. This is an extreme shared-host
-measurement, not a phone benchmark. The report is in
-[verification/authored-basin/stress.json](verification/authored-basin/stress.json).
+The actual **v0.6-to-v0.7 install** passed all **16 checks** in 349.776 seconds.
+The published v0.6 APK loaded and wrote its version-five settlement before v0.7
+was installed over it. Android retained the complete file. The new app migrated
+the save to version six while preserving terrain revision 2, building kinds,
+positions and levels, resources, mission time and kills. The disposable device's
+woodland fixture was restored afterward. See the [upgrade report](verification/woodland-basin/native-upgrade.json)
+and [updated legacy settlement](screenshots/android-woodland-updated-legacy.png).
 
-All **six normal-cost campaigns** reached the 15-minute victory and survived
-the 25-minute cutoff (wave 50), with 4,344–4,353 kills. No resources were granted.
-The six-seed run took 445.076 real seconds; each campaign also exercised
-periodic save round trips. See [balance.json](verification/authored-basin/balance.json).
+## APK packaging
 
-The rendered endurance test completed **70.000 actual
-minutes** across two game processes: a continuous 65-minute run followed by a
-fresh-process load of its saved settlement and five more minutes of play. Both
-segments use the same frozen runtime. The test exercised **3 settlements,
-2 victories, endless continuation and defeat**, with **68 disk restorations**,
-**4150 normal-cost action cycles**, and **173 camera tours**. No invariant,
-script, shader or shutdown-resource errors were recorded.
-
-The active-time counter excludes frame gaps beyond two seconds; total excluded
-stall time was 0.000 seconds. Peak Godot-tracked static allocation was
-44.21 MiB; this excludes driver/GPU allocations and is not total application
-memory. The [first segment](verification/authored-basin/endurance-initial.json)
-and [combined report](verification/authored-basin/endurance.json) preserve the
-actual time and fresh-process resume evidence.
+`tools/package_android.py` applies lossless ZIP compression to texture containers,
+checks every uncompressed payload against the Godot export, aligns the package
+for native libraries, then signs with the same development certificate used by
+v0.6. Texture pixels and scripts are unchanged by packaging. The source contains
+no signing key. Android tests exercise the final repackaged APK.
 
 ## Limits
 
-The local host and emulator use software rendering. Their frame rates do not
-measure the S23 Ultra. No physical handset was available for verification.
-The APK is a development-signed sideload build, not a Play Store release.
-The richer build requires a 64-bit device. Existing settlements preserve their
-old terrain; start a new settlement to see the authored map.
+The local Android device and Linux renderer are software emulators. Their speed
+does not represent the S23 Ultra. No physical handset was available. This is a
+development-signed sideload build. Start a new settlement to see the new terrain;
+installing the update preserves the terrain of an existing settlement.

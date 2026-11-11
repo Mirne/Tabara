@@ -26,3 +26,8 @@ resource limits and old-save compatibility.
 Reference study: developer-published They Are Billions screenshots and full-map
 views, used for landscape structure and playable negative space. No reference-game
 art is included in the game.
+
+Reference sources:
+
+- https://numantiangames.com/TheyAreBillions/
+- https://www.moddb.com/games/they-are-billions/images/they-are-billions-full-map-screen
