@@ -29,7 +29,7 @@ wall runs are drawn as fortification geometry rather than cropped wall strips.
 
 ## Play
 
-Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/master/builds/tabara-frontier-v0.7.apk) from GitHub,
+Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/main/builds/tabara-frontier-v0.7.apk) from GitHub,
 or install the local `builds/tabara-frontier-v0.7.apk`. You can also open `project.godot` in Godot 4.6.3 and
 press **F5**. A 64-bit Android 7.0/API 24 or later device with OpenGL ES 3.0 is required. ARM64 phones, including the Samsung S23 Ultra, are supported.
 This is a **development-signed test build**. The game is in English and has no
@@ -114,8 +114,8 @@ Starting a new frontier replaces the active frontier after confirmation when a l
 
 ## Development
 
-`master` contains the game source and the current tested APK with its checksum.
-Continue development directly on `master`; separate feature and download branches
+`main` contains the game source and the current tested APK with its checksum.
+Continue development directly on `main`; separate feature and download branches
 have been retired. Keep only the latest tested build in `builds/`. Earlier source,
 artwork, screenshots and verification reports remain in [release history](docs/HISTORY.md).
 Published APK download commits are preserved in the merged history, so old links

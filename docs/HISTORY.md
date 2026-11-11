@@ -1,8 +1,8 @@
 # Release history
 
-Master keeps the current source, artwork, APK and verification record. Superseded
+`main` keeps the current source, artwork, APK and verification record. Superseded
 reports, screenshots and unused artwork remain in the release tags below. APK
-commit history is merged into master, preserving the fixed download URLs used in
+commit history is merged into main, preserving the fixed download URLs used in
 previous releases and chat messages.
 
 | Release | Source | Verification |

@@ -39,7 +39,7 @@ outputs. Atlas regions select whole objects, with transparent padding.
 | `assets/world/wall-stone.png` | Tileable granite masonry for textured wall faces and parapets |
 | `assets/world/wall-walk.png` | Tileable weathered oak planks for wall walkways |
 
-These files remain for compatible old settlements and shared ground/wall materials. Producer scenery uses the woodland atlas. Superseded resource sheets and wall-kit art have been removed from master; their originals remain in the [v0.6 source](https://github.com/Mirne/Tabara/tree/v0.6.0/assets).
+These files remain for compatible old settlements and shared ground/wall materials. Producer scenery uses the woodland atlas. Superseded resource sheets and wall-kit art have been removed from main; their originals remain in the [v0.6 source](https://github.com/Mirne/Tabara/tree/v0.6.0/assets).
 
 ## Connected woodland artwork (v0.7)
 

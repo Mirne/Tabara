@@ -75,10 +75,10 @@ does not represent the S23 Ultra. No physical handset was available. This is a
 development-signed sideload build. Start a new settlement to see the new terrain;
 installing the update preserves the terrain of an existing settlement.
 
-## Master consolidation
+## Repository consolidation
 
 The repository now keeps the current source, tested APK and checksum together on
-`master`. Older download commits are preserved as merged ancestors, and earlier
+`main`. Older download commits are preserved as merged ancestors, and earlier
 reports and screenshots remain accessible through release tags. Removed art was
 already excluded from the v0.7 export; the game scripts, remaining runtime assets,
 and signed APK are unchanged. Legacy save artwork and all four terrain layouts
