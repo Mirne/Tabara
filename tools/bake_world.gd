@@ -75,7 +75,6 @@ func run()->void:
    woodland_pixels[index*4+2]=pixels[index*4+2]
    woodland_pixels[index*4+3]=roundi(tree*255)
  woods["surface_pixels"]=Marshalls.raw_to_base64(woodland_pixels)
- woods.erase("forest_cells")
  var woodland_file:=FileAccess.open("res://assets/world/woodland.json",FileAccess.WRITE)
  woodland_file.store_string(JSON.stringify(woods,"",true,true))
  woodland_file.close()

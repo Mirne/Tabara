@@ -24,6 +24,7 @@ static var woodland:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("
 static var forest_shapes:Array=[]
 static var forest_pockets:Array=[]
 static var city_shape:=PackedVector2Array()
+static var canopy_cells:Dictionary={}
 static var water_cells:Dictionary={}
 
 static func _static_init()->void:
@@ -35,6 +36,7 @@ static func _static_init()->void:
  for item in woodland.working_pockets:
   forest_pockets.append({"pos":Vector2(item.pos[0],item.pos[1]),"radius":float(item.radius)})
  for pair in woodland.city_clearing: city_shape.append(Vector2(pair[0],pair[1]))
+ for key in woodland.get("forest_cells",[]): canopy_cells[int(key)]=true
 
 static func forest_regions()->Array:
  var result:Array=[]
@@ -49,6 +51,9 @@ static func forest_at(p:Vector2)->bool:
  if Rect2(a[0],a[1],a[2],a[3]).has_point(p): return false
  for pocket in forest_pockets:
   if p.distance_squared_to(pocket.pos)<pocket.radius*pocket.radius: return false
+ if not canopy_cells.is_empty():
+  var c:=cell_of(p)
+  return canopy_cells.has(c.y*GRID_WIDTH+c.x)
  for shape in forest_shapes:
   if Geometry2D.is_point_in_polygon(p,shape): return true
  return false

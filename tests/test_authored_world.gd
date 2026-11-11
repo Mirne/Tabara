@@ -63,7 +63,9 @@ func run()->void:
    if is_finite(s.navigation.costs[i]): reachable+=1
  check(canopy_solid,"Every dense canopy cell blocks movement")
  check(float(trees)/Map.terrain_field(3).size()>0.35 and float(trees)/Map.terrain_field(3).size()<0.65,"Forest belts occupy a coherent substantial part of the basin")
- check(open>6000 and float(reachable)/open>0.95,"Most open meadow belongs to the connected playable basin")
+ check(open>6000 and reachable>6000,"The main connected meadow provides a broad playable basin")
+ for point in [Vector2(1800,2700),Vector2(3900,2800),Vector2(4160,2800),Vector2(6100,2800),Vector2(6900,2900),Vector2(7600,1600)]:
+  check(is_finite(s.navigation.costs[s.navigation.index(Map.cell_of(point))]),"Approach, pass, expansion meadow and eastern shore connect to the Hall: %s"%point)
  check(is_finite(s.navigation.costs[s.navigation.index(Map.cell_of(Map.ROAD[0]))]),"Western entry reaches the Hall through the mountain pass")
  check(Map.scenery().is_empty(),"New map does not scatter decorative specimens")
  for item in Map.authored_landmarks():

@@ -57,7 +57,7 @@ not add isolated grove images on top. Stone and ore sites reuse the same geology
 The source PNGs are unchanged image-generation outputs. Reference screenshots
 remain outside the repository and game.
 
-The layout and protected clearings are in `assets/world/woodland.json`. The
+The layout and protected clearings are in `assets/world/woodland.json`. `tools/bake_canopy.py` reads source-image alpha to fit forest collision to the visible canopy without modifying any image. The
 terrain bake stores woodland cells in the same authoritative field as all other
 obstacles. Forest artwork is rendered at native imported resolution above the
 cached floor; linear sampling and disabled edge wrapping avoid seams. New
