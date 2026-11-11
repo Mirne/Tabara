@@ -2,12 +2,10 @@ extends Node2D
 ## Raster scenery, animated sprite units, depth ordering, and culled world rendering.
 const Map=preload("res://scripts/world_data.gd")
 const Art=preload("res://scripts/frontier_art.gd")
-const RESOURCE_SITES=preload("res://assets/frontier/resource-sites.png")
 const MOUNTAINS=preload("res://assets/frontier/mountains.png")
-const WALL_KIT=preload("res://assets/frontier/wall-kit.png")
 const Ramparts=preload("res://scripts/wall_art.gd")
 const AUTHORED_FLOOR=preload("res://assets/world/ground.png")
-const RESOURCE_ATLASES=[preload("res://assets/world/resources-a.png"),preload("res://assets/world/resources-b.png"),preload("res://assets/world/resources-c.png"),preload("res://assets/world/resources-d.png"),preload("res://assets/world/ores.png")]
+const RESOURCE_ATLASES=[preload("res://assets/woodland/sites.png")]
 const LANDMARKS=preload("res://assets/world/landmarks.png")
 const CLIFF_ART=preload("res://assets/world/cliffs.png")
 const UNIQUE_RIDGES={"north_crown":preload("res://assets/world/north_crown.png"),"north_gate":preload("res://assets/world/north_gate.png"),"south_gate":preload("res://assets/world/south_gate.png"),"south_buttress":preload("res://assets/world/south_buttress.png")}
@@ -35,6 +33,8 @@ var water_masks:Dictionary={}
 var surface_mask:ImageTexture
 var floor_source:Sprite2D
 var overview:Texture2D
+var environment_layer:Node2D
+var woodland_surface:ImageTexture
 
 func _ready()->void:
  scenery=Map.scenery()
@@ -93,6 +93,9 @@ func _ready()->void:
  blocked_view.z_index=-5
  blocked_view.visible=false
  add_child(blocked_view)
+ environment_layer=Node2D.new()
+ environment_layer.z_index=-8
+ add_child(environment_layer)
  shadow=soft_texture(Color(0.035,0.045,0.025,0.5))
  cloud=soft_texture(Color(0.42,0.39,0.33,0.55))
 
@@ -123,17 +126,18 @@ func _draw()->void:
    if visible_world.intersects(mountain.rect): entities.append({"y":mountain.pos.y,"unique_mountain":mountain})
   for landmark in landmarks:
    if visible_world.grow(250).has_point(landmark.pos): entities.append({"y":landmark.pos.y,"landmark":landmark})
- elif sim.mountains_enabled:
+ elif sim.terrain_revision<2 and sim.mountains_enabled:
   for mountain in legacy_ridges:
    if visible_world.grow(300).has_point(mountain.pos): entities.append({"y":mountain.pos.y,"mountain":mountain})
  for i in Map.CLIFFS.size():
   var center:Vector2=Map.CLIFFS[i]
-  if visible_world.grow(400).has_point(center):entities.append({"y":center.y,"cliff":i,"pos":center})
+  if sim.terrain_revision<3 and visible_world.grow(400).has_point(center):entities.append({"y":center.y,"cliff":i,"pos":center})
  for prop in scenery:
   if not scenery_visible(prop): continue
   if visible_world.has_point(prop.pos): entities.append({"y":prop.pos.y,"prop":prop})
  for i in sim.resource_nodes.size():
   var d:Dictionary=sim.resource_nodes[i]
+  if sim.terrain_revision==3 and d.kind=="wood": continue
   if visible_world.has_point(d.pos): entities.append({"y":d.pos.y,"deposit":i})
  for i in sim.buildings.size():
   var b=sim.buildings[i]
@@ -308,16 +312,21 @@ func mask_texture(revision:int)->ImageTexture:
 func configure_ground(revision:int)->void:
  ground_revision=revision
  var material:=ShaderMaterial.new()
- if revision==2:
+ configure_environment(revision)
+ if revision>=2:
   floor_source.texture=AUTHORED_FLOOR
-  material.shader=preload("res://scripts/authored_ground.gdshader")
+  material.shader=preload("res://scripts/woodland_ground.gdshader") if revision==3 else preload("res://scripts/authored_ground.gdshader")
   material.set_shader_parameter("micro_materials",preload("res://assets/frontier/terrain.png"))
   material.set_shader_parameter("water_mask",mask_texture(revision))
   if surface_mask==null:
    var bytes:PackedByteArray=Marshalls.base64_to_raw(Map.authored.get("surface_pixels",""))
    if bytes.size()==Map.GRID_WIDTH*Map.GRID_HEIGHT*4:
     surface_mask=ImageTexture.create_from_image(Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_RGBA8,bytes))
-  material.set_shader_parameter("surface_mask",surface_mask)
+  if revision==3 and woodland_surface==null:
+   var bytes:PackedByteArray=Marshalls.base64_to_raw(Map.woodland.get("surface_pixels",""))
+   if bytes.size()==Map.GRID_WIDTH*Map.GRID_HEIGHT*4:
+    woodland_surface=ImageTexture.create_from_image(Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_RGBA8,bytes))
+  material.set_shader_parameter("surface_mask",woodland_surface if revision==3 else surface_mask)
   water.texture=AUTHORED_FLOOR
   var bounds:Array=Map.authored.water_bounds
   var region:=Rect2(bounds[0],bounds[1],bounds[2],bounds[3])
@@ -353,6 +362,42 @@ func configure_ground(revision:int)->void:
  floor_source.scale=Vector2(ground_view.size)/Vector2(floor_source.texture.get_size())
  floor_source.material=material
  ground_view.render_target_update_mode=SubViewport.UPDATE_ONCE
+
+func configure_environment(revision:int)->void:
+ for node in environment_layer.get_children():
+  environment_layer.remove_child(node)
+  node.queue_free()
+ if revision!=3: return
+ for region in Map.forest_regions():
+  var sprite:=Sprite2D.new()
+  sprite.texture=load(region.texture)
+  sprite.texture_repeat=CanvasItem.TEXTURE_REPEAT_DISABLED
+  sprite.centered=false
+  sprite.position=region.rect.position
+  sprite.scale=region.rect.size/Vector2(sprite.texture.get_size())
+  environment_layer.add_child(sprite)
+ # All escarpments use the same grey limestone as the exposed resource outcrops.
+ for ridge in Map.mountain_sprites():
+  var sprite:=Sprite2D.new()
+  sprite.texture=load("res://assets/woodland/%s.png"%ridge.id)
+  sprite.texture_repeat=CanvasItem.TEXTURE_REPEAT_DISABLED
+  sprite.centered=false
+  sprite.position=ridge.rect.position
+  sprite.scale=ridge.rect.size/Vector2(sprite.texture.get_size())
+  environment_layer.add_child(sprite)
+ for i in Map.CLIFFS.size():
+  var sprite:=Sprite2D.new()
+  var atlas:=AtlasTexture.new()
+  atlas.atlas=RESOURCE_ATLASES[0]
+  var cell_size:=Vector2(atlas.atlas.get_size())/Vector2(2,3)
+  var frame:=3+i%3
+  atlas.region=Rect2(Vector2(frame%2,frame/2)*cell_size,cell_size)
+  sprite.texture=atlas
+  sprite.texture_repeat=CanvasItem.TEXTURE_REPEAT_DISABLED
+  sprite.centered=false
+  sprite.position=Map.CLIFFS[i]-Vector2(395,335)
+  sprite.scale=Vector2(790,465)/cell_size
+  environment_layer.add_child(sprite)
 
 func smoke(p:Vector2,scale_value:float)->void:
  for i in 3:

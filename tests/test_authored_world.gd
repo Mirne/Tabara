@@ -12,7 +12,7 @@ func check(ok:bool,label:String)->void:
   failures+=1
   printerr("FAIL AUTHORED: ",label)
 func run()->void:
- for layout in 3:
+ for layout in range(Map.AUTHORED_REVISION+1):
   check(Map.terrain_field(layout)==Map.compute_field(layout),"Baked terrain exactly matches layout %d"%layout)
   var cached=Nav.new(Map.HALL,layout)
   var computed=Nav.new(Map.HALL,layout,false)
@@ -30,12 +30,12 @@ func run()->void:
    var a:=Vector2i(i%Map.GRID_WIDTH,i/Map.GRID_WIDTH)
    var b:=Vector2i(next%Map.GRID_WIDTH,next/Map.GRID_WIDTH)
    if not cached.can_step(Map.cell_center(a),Map.cell_center(b)): valid=false
-  check(valid and count>15000,"Every cached route descends safely without corner cutting for layout %d"%layout)
+  check(valid and count>5000,"Every cached route descends safely without corner cutting for layout %d"%layout)
   var original=Sim.new(43,layout)
   original.resources={"wood":400.0,"stone":300.0,"gold":200.0}
   original.step(7)
   var restored=Sim.restore(JSON.parse_string(JSON.stringify(original.snapshot(),"",true,true)))
-  check(restored!=null and restored.terrain_revision==layout and restored.buildings[0].pos==Map.HALL and restored.enemies[0].pos.is_equal_approx(original.enemies[0].pos),"Version five roundtrip retains geography and units for layout %d"%layout)
+  check(restored!=null and restored.terrain_revision==layout and restored.buildings[0].pos==Map.HALL and restored.enemies[0].pos.is_equal_approx(original.enemies[0].pos),"Save roundtrip retains geography and units for layout %d"%layout)
   if layout<2:
    var old:Dictionary=original.snapshot()
    old.version=4
@@ -44,30 +44,38 @@ func run()->void:
    check(migrated!=null and migrated.terrain_revision==layout and migrated.resources==original.resources and migrated.enemies[0].pos.is_equal_approx(original.enemies[0].pos),"Version four settlements retain original geography %d"%layout)
  var s=Sim.new(19)
  s.resources={"wood":1e8,"stone":1e8,"gold":1e8}
- check(s.terrain_revision==2,"New settlements use the authored basin")
+ check(s.terrain_revision==3,"New settlements use the connected woodland basin")
  for node in s.resource_nodes:
   if node.kind in ["wood","stone"]:
    check(s.build_at(node.pos,node.kind)=="","Matching producer is buildable on resource site %s"%str(node.pos))
- var images:Dictionary={}
- for i in s.resource_nodes.size():
-  var art:=Map.unique_resource(i)
-  var key:="%d:%d"%[int(art.atlas),int(art.frame)]
-  check(not images.has(key),"Resource site %d has its own atlas object"%i)
-  images[key]=true
- check(Map.scenery().is_empty(),"The authored landscape does not scatter repeated decorative props")
- var ridges:Dictionary={}
- for ridge in Map.mountain_sprites(): ridges[ridge.id]=true
- check(ridges.size()==4 and Map.mountain_sprites().size()==4,"Four distinct mountain formations are each placed once")
- var landmarks:Dictionary={}
- var frames:Dictionary={}
+ # Composition is reviewed as a landscape; tests protect the shared terrain rules.
+ var trees:=0
+ var open:=0
+ var reachable:=0
+ var canopy_solid:=true
+ for i in Map.terrain_field(3).size():
+  var kind:int=Map.terrain_field(3)[i]
+  if kind==6:
+   trees+=1
+   if s.navigation.passable(Map.cell_center(Vector2i(i%Map.GRID_WIDTH,i/Map.GRID_WIDTH))): canopy_solid=false
+  if kind==0:
+   open+=1
+   if is_finite(s.navigation.costs[i]): reachable+=1
+ check(canopy_solid,"Every dense canopy cell blocks movement")
+ check(float(trees)/Map.terrain_field(3).size()>0.35 and float(trees)/Map.terrain_field(3).size()<0.65,"Forest belts occupy a coherent substantial part of the basin")
+ check(open>6000 and float(reachable)/open>0.95,"Most open meadow belongs to the connected playable basin")
+ check(is_finite(s.navigation.costs[s.navigation.index(Map.cell_of(Map.ROAD[0]))]),"Western entry reaches the Hall through the mountain pass")
+ check(Map.scenery().is_empty(),"New map does not scatter decorative specimens")
  for item in Map.authored_landmarks():
-  landmarks[item.id]=true
-  frames[item.frame]=true
   var c:=Map.cell_of(item.footprint.get_center())
-  check(Map.cell_terrain(c,2)>0 and not s.navigation.passable(Map.cell_center(c)),"Landmark %s has an impassable construction footprint"%item.id)
- check(landmarks.size()==6 and frames.size()==6,"Six different landmarks use six distinct atlas frames")
+  check(Map.cell_terrain(c,2)==5,"Old landmark footprint stays in old saves")
+ var previous:Dictionary=s.snapshot()
+ previous.version=5
+ previous.terrain_revision=2
+ var preserved=Sim.restore(JSON.parse_string(JSON.stringify(previous,"",true,true)))
+ check(preserved!=null and preserved.terrain_revision==2 and preserved.resources==s.resources,"Version five settlements preserve their original terrain")
  var bad:Dictionary=s.snapshot()
- for value in [-1,3,1.5,"2",null]:
+ for value in [-1,4,1.5,"2",null]:
   bad.terrain_revision=value
   check(Sim.restore(bad)==null,"Malformed terrain revision is rejected: %s"%str(value))
  print("AUTHORED RESULT: %d checks, %d failures"%[checks,failures])

@@ -1,4 +1,4 @@
-"""Verify an actual v0.5 -> v0.6 Android update on the disposable emulator.
+"""Verify an actual v0.6 -> v0.7 Android update on the disposable emulator.
 
 Run after android_smoke.py. Requires ANDROID_PREVIOUS_APK and ANDROID_BASE_REPORT;
 uses the same adb/device/report variables as android_smoke.py. Both APKs must
@@ -53,14 +53,14 @@ def run():
         native.check(base['passed'] and base['apk_sha256'] == native.APK_SHA256,
                      'Upgrade test begins after the exact current APK passes native checks')
         original = native.save()
-        native.check(original['version'] == 5 and original['terrain_revision'] == 2,
+        native.check(original['version'] == 6 and original['terrain_revision'] == 3,
                      'Current native settlement uses the authored map')
         native.adb('shell', 'am', 'force-stop', native.PACKAGE)
         result = native.adb('install', '--no-incremental', '-r', '-d', PREVIOUS, timeout=360)
-        native.check('Success' in result, 'Previous signed v0.5 APK installs on the disposable emulator')
+        native.check('Success' in result, 'Previous signed v0.6 APK installs on the disposable emulator')
         legacy = copy.deepcopy(original)
-        legacy['version'] = 4
-        legacy.pop('terrain_revision', None)
+        legacy['version'] = 5
+        legacy['terrain_revision'] = 2
         legacy['mountains_enabled'] = True
         write_save(legacy)
         injected = native.save()
@@ -70,17 +70,17 @@ def run():
         (native.OUT / 'old-observed.json').write_text(json.dumps(old, indent=2))
         native.screen('01-old-app-settlement')
         print('OLD SAVE OBSERVED:', old.get('version'), old.get('mountains_enabled'), old.get('elapsed'), flush=True)
-        native.check(old['version'] == 4 and old['mountains_enabled'],
-                     'Actual v0.5 app restores and writes its legacy terrain save')
+        native.check(old['version'] == 5 and old['terrain_revision'] == 2,
+                     'Actual v0.6 app restores and writes its legacy terrain save')
         native.check(signature(old) == signature(original),
                      'Actual old app retains all building positions and levels')
         native.adb('shell', 'am', 'force-stop', native.PACKAGE)
         result = native.adb('install', '--no-incremental', '-r', native.APK, timeout=360)
-        native.check('Success' in result, 'New v0.6 APK updates v0.5 without clearing app data')
+        native.check('Success' in result, 'New v0.7 APK updates v0.6 without clearing app data')
         retained = native.save()
         native.check(retained == old, 'Android update retains the complete legacy save file')
         migrated = continue_and_pause()
-        native.check(migrated['version'] == 5 and migrated['terrain_revision'] == 1,
+        native.check(migrated['version'] == 6 and migrated['terrain_revision'] == 2,
                      'New app migrates the actual old save while retaining its terrain')
         native.check(signature(migrated) == signature(old),
                      'Upgrade preserves every building kind, position and level')

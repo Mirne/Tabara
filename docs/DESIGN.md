@@ -21,8 +21,7 @@ legacy saves and the western spawn. Two mountain spines touch
 the map boundaries and leave a 480-unit pass at y=2,560–3,040. Six wall
 sections centred at x=4,160 can seal the pass. Attackers choose
 a direct land route to the hall. Forest groves, quarries, gold
-ore, four custom ridge formations, six unique landmarks, and an irregular eastern lake give the valley
-geographic landmarks. Geography is deterministic and shared by rendering,
+ore, connected forest belts, low grey limestone escarpments and an irregular eastern lake define the basin. Geography is deterministic and shared by rendering,
 placement checks, production bonuses, and the minimap.
 
 Placement snaps to a visible 40-unit grid. Rectangular foundations occupy whole
@@ -40,14 +39,18 @@ and reserve the closest matching site.
 There is one main hall and room for up to 512 structures. Clearing ruins reuses
 storage slots and ground without growing the building array indefinitely.
 
-Each forest and quarry is a compact, single raster image with no pale base mat. Resources have no tap
+Dense forests form connected canopy masses around open meadow. Woodcutters occupy marked working pockets at their fixed resource sites; quarries share the grey limestone of the surrounding escarpments. Resources have no tap
 interaction, collection button or floating refill timer. A matching producer
 occupies each site; resource cores remain protected from unrelated buildings.
 
-The authored layout uses no random scenery scatter. Its 41 major objects have
-deliberate positions and distinct atlas frames: 28 resource sites, four ridges,
-three cliffs, and six landmarks. Old clearing cells remain bounded and preserved
-for save compatibility. Every forest and quarry uses one compact custom object.
+The woodland composition uses one palette, view angle, light direction and tree
+scale. Northwest and southwest forest belts frame the western approach; the
+northeast forest follows the lake and the southeast belt encloses the starting
+clearing. The old chapel, windmill, arch and unrelated ruined vignettes are absent
+from new settlements. Repetition of local trees and geology is intentional.
+Terrain code 6 represents dense woodland in layout 3, shared by placement and
+navigation. Producer cores retain their matching-building exception. Older
+layouts keep their previous collision masks and foundations.
 
 ## Economy and progression
 
@@ -127,11 +130,10 @@ victory is measured in game time.
 
 An original ground painting sets broad geography and color. Sharp raster ground
 materials follow an offline surface mask for trails, meadow, rocky ground, wet
-shore and the drier southwest. They are composed once into a 4,096 × 2,560 cached
+shore and leaf litter along forest edges. Stochastic overlapping texture samples break up visible tile boundaries. They are composed once into a 4,096 × 2,560 cached
 texture. The irregular lake has a separate animated raster material clipped to
 its bounds. The minimap is rendered from the actual authored world. Large
-formations use unique images, each placed once. Scenery and entities are culled against
-the camera and depth sorted by foot position. Four-frame character sprites,
+forest masses retain their original texture resolution as static world sprites above the cached ground. Entities are culled against the camera and depth sorted by foot position. Four-frame character sprites,
 workers, smoke, projectiles, brief death animations and building collapse provide
 motion without geometric placeholder characters.
 
@@ -157,7 +159,7 @@ suppresses tap placement. Desktop and Android use the same logical canvas.
 
 ## Saves and lifecycle
 
-Save version 5 stores free building positions, ruins, levels, health, enemy
+Save version 6 stores free building positions, ruins, levels, health, enemy
 world positions, cached movement/attack state and explicit terrain revision,
 wave state, random-generator state, resource cooldowns, cleared vegetation,
 camera and zoom. Full-precision JSON reduces rounding; restoration validates
@@ -165,7 +167,8 @@ all fields before accepting the settlement. Versions 2–4 retain their compatib
 terrain layout (0 or 1); existing buildings and enemies are not moved to the
 new map. Version 2 converts road progress into actual enemy positions. Legacy
 buildings crossing the old mountain pass retain the earlier ridge-free layout.
-New settlements use revision 2, the authored basin. A new settlement is therefore
+Version-five settlements retain their explicit layout 0–2.
+New settlements use revision 3, the connected woodland basin. A new settlement is therefore
 required to see the new geography. Enemies caught in an old blocked resource
 cell recover to the nearest open cell on their next step. JSON numeric version
 values are normalized before validation. Files are atomically renamed over

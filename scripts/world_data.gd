@@ -17,13 +17,41 @@ const GRID_WIDTH := 205
 const GRID_HEIGHT := 128
 # Two continuous spines meet the map edges, leaving a 480-unit mountain pass.
 const MOUNTAIN_RECTS := [Rect2(3600,0,320,1440),Rect2(3680,1280,480,320),Rect2(4000,1440,240,1120),Rect2(4000,3040,240,2080)]
-const AUTHORED_REVISION:=2
+const AUTHORED_REVISION:=3
 static var terrain_fields:Dictionary={}
 static var authored:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/hearthvale.json"))
+static var woodland:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/woodland.json"))
+static var forest_shapes:Array=[]
+static var forest_pockets:Array=[]
+static var city_shape:=PackedVector2Array()
 static var water_cells:Dictionary={}
 
 static func _static_init()->void:
  for key in authored.get("water_cells",[]): water_cells[int(key)]=true
+ for item in woodland.regions:
+  var shape:=PackedVector2Array()
+  for pair in item.polygon: shape.append(Vector2(pair[0],pair[1]))
+  forest_shapes.append(shape)
+ for item in woodland.working_pockets:
+  forest_pockets.append({"pos":Vector2(item.pos[0],item.pos[1]),"radius":float(item.radius)})
+ for pair in woodland.city_clearing: city_shape.append(Vector2(pair[0],pair[1]))
+
+static func forest_regions()->Array:
+ var result:Array=[]
+ for item in woodland.regions:
+  var a:Array=item.rect
+  result.append({"id":item.id,"belt":item.belt,"texture":item.texture,"rect":Rect2(a[0],a[1],a[2],a[3])})
+ return result
+
+static func forest_at(p:Vector2)->bool:
+ if Geometry2D.is_point_in_polygon(p,city_shape): return false
+ var a:Array=woodland.protected_approach
+ if Rect2(a[0],a[1],a[2],a[3]).has_point(p): return false
+ for pocket in forest_pockets:
+  if p.distance_squared_to(pocket.pos)<pocket.radius*pocket.radius: return false
+ for shape in forest_shapes:
+  if Geometry2D.is_point_in_polygon(p,shape): return true
+ return false
 
 static func revision(value:Variant)->int:
  if value is bool: return 1 if value else 0
@@ -42,11 +70,11 @@ static func authored_landmarks()->Array:
 
 static func unique_resource(index:int)->Dictionary:
  var wood_count:int=GROVES.size()
- if index<wood_count: return {"atlas":index/4,"frame":index%4,"size":Vector2(245+(index%3)*12,225+(index%2)*15)}
+ if index<wood_count: return {"atlas":0,"frame":index%3,"size":Vector2(245,225)}
  if index<wood_count+QUARRIES.size():
   var n:=index-wood_count
-  return {"atlas":n/2,"frame":4+n%2,"size":Vector2(230+(n%2)*15,165+(n%3)*9)}
- return {"atlas":4,"frame":index-wood_count-QUARRIES.size(),"size":Vector2(145,115)}
+  return {"atlas":0,"frame":3+n%3,"size":Vector2(245,175)}
+ return {"atlas":0,"frame":3+(index-wood_count-QUARRIES.size())%3,"size":Vector2(145,115)}
 
 static func cell_of(p:Vector2)->Vector2i: return Vector2i(floori(p.x/CELL),floori(p.y/CELL))
 static func cell_center(c:Vector2i)->Vector2: return (Vector2(c)+Vector2.ONE*0.5)*CELL
@@ -90,7 +118,8 @@ static func compute_field(layout:int)->PackedInt32Array:
      var point:Vector2=cell_center(c)+offset
      if water_at(point,layout): value=2
      elif rock_at(point): value=3
-     if layout==2 and (Geometry2D.is_point_in_polygon(point,north) or Geometry2D.is_point_in_polygon(point,south)): value=4
+     if layout>=2 and (Geometry2D.is_point_in_polygon(point,north) or Geometry2D.is_point_in_polygon(point,south)): value=4
+     if layout==3 and value==0 and forest_at(point): value=6
     if layout==1:
      for ridge in MOUNTAIN_RECTS:
       if ridge.intersects(rect): value=4
@@ -104,7 +133,7 @@ static func compute_field(layout:int)->PackedInt32Array:
   for y in range(floori(rect.position.y/CELL),ceili(rect.end.y/CELL)):
    for x in range(floori(rect.position.x/CELL),ceili(rect.end.x/CELL)):
     var key:=y*GRID_WIDTH+x
-    if key>=0 and key<field.size() and field[key]==0: field[key]=10+i
+    if key>=0 and key<field.size() and field[key] in [0,6]: field[key]=10+i
  return field
 
 static func terrain_field(layout:Variant=AUTHORED_REVISION)->PackedInt32Array:
@@ -147,7 +176,7 @@ static func rock_at(p: Vector2) -> bool:
 
 static func terrain_error(p:Vector2,radius:float,own_deposit:int=-1,layout:Variant=AUTHORED_REVISION)->String:
  var rect:=Rect2(p-Vector2.ONE*radius,Vector2.ONE*radius*2)
- var reasons=["","Stay inside the frontier boundary.","Build on dry ground.","This rocky ridge cannot support foundations.","Mountains block this ground. Build walls across the pass.","This landmark occupies the ground."]
+ var reasons=["","Stay inside the frontier boundary.","Build on dry ground.","This rocky ridge cannot support foundations.","Mountains block this ground. Build walls across the pass.","This landmark occupies the ground.","Dense woodland blocks this ground. Use the clearings and timber sites."]
  for y in range(floori(rect.position.y/CELL),ceili(rect.end.y/CELL)):
   for x in range(floori(rect.position.x/CELL),ceili(rect.end.x/CELL)):
    var value:=cell_terrain(Vector2i(x,y),layout)

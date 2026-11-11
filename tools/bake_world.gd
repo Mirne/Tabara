@@ -7,7 +7,7 @@ func run()->void:
  var data:Dictionary=Map.authored.duplicate(true)
  data["terrain_fields"]={}
  data["navigation"]={}
- for revision in range(3):
+ for revision in range(Map.AUTHORED_REVISION+1):
   var started:=Time.get_ticks_msec()
   var field:PackedInt32Array=Map.compute_field(revision)
   Map.terrain_fields[revision]=field
@@ -55,5 +55,29 @@ func run()->void:
  var file:=FileAccess.open("res://assets/world/hearthvale.json",FileAccess.WRITE)
  file.store_string(JSON.stringify(data,"",true,true))
  file.close()
+ var woods:Dictionary=Map.woodland.duplicate(true)
+ var woodland_pixels:=PackedByteArray()
+ woodland_pixels.resize(pixels.size())
+ var woodland_field:PackedInt32Array=Map.terrain_fields[3]
+ for y in Map.GRID_HEIGHT:
+  for x in Map.GRID_WIDTH:
+   var index:int=y*Map.GRID_WIDTH+x
+   var tree:=0.0
+   for dy in range(-4,5):
+    for dx in range(-4,5):
+     var cx:=x+dx
+     var cy:=y+dy
+     if cx<0 or cy<0 or cx>=Map.GRID_WIDTH or cy>=Map.GRID_HEIGHT: continue
+     if woodland_field[cy*Map.GRID_WIDTH+cx]==6:
+      tree=maxf(tree,1.0-Vector2(dx,dy).length()/5.0)
+   woodland_pixels[index*4]=pixels[index*4]
+   woodland_pixels[index*4+1]=pixels[index*4+1]
+   woodland_pixels[index*4+2]=pixels[index*4+2]
+   woodland_pixels[index*4+3]=roundi(tree*255)
+ woods["surface_pixels"]=Marshalls.raw_to_base64(woodland_pixels)
+ woods.erase("forest_cells")
+ var woodland_file:=FileAccess.open("res://assets/world/woodland.json",FileAccess.WRITE)
+ woodland_file.store_string(JSON.stringify(woods,"",true,true))
+ woodland_file.close()
  print("WORLD BAKE COMPLETE: ",Map.GRID_WIDTH*Map.GRID_HEIGHT," cells per layout")
  quit()

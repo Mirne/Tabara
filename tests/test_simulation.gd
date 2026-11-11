@@ -40,17 +40,17 @@ func run()->void:
  var first_hp:float=s.enemies[-1].hp
  s.step(0.2)
  check(s.kills>0 or s.enemies[-1].hp<first_hp,"Main hall fires immediately")
- check(s.build_at(Vector2(6101,3702),"arrow")=="","Free placement works far beyond the old plots")
- check(s.buildings[1].pos==Vector2(6120,3720),"Placement snaps to the visible forty-unit grid")
+ check(s.build_at(Vector2(6101,2802),"arrow")=="","Free placement works far beyond the old plots")
+ check(s.buildings[1].pos==Vector2(6120,2800),"Placement snaps to the visible forty-unit grid")
  var before:Dictionary=s.resources.duplicate()
- check(s.build_at(Vector2(6101,3702),"wall")!="" and s.resources==before,"Overlapping foundations are rejected without spending")
+ check(s.build_at(Vector2(6101,2802),"wall")!="" and s.resources==before,"Overlapping foundations are rejected without spending")
  check(s.build_at(Map.LAKE_CENTER,"wood")!="","Water placement is rejected")
  check(s.build_at(Map.CLIFFS[0],"wood")!="","Ridge placement is rejected")
  check(s.build_at(Vector2(10,10),"wall")!="","Map boundary is enforced")
  check(s.build_at(Map.GROVES[0],"arrow")!="","Resource groves retain access space")
- check(s.build_at(Vector2(6400,4000),"wall")=="","Walls can be built away from the road")
+ check(s.build_at(Vector2(6400,2800),"wall")=="","Walls can be built away from the road")
  check(s.buildings.size()==3,"Buildings are dynamic rather than fixed slots")
- check(s.vegetation_cleared(Vector2(6400,4000)),"Foundations create a persistent clearing")
+ check(s.vegetation_cleared(Vector2(6400,2800)),"Foundations create a persistent clearing")
  var rates:Dictionary=s.income_rates()
  var node:=0
  var timber:float=s.resources.wood
@@ -58,9 +58,9 @@ func run()->void:
  check(s.build_at(Vector2(7000,4000),"hall")!="","Only one main hall is allowed")
  check(not s.buy("stone") and not s.trade("wood"),"Trading requires a marketplace")
  var tiles=rich()
- check(tiles.build_at(Vector2(6400,4000),"wall")=="" and tiles.build_at(Vector2(6480,4000),"wall")=="","Adjacent wall foundations meet cleanly on the grid")
+ check(tiles.build_at(Vector2(6400,2800),"wall")=="" and tiles.build_at(Vector2(6480,2800),"wall")=="","Adjacent wall foundations meet cleanly on the grid")
  var tile_stock:Dictionary=tiles.resources.duplicate()
- check(tiles.build_at(Vector2(6440,4000),"wall")!="" and tiles.resources==tile_stock,"Partly overlapping grid footprints spend nothing")
+ check(tiles.build_at(Vector2(6440,2800),"wall")!="" and tiles.resources==tile_stock,"Partly overlapping grid footprints spend nothing")
  var old_save=Sim.restore(JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/frontier-preview.json")))
  check(old_save!=null and old_save.buildings[1].pos==Vector2(4544,3264),"Existing v0.2 free-position settlements keep their progress")
  if old_save!=null:
@@ -68,7 +68,7 @@ func run()->void:
  # Resource sites limit producers, retain their identity and survive clear/repair.
  var limited=rich()
  var deposit_count:int=limited.resource_nodes.size()
- check(limited.build_at(Vector2(6100,3700),"stone")!="","Stonemasons cannot be built on empty ground")
+ check(limited.build_at(Vector2(6100,2800),"stone")!="","Stonemasons cannot be built on empty ground")
  check(limited.build_at(Map.QUARRIES[0],"wood")!="","A woodcutter requires a forest, not a quarry")
  check(limited.build_at(Map.QUARRIES[0],"stone")=="","Stonemason snaps onto its quarry")
  var stone_site:Vector2=limited.buildings[1].pos
@@ -95,7 +95,7 @@ func run()->void:
  check(reward_test.resources.gold-before_gold<1,"A removed enemy cannot pay gold twice")
  # Dragged wall batches are connected, priced once and atomic.
  var walls=rich()
- var stroke:Array=walls.wall_line(Vector2(6100,3700),Vector2(6420,3860))
+ var stroke:Array=walls.wall_line(Vector2(6100,2800),Vector2(6420,2960))
  for i in range(1,stroke.size()):
   check(absf(stroke[i].x-stroke[i-1].x)+absf(stroke[i].y-stroke[i-1].y)==80,"Every dragged wall piece joins a neighbor")
  var preview:Dictionary=walls.wall_preview(stroke)
@@ -107,7 +107,7 @@ func run()->void:
  check(walls.wall_preview(extension).count==2,"Joining an existing endpoint charges only new pieces")
  var empty=Sim.new(3)
  var unpaid:Dictionary=empty.snapshot()
- check(empty.build_wall(empty.wall_line(Vector2(6100,3700),Vector2(6740,3700)))!="" and empty.snapshot()==unpaid,"Unaffordable wall strokes make no partial changes")
+ check(empty.build_wall(empty.wall_line(Vector2(6100,2800),Vector2(6740,2800)))!="" and empty.snapshot()==unpaid,"Unaffordable wall strokes make no partial changes")
  var blocked=rich()
  var blocked_stock:Dictionary=blocked.resources.duplicate()
  var lake_line:Array=blocked.wall_line(Map.LAKE_CENTER-Vector2(1000,0),Map.LAKE_CENTER+Vector2(200,0))
@@ -126,7 +126,7 @@ func run()->void:
  assault.enemies.clear()
  assault.spawn_remaining=0
  assault.build_at(Vector2(4000,2800),"market")
- assault.build_at(Vector2(4520,3360),"market")
+ assault.build_at(Vector2(5040,3360),"market")
  assault.buildings[0].cooldown=10000
  var raider:Dictionary=assault.spawn_enemy()
  raider.pos=Vector2(3800,2800)
@@ -149,7 +149,7 @@ func run()->void:
  around.spawn_remaining=0
  around.buildings[0].cooldown=10000
  var scout:Dictionary=around.enemies[0]
- scout.pos=Vector2(1230,3200)
+ scout.pos=Vector2(1230,2800)
  scout.hp=1e8
  scout.max_hp=1e8
  var avoided:=true
@@ -225,7 +225,7 @@ func run()->void:
   s=rich()
   var index:=0
   if kind!="hall":
-   var site:Vector2=Map.GROVES[0] if kind=="wood" else (Map.QUARRIES[0] if kind=="stone" else Vector2(6100,3700))
+   var site:Vector2=Map.GROVES[0] if kind=="wood" else (Map.QUARRIES[0] if kind=="stone" else Vector2(6100,2800))
    check(s.build_at(site,kind)=="","Construct "+kind)
    index=1
   var b:Dictionary=s.buildings[index]
@@ -256,7 +256,7 @@ func run()->void:
  var clearing=s.cleared_ground.duplicate()
  check(s.clear_at(1)=="" and s.buildings[1]==null,"Ruins can be completely removed")
  check(s.cleared_ground==clearing,"Cleared trees do not regrow after demolition")
- check(s.build_at(Vector2(4544,3264),"market")=="","Other clear ground accepts a marketplace")
+ check(s.build_at(Vector2(5024,3264),"market")=="","Other clear ground accepts a marketplace")
  check(s.buildings.size()==2,"Cleared storage slots are reused")
  s.step(3)
  var gold:float=s.resources.gold
@@ -307,13 +307,13 @@ func run()->void:
  enemy.aim=0.2
  enemy.cooldown=-1
  s.clear_at(1)
- s.build_at(Vector2(6400,4000),"wall")
+ s.build_at(Vector2(6400,2800),"wall")
  var remote_hp:float=s.buildings[1].hp
  s.step(0.05)
  check(s.buildings[1].hp==remote_hp,"Cached attacks cannot hit a reused remote building index")
  # Save validation and deterministic continuation, including cleared vegetation.
  s=rich()
- s.build_at(Vector2(6100,3700),"arrow")
+ s.build_at(Vector2(6100,2800),"arrow")
  s.step(25)
  var restored=roundtrip(s)
  check(restored!=null,"Full snapshot restores")

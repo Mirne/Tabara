@@ -6,7 +6,7 @@ extends RefCounted
 const VICTORY_TIME := 900.0
 const MAX_LEVEL := 100
 const WAVE_SECONDS := 30.0
-const SAVE_VERSION := 5
+const SAVE_VERSION := 6
 const Navigator=preload("res://scripts/assault_navigation.gd")
 static var shared_navigation:Dictionary={}
 var mountains_enabled:=true
@@ -31,7 +31,7 @@ const FOOTPRINTS := {"hall":100.0,"wood":65.0,"stone":68.0,"arrow":45.0,"wall":3
 const BODY_GAPS := {"raider":30.0,"runner":28.0,"brute":43.0,"siege":60.0}
 const DEFINITIONS := {
  "hall": {"name":"Main hall", "tag":"THE HEART OF TABARA", "desc":"Your last line of defense. Fires arrows and provides a small steady income.", "cost":[0,0,0], "upgrade":[65,45,25], "hp":4200.0, "damage":50.0, "range":560.0, "period":0.9, "art":0},
- "wood": {"name":"Woodcutter", "tag":"WOOD PRODUCTION", "desc":"Harvests timber automatically. Must be built on a forest deposit. One woodcutter per forest.", "cost":[60,20,10], "upgrade":[50,25,15], "hp":300.0, "income":4.0, "resource":"wood", "art":1},
+ "wood": {"name":"Woodcutter", "tag":"WOOD PRODUCTION", "desc":"Harvests timber automatically. Build in a marked timber working pocket. One woodcutter per site.", "cost":[60,20,10], "upgrade":[50,25,15], "hp":300.0, "income":4.0, "resource":"wood", "art":1},
  "stone": {"name":"Stonemason", "tag":"STONE PRODUCTION", "desc":"Quarries stone automatically. Must be built on a stone deposit. One stonemason per quarry.", "cost":[70,15,15], "upgrade":[45,40,15], "hp":380.0, "income":3.0, "resource":"stone", "art":2},
  "arrow": {"name":"Arrow tower", "tag":"FAST SINGLE TARGET", "desc":"Accurate, rapid arrows. Best against scouts and lone raiders.", "cost":[75,40,20], "upgrade":[55,35,20], "hp":500.0, "damage":24.0, "range":460.0, "period":0.85, "art":3},
  "wall": {"name":"Wall", "tag":"HOLD THE LINE", "desc":"Build freely to form a defensive line. Enemies attack walls in their way.", "cost":[25,65,10], "upgrade":[20,55,10], "hp":1250.0, "art":4},
@@ -643,7 +643,7 @@ func snapshot() -> Dictionary:
 
 static func restore(data: Dictionary):
  if not _number(data.get("version"),2,SAVE_VERSION) or float(data.version)!=floorf(data.version): return null
- if int(data.version) not in [2,3,4,SAVE_VERSION]: return null
+ if int(data.version) not in [2,3,4,5,SAVE_VERSION]: return null
  if not data.get("buildings") is Array or data.buildings.is_empty() or data.buildings.size()>MAX_BUILDINGS: return null
  if not data.get("enemies") is Array or data.enemies.size()>MAX_ENEMIES: return null
  if not data.get("resources") is Dictionary: return null

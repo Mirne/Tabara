@@ -43,10 +43,25 @@ outputs. Atlas regions select whole objects, with transparent padding.
 | `assets/world/wall-stone.png` | Tileable granite masonry for textured wall faces and parapets |
 | `assets/world/wall-walk.png` | Tileable weathered oak planks for wall walkways |
 
-The renderer places 41 individually assigned major objects. It does not scatter
-the old repeated vegetation and rock stamps over the new map. Resource sites
-remain compact, noninteractive scenery. Mountain images are drawn once each,
-with shared authored collision polygons behind the red construction grid.
+These files describe the previous v0.6 map. Its landmark and ridge art remains for compatible old settlements. The former resource atlases are excluded from current exports; producer scenery now uses the shared woodland atlas.
+
+## Connected woodland artwork (v0.7)
+
+Original images generated on 11 November 2026 follow a single composition study:
+muted olive pine and oak, mossy grey limestone, overhead view and upper-left light.
+`assets/woodland/` contains continuous canopy sections fitted to the authored
+forest belts, four matching low escarpment images, and `sites.png` (2 columns ×
+3 rows: three small legacy groves, then three related limestone outcrops).
+New settlements render timber working pockets in the continuous forest; they do
+not add isolated grove images on top. Stone and ore sites reuse the same geology.
+The source PNGs are unchanged image-generation outputs. Reference screenshots
+remain outside the repository and game.
+
+The layout and protected clearings are in `assets/world/woodland.json`. The
+terrain bake stores woodland cells in the same authoritative field as all other
+obstacles. Forest artwork is rendered at native imported resolution above the
+cached floor; linear sampling and disabled edge wrapping avoid seams. New
+woodland textures use ETC2/S3TC compression, a 2,048-pixel limit and no mipmaps.
 
 `assets/world/overview.png` and `wall-icon.png` are **game-engine renders**, not
 additional generated paintings: `tools/capture_authored.gd` renders the actual
@@ -55,14 +70,13 @@ layout as the game. The original ground-material atlas supplies sharp close-up
 detail over the macro painting. Original generated PNGs have not been retouched
 with image-processing scripts.
 
-New mobile art uses VRAM compression and mipmaps, with a 2,048-pixel import limit.
+Earlier mobile artwork uses VRAM compression and mipmaps, with a 2,048-pixel import limit.
 Runtime atlas regions include each complete selected object. Transparent-corner
 checks and actual-game views were reviewed for opaque pale background patches.
 Building pivots and centered dirt decals retain the v0.5 ground alignment.
 Legacy mountain artwork remains for existing save layouts.
 
-The gameplay reference **They Are Billions** informed the settlement-defense
-structure, not the graphics. No art or screenshots from that game are included.
+The **They Are Billions** reference informed settlement-defense play and the relationship between dense terrain, clearings and chokepoints. The visual style and all game assets are original. No art or screenshots from that game are included.
 
 Animation, sprite transforms, terrain composition, soft shadows, smoke,
 projectiles, deaths and collapse are implemented in code using these raster

@@ -697,7 +697,7 @@ func draw_inspector()->void:
 
 func draw_minimap()->void:
  Art.skin(self,Rect2(10,635,251,165),Color(0.9,0.93,0.86),10)
- if sim.terrain_revision==2 and world.overview!=null: draw_texture_rect(world.overview,MINIMAP,false,Color(0.9,0.94,0.88))
+ if sim.terrain_revision==3 and world.overview!=null: draw_texture_rect(world.overview,MINIMAP,false,Color(0.9,0.94,0.88))
  elif world.ground_view!=null: draw_texture_rect(world.ground_view.get_texture(),MINIMAP,false,Color(0.79,0.88,0.75))
  for b in sim.buildings:
   if b!=null: draw_rect(Rect2(MINIMAP.position+b.pos/Map.SIZE*MINIMAP.size-Vector2(1.5,1.5),Vector2(3,3)),GOLD if b.hp>0 else RED)
@@ -762,7 +762,7 @@ func draw_settings()->void:
 
 func draw_guide()->void:
  overlay(Rect2(235,65,970,680),"FIELD MANUAL","Build a settlement worth defending.")
- var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a forest or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","All seven structures reach level 100. Destroyed buildings leave repairable ruins. Dismantling frees the ground but loses the upgrades."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
+ var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a marked timber site or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","All seven structures reach level 100. Destroyed buildings leave repairable ruins. Dismantling frees the ground but loses the upgrades."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
  for i in entries.size():
   var p:=Vector2(274+(i%2)*462,245+(i/2)*141)
   label("0%d  %s"%[i+1,entries[i][0]],p,19,IVORY,true)
