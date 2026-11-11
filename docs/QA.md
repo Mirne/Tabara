@@ -15,7 +15,7 @@ ARM64 and x86-64, Android API 24 minimum. Existing saves retain layouts 0–2.
 APK: `tabara-frontier-v0.7.apk`, 92,946,314 bytes (88.6 MiB).
 SHA-256: `950159db7817c55c61074a113be02b9c1eb61fcb76db013a62200822710832fa`.
 Certificate SHA-256: `dbd0f5f2a2a56082d36b733d6467f28dc7dc166e82ffe41d0dc2c2fe42cd6ebb`.
-Previous release evidence remains in [QA-v0.6.md](QA-v0.6.md).
+Previous release evidence remains in [the v0.6 release](https://github.com/Mirne/Tabara/blob/v0.6.0/docs/QA.md).
 
 Local verification completed with 3,314 model checks, 68 world checks and 119
 rendered interface checks, zero failures. Actual movement completed 29 routes
@@ -74,3 +74,18 @@ The local Android device and Linux renderer are software emulators. Their speed
 does not represent the S23 Ultra. No physical handset was available. This is a
 development-signed sideload build. Start a new settlement to see the new terrain;
 installing the update preserves the terrain of an existing settlement.
+
+## Master consolidation
+
+The repository now keeps the current source, tested APK and checksum together on
+`master`. Older download commits are preserved as merged ancestors, and earlier
+reports and screenshots remain accessible through release tags. Removed art was
+already excluded from the v0.7 export; the game scripts, remaining runtime assets,
+and signed APK are unchanged. Legacy save artwork and all four terrain layouts
+remain available.
+
+A clean local import and `python3 tools/verify.py --ui` passed after cleanup,
+including the model, terrain, actual movement and rendered control checks above.
+The initial fresh import hit a Godot font-import thread crash; repeating with
+`--single-threaded-scene` succeeded. Build instructions and both CI import steps
+now use that flag.

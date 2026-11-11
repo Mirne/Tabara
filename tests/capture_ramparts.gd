@@ -29,7 +29,7 @@ func run()->void:
  await process_frame
  await process_frame
  await RenderingServer.frame_post_draw
- root.get_texture().get_image().save_png("res://test-results/v06-wall-matrix.png")
+ root.get_texture().get_image().save_png("res://test-results/rampart-matrix.png")
  print("RAMPART MATRIX: rendered all 16 cardinal connection combinations")
  background.queue_free()
  for node in root.get_children():node.queue_free()

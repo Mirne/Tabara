@@ -1,6 +1,5 @@
 .godot/
 builds/*
-!builds/.gitkeep
 *.keystore
 *.apk
 *.aab
@@ -10,3 +9,7 @@ __pycache__/
 *.pyc
 android/build/
 test-results/
+
+# Keep the current tested download on master. Other build outputs stay local.
+!builds/tabara-frontier-v0.7.apk
+!builds/tabara-frontier-v0.7.apk.sha256

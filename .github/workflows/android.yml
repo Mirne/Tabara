@@ -39,7 +39,7 @@ jobs:
           "$RUNNER_TEMP/tabara-test-python/bin/pip" install Pillow
       - name: Build test APK
         run: |
-          "$GODOT" --headless --editor --path . --import --quit
+          "$GODOT" --headless --editor --single-threaded-scene --path . --import --quit
           python3 - <<'PY'
           import os
           from pathlib import Path

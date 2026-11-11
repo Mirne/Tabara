@@ -2,7 +2,9 @@ name: Verify game
 
 on:
   push:
+    branches: [master]
   pull_request:
+    branches: [master]
   workflow_dispatch:
 
 permissions:
@@ -26,7 +28,7 @@ jobs:
           unzip -q /tmp/godot.zip -d /tmp/godot
           chmod +x "$GODOT"
       - name: Import assets
-        run: "$GODOT --headless --editor --path . --import --quit"
+        run: "$GODOT --headless --editor --single-threaded-scene --path . --import --quit"
       - name: Verify simulation and rendered interactions
         run: xvfb-run -a python3 tools/verify.py --ui
       - name: Save UI screenshots

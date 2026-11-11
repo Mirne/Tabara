@@ -29,7 +29,7 @@ wall runs are drawn as fortification geometry rather than cropped wall strips.
 
 ## Play
 
-Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/02f6252417371041ed7cc5d542e0f3f0c0081ef8/builds/tabara-frontier-v0.7.apk) from GitHub,
+Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/master/builds/tabara-frontier-v0.7.apk) from GitHub,
 or install the local `builds/tabara-frontier-v0.7.apk`. You can also open `project.godot` in Godot 4.6.3 and
 press **F5**. A 64-bit Android 7.0/API 24 or later device with OpenGL ES 3.0 is required. ARM64 phones, including the Samsung S23 Ultra, are supported.
 This is a **development-signed test build**. The game is in English and has no
@@ -74,7 +74,7 @@ Ruined producers keep their resource claim until repaired or cleared. New constr
 | Building | Role |
 | --- | --- |
 | Main hall | Prebuilt headquarters; attacks from the beginning and supplies passive income |
-| Woodcutter | Requires a forest deposit; one per forest; produces timber |
+| Woodcutter | Requires a timber working pocket; one per site; produces timber |
 | Stonemason | Requires a quarry; one per stone deposit; produces stone |
 | Arrow tower | Fast attacks against individual raiders |
 | Wall | Drag connected grid runs; each section can be upgraded, breached and repaired |
@@ -112,6 +112,15 @@ The expanded map uses a **new frontier save format**. The earlier fixed-plot
 settlement is not migrated or loaded; its original save file is left intact.
 Starting a new frontier replaces the active frontier after confirmation when a live save exists.
 
+## Development
+
+`master` contains the game source and the current tested APK with its checksum.
+Continue development directly on `master`; separate feature and download branches
+have been retired. Keep only the latest tested build in `builds/`. Earlier source,
+artwork, screenshots and verification reports remain in [release history](docs/HISTORY.md).
+Published APK download commits are preserved in the merged history, so old links
+continue to work.
+
 ## Build
 
 Install Godot **4.6.3** and matching export templates, an Android SDK with
@@ -119,7 +128,7 @@ Install Godot **4.6.3** and matching export templates, an Android SDK with
 **Editor Settings → Export → Android**. ETC2/ASTC imports are already enabled.
 
 ```sh
-godot --headless --editor --path . --import --quit
+godot --headless --editor --single-threaded-scene --path . --import --quit
 mkdir -p builds
 godot --headless --path . --export-debug Android builds/tabara-frontier-v0.7-unpacked.apk
 python3 tools/package_android.py builds/tabara-frontier-v0.7-unpacked.apk builds/tabara-frontier-v0.7.apk --sdk "$ANDROID_HOME"

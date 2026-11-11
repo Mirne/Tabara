@@ -19,8 +19,6 @@ repository assets are copies of those outputs, sampled through atlas regions.
 | `assets/frontier/menu.png` | Original illustrated frontier-valley menu landscape |
 | `assets/frontier/water.png` | Tileable lake material used by the terrain and animated surface |
 | `assets/frontier/earth.png` | Transparent irregular compacted-earth foundation decal |
-| `assets/frontier/resource-sites.png` | Compact pine grove and limestone quarry; one raster image per producer site |
-| `assets/frontier/wall-kit.png` | Complete short horizontal/north–south modules and junction pier; no angled sprite crop |
 | `assets/frontier/mountains.png` | Transparent rugged mountain cluster used along impassable spines |
 
 ## Authored world artwork (v0.6)
@@ -31,8 +29,6 @@ outputs. Atlas regions select whole objects, with transparent padding.
 
 | File | Contents and use |
 | --- | --- |
-| `assets/world/resources-a.png` through `resources-d.png` | Four different woodland objects and two quarries per sheet; 14 woodland and eight quarry frames are used, each once |
-| `assets/world/ores.png` | Six different ore formations, each assigned once |
 | `assets/world/landmarks.png` | Six complete objects in a 3-column × 2-row atlas: ruined watchfort, broken wagon, jetty/boat, chapel, windmill and stone arch |
 | `assets/world/cliffs.png` | Three distinct cliff formations, one per cliff site |
 | `assets/world/north_crown.png` | One northern boundary ridge |
@@ -43,7 +39,7 @@ outputs. Atlas regions select whole objects, with transparent padding.
 | `assets/world/wall-stone.png` | Tileable granite masonry for textured wall faces and parapets |
 | `assets/world/wall-walk.png` | Tileable weathered oak planks for wall walkways |
 
-These files describe the previous v0.6 map. Its landmark and ridge art remains for compatible old settlements. The former resource atlases are excluded from current exports; producer scenery now uses the shared woodland atlas.
+These files remain for compatible old settlements and shared ground/wall materials. Producer scenery uses the woodland atlas. Superseded resource sheets and wall-kit art have been removed from master; their originals remain in the [v0.6 source](https://github.com/Mirne/Tabara/tree/v0.6.0/assets).
 
 ## Connected woodland artwork (v0.7)
 
