@@ -11,5 +11,5 @@ android/build/
 test-results/
 
 # Keep the current tested download on main. Other build outputs stay local.
-!builds/tabara-frontier-v0.7.apk
-!builds/tabara-frontier-v0.7.apk.sha256
+!builds/tabara-frontier-v0.8.apk
+!builds/tabara-frontier-v0.8.apk.sha256

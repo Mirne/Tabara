@@ -19,11 +19,15 @@
       "passed": true
     },
     {
+      "label": "Native producer preview renders green buildable tiles",
+      "passed": true
+    },
+    {
       "label": "Native preview never constructs before confirmation",
       "passed": true
     },
     {
-      "label": "Native initial grid buildings are stored before wall dragging",
+      "label": "Native full-height panels construct the initial three buildings",
       "passed": true
     },
     {
@@ -31,7 +35,7 @@
       "passed": true
     },
     {
-      "label": "Native app writes the world-position save format",
+      "label": "Native app writes global research and the new eight-site terrain format",
       "passed": true
     },
     {
@@ -71,15 +75,31 @@
       "passed": true
     },
     {
-      "label": "Native wall stroke creates joined piece at (4200, 2720)",
+      "label": "Native wall stroke creates joined piece at (4160, 2600)",
       "passed": true
     },
     {
-      "label": "Native wall stroke creates joined piece at (4200, 2800)",
+      "label": "Native wall stroke creates joined piece at (4160, 2680)",
       "passed": true
     },
     {
-      "label": "Native wall stroke creates joined piece at (4200, 2880)",
+      "label": "Native wall stroke creates joined piece at (4160, 2760)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4160, 2840)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4160, 2920)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4160, 3000)",
+      "passed": true
+    },
+    {
+      "label": "Native mission contains only eight producer sites",
       "passed": true
     },
     {
@@ -103,6 +123,14 @@
       "passed": true
     },
     {
+      "label": "Native touch constructs an operational Workshop",
+      "passed": true
+    },
+    {
+      "label": "Native Workshop starts a timed global upgrade without an instant level",
+      "passed": true
+    },
+    {
       "label": "Android launcher opens the game",
       "passed": true
     },
@@ -115,7 +143,11 @@
       "passed": true
     },
     {
-      "label": "Cold restart retains free-placed kinds, coordinates, and upgrades",
+      "label": "Cold restart retains all confirmed structures and coordinates",
+      "passed": true
+    },
+    {
+      "label": "Cold restart retains global research or its paid in-progress order",
       "passed": true
     },
     {
@@ -151,9 +183,7 @@
       "passed": true
     }
   ],
-  "actual_seconds": 281.877530799,
-  "apk_sha256": "f00b6c211e8df90fe7d6349bf9bc611378ff9ba576c50e811bb787819f5e091b",
-  "mode": "full-native",
-  "workflow_url": "https://github.com/Mirne/Tabara/actions/runs/42992179412",
-  "runtime_commit": "ec493311cb94bfa7568a3874dc3f20e378274df2"
+  "actual_seconds": 360.15912019999996,
+  "apk_sha256": "9fab5d9717c3c30ae366e0c247d534ec99c0d843c7b45be7ee53d161e9d9f4d9",
+  "mode": "full-native"
 }

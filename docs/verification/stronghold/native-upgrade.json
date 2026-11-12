@@ -11,7 +11,7 @@
       "passed": true
     },
     {
-      "label": "Previous signed v0.6 APK installs on the disposable emulator",
+      "label": "Previous signed v0.7 APK installs on the disposable emulator",
       "passed": true
     },
     {
@@ -27,7 +27,7 @@
       "passed": true
     },
     {
-      "label": "Actual v0.6 app restores and writes its legacy terrain save",
+      "label": "Actual v0.7 app restores and writes its legacy terrain save",
       "passed": true
     },
     {
@@ -35,7 +35,7 @@
       "passed": true
     },
     {
-      "label": "New v0.7 APK updates v0.6 without clearing app data",
+      "label": "New v0.8 APK updates v0.7 without clearing app data",
       "passed": true
     },
     {
@@ -55,7 +55,11 @@
       "passed": true
     },
     {
-      "label": "Upgrade preserves every building kind, position and level",
+      "label": "Upgrade preserves foundations and migrates the highest old level per building type globally",
+      "passed": true
+    },
+    {
+      "label": "Legacy terrain retains its sites and existing tower research is never downgraded",
       "passed": true
     },
     {
@@ -67,8 +71,8 @@
       "passed": true
     }
   ],
-  "actual_seconds": 349.77593196999806,
-  "apk_sha256": "950159db7817c55c61074a113be02b9c1eb61fcb76db013a62200822710832fa",
-  "previous_apk_sha256": "2014b3a0d4d4dc14784a94c6ddd17bd43e9bff605fd3f4772f489901be041afa",
+  "actual_seconds": 386.22339865699905,
+  "apk_sha256": "e1aca8a5c8b7fd36419e04d5c5f86e48eec8809ca070bfb1dde3e45ee85a0ee6",
+  "previous_apk_sha256": "950159db7817c55c61074a113be02b9c1eb61fcb76db013a62200822710832fa",
   "mode": "actual-native-version-update"
 }

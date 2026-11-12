@@ -59,7 +59,7 @@ obstacles. Forest artwork is rendered at native imported resolution above the
 cached floor; linear sampling and disabled edge wrapping avoid seams. New
 woodland textures use ETC2/S3TC compression, a 2,048-pixel limit and no mipmaps.
 
-`assets/world/overview.png` and `wall-icon.png` are **game-engine renders**, not
+`assets/world/overview.png`, `overview-v07.png` and `wall-icon.png` are **game-engine renders**, not
 additional generated paintings: `tools/capture_authored.gd` renders the actual
 world and the textured wall geometry. The minimap therefore follows the same
 layout as the game. The original ground-material atlas supplies sharp close-up
@@ -79,6 +79,24 @@ projectiles, deaths and collapse are implemented in code using these raster
 assets. Interface text, health bars, selection/range guides and minimap markers
 remain functional drawing primitives; the world and command deck do not use
 geometric placeholder characters or flat vector terrain.
+
+## Stronghold artwork (v0.8)
+
+Generated on 12 November 2026, using the existing woodland and building palette:
+
+| File | Contents and use |
+| --- | --- |
+| `assets/art/workshop.png` | Transparent limestone/timber Workshop, red tile roof and two chimneys |
+| `assets/frontier/elites.png` | Four walking frames of a larger iron-clad raider with crimson cloth |
+| `assets/woodland/canopy-infill.png` | Continuous pine/oak canopy patch closing old isolated logging hollows |
+| `assets/world/overview-v07.png` | Preserved engine-rendered overview for legacy layout three |
+| `assets/world/stronghold.json` | Authored eight resource sites and base bounds; data, not image art |
+
+The three generated PNGs are unchanged copies of image-generation outputs. They
+use compressed texture imports, no mipmaps and a 2,048-pixel limit. Infill sprites
+are placed only within the existing forest composition; their visible crown edges
+participate in collision. The new overview is rendered by the engine from layout
+four. Helmeted elite artwork does not imply a damage resistance mechanic.
 
 ## Audio and app icon
 

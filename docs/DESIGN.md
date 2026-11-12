@@ -1,183 +1,136 @@
-# Hearthvale Basin
+# Hearthvale Basin: Stronghold
 
-## Direction
+## Direction and geography
 
-A freely built settlement faces increasing pressure from one western entry.
-The player chooses positions and defensive lines rather than filling prescribed
-plots. The gameplay reference is the colony-defense structure of **They Are
-Billions**; the world and art are original, and this is a smaller single-mission
-game, not a reproduction of that title.
+One western entry pressures a freely built settlement. The gameplay reference is
+**They Are Billions**; the art is original and this is a smaller, single-mission
+game. Raster buildings, animated characters, connected woodland and limestone,
+and a textured command deck establish the visual style.
 
-The illustrated buildings remain recognizable from the first prototype. Raster
-terrain materials, vegetation, unit animation and a restrained textured command
-deck replace the original flat terrain, geometric people, resource symbols and
-rounded dashboard panels.
+The world is 8,192 × 5,120 units, with the hall at (4,800, 2,800). Two mountain
+spines leave a 480-unit pass at y=2,560–3,040. Six wall sections at x=4,160 can
+seal it. The continuous forest belts, low escarpments and eastern lake remain
+from v0.7. New layout four has only eight resource sites, defined in
+`assets/world/stronghold.json`: two wood and two stone inside the base, with two
+of each exposed west of the pass. Legacy layouts 0–3 retain their 28 sites.
 
-## World and placement
+A shared 40-unit terrain grid governs placement, red cell overlays and enemy
+navigation. Forests, resource cores, water and mountains are impassable. A matching
+producer is the sole exception for construction on a resource core. Producer
+foundations are at accessible forest margins. Canopy infill closes the previous
+isolated working pockets; a flood fill seals remaining disconnected grass cells.
+Every ordinary open cell in layout four can be reached from the hall.
 
-The world is 8,192 × 5,120 units. The headquarters is at (4,800, 2,800), and an
-authored trail network crosses the valley. The original road data remains for
-legacy saves and the western spawn. Two mountain spines touch
-the map boundaries and leave a 480-unit pass at y=2,560–3,040. Six wall
-sections centred at x=4,160 can seal the pass. Attackers choose
-a direct land route to the hall. Forest groves, quarries, gold
-ore, connected forest belts, low grey limestone escarpments and an irregular eastern lake define the basin. Geography is deterministic and shared by rendering,
-placement checks, production bonuses, and the minimap.
+Foundations occupy whole grid cells. Defense buildings may meet without overlap;
+producers require their matching site, one per site. There is one main hall and
+at most one Marketplace and Workshop. Up to 512 standing structures are supported.
+Destroyed non-hall structures become null slots immediately and release their
+foundation/site. New construction reuses free slots. No repairable ruins remain.
 
-Placement snaps to a visible 40-unit grid. Rectangular foundations occupy whole
-grid cells and may meet without overlapping. The same cached 40-unit terrain
-mask drives placement, red grid cells and enemy navigation. Resource cores,
-water, ridges, mountains and boundaries are impassable. A matching producer
-is the one construction exception on its resource core. Standing structures
-are red and physically block attackers until destroyed; ruins are amber and
-allow passage. Each building has a footprint; collisions,
-water, ridges, map boundaries and resource cores reject construction before any
-materials are spent. There are no fixed defense pads or reserved wall checkpoints. Woodcutters and
-stonemasons require matching deposits, one producer per deposit. Ruins retain
-that claim; clearing releases it. Existing v0.2 producers retain their locations
-and reserve the closest matching site.
-There is one main hall and room for up to 512 structures. Clearing ruins reuses
-storage slots and ground without growing the building array indefinitely.
+## Economy and research
 
-Dense forests form connected canopy masses around open meadow. Woodcutters occupy marked working pockets at their fixed resource sites; quarries share the grey limestone of the surrounding escarpments. Resources have no tap
-interaction, collection button or floating refill timer. A matching producer
-occupies each site; resource cores remain protected from unrelated buildings.
+Starting supplies are 450 wood, 320 stone and 180 gold. The hall supplies
+0.8 wood, 0.45 stone and 0.1 gold per second. Producers have base output four
+wood or five stone per second, with a 25% matching-site bonus. Ordinary buildings
+finish construction in 2.5 game seconds; the Workshop takes six. The Marketplace
+has no passive gold income: it buys 60 supplies for 90 gold with an eight-second
+cooldown, or sells 60 for 30–55 gold with a six-second cooldown. Kills provide gold.
 
-The woodland composition uses one palette, view angle, light direction and tree
-scale. Northwest and southwest forest belts frame the western approach; the
-northeast forest follows the lake and the southeast belt encloses the starting
-clearing. The old chapel, windmill, arch and unrelated ruined vignettes are absent
-from new settlements. Repetition of local trees and geology is intentional.
-Terrain code 6 represents dense woodland in layout 3, shared by placement and
-navigation. Producer cores retain their matching-building exception. Older
-layouts keep their previous collision masks and foundations.
+The Workshop researches one building type at a time. Completion updates all
+existing buildings of that type; future buildings inherit the level. Global
+levels start at one and cap at 100. Base duration is `35 + 8 × (current level − 1)`
+seconds. Workshop levels increase research speed by 2% per level. Costs are twice
+the old per-building base price, scaled by `1.15^(current level − 1)` and rounded
+up. Losing the Workshop pauses an order; a replacement resumes it. Completed
+research survives destruction and dismantling.
 
-## Economy and progression
-
-- The hall supplies 1.5 timber, 0.9 stone and 0.45 gold per second.
-- Producers become operational after 2.5 seconds of construction.
-- Woodcutters and stonemasons receive +25% output within 520 units of their
-  respective resource grove or quarry.
-- Resource sites cannot be manually collected. Producers, the hall, markets
-  and kills supply the economy; old deposit timers remain only for save compatibility.
-- Buildings start at level 1 and cap at 100.
-- Maximum health scales by `1.11^(level − 1)`.
-- Damage and production scale by `1.14^(level − 1)`.
-- Upgrade costs scale by `1.13^(level − 1)` and round upward.
-- Range rises gradually, capped at +55 units; attack periods improve by at most 50%.
-- Upgrades preserve the building's health percentage, rather than healing it.
-- Repair cost depends on missing health and `1.08^(level − 1)`.
-- An active marketplace buys 60 wood or stone for 60 gold, and sells 60 supplies
-  for 30–55 gold depending on level. The spread remains positive at level 100.
-
-Ruins retain levels but stop attacks and production. Repair restores them;
-confirmed clearing permanently removes them. Standing structures return 25% of
-base construction materials when dismantled. The hall cannot be dismantled;
-its destruction ends the mission.
+Health scales by `1.085^(level − 1)`, damage by `1.10^(level − 1)`, and producer
+output by `1.08^(level − 1)`. Range and attack-period improvements are bounded.
+Research preserves the current health percentage and adjusts any active repair
+rate, preventing upgrades from acting as free healing. Local repairs charge a
+missing-health quote once, then heal over eight seconds. Repeated taps cannot
+create duplicate repair jobs. Dismantling a standing building returns 25% of its
+base cost. The hall cannot be dismantled; its destruction ends the mission.
 
 ## Combat
 
-The model uses 0.05-second steps. The first enemy starts at progress zero on the
-western path entrance; new games have no near-hall vanguard. The hall attacks
-automatically once enemies reach its range. Waves arrive every 30 seconds. The wave
-size grows from 10 toward 220; every fifth wave can reach 300 attackers. Runners,
-armored brutes and occasional siege carts add different speeds and threats.
+Simulation uses 0.05-second steps. The first attacker spawns immediately at the
+western entrance; new games contain no near-hall vanguard. Waves arrive every
+30 seconds. Their count grows from ten toward 220; every fifth wave is doubled,
+up to 300. Base enemy health is `50 × 1.06^(wave − 1)`, damage is
+`12 × 1.06^(wave − 1)`. Exponents and population are bounded for numerical safety.
+Runners, brutes and siege carts retain distinct speed/health/attack profiles.
 
-Base enemy health scales by `1.065^(wave − 1)` and damage by
-`1.055^(wave − 1)`. Exponents are bounded to keep arithmetic finite; waves
-continue increasing in number. A 2,400-enemy population bound protects memory.
+Elites start at wave five. Every great horde guarantees one, and their random
+share gradually rises to 20%. They have 5.5 times ordinary health, twice the
+attack and 85% of ordinary speed. **All incoming damage remains ordinary**:
+no splash resistance, armor reduction, per-hit cap, or arrow bonus. Base arrow
+towers fire 30 damage every second. Cannons deal 110 area damage every three
+seconds in a 140-unit radius. A fresh elite survives several base cannon shells.
 
-Enemies have actual two-dimensional world positions. A shared reverse Dijkstra
-field on the shared 40-unit grid routes around resources, water, cliffs and mountains; clear line of sight
-allows a direct heading to the hall. Eight neighboring terrain cells participate,
-with no diagonal corner cutting. Same-cell and adjacent-cell movement use
-constant-time checks; larger debug moves retain a sampled fallback. Tight turns
-can recenter within an open cell. Buildings do not divert the route: a swept
-foundation test finds the first blocking structure and attackers destroy it
-before advancing through its ruins. Nearby structures outside the route are
-ignored. Siege carts attack from farther away.
+Attackers use a cached reverse Dijkstra field to approach the hall, with direct
+movement on clear terrain and no diagonal corner cutting. Shots provoke their
+victims; arrow impacts can also alert nearby witnesses. A reachable firing defense
+within 850 units becomes a temporary target for seven seconds, refreshed by
+attacks. A cached AStarGrid2D path routes around static terrain; excessive detours
+are rejected. Dynamic structures still block that path and are attacked first.
+Adjacent exposed buildings, including producers beside resource cores, can also
+be attacked. Enemies do not cross red terrain or pass through standing walls.
 
-Static terrain and Hall route fields are baked into `assets/world/hearthvale.json`
-by `tools/bake_world.gd`. A terrain fingerprint guards the navigation cache. A
-custom Hall destination or invalid cache falls back to a fresh search. Tests
-compare baked and computed terrain, links and costs for every supported layout.
+Spatial indexes, five-hertz local crowd separation, bounded neighbor searches,
+and short target caches limit per-step work. Towers prioritize threats near the
+hall. Kill rewards vary by enemy type, are paid once, and show a coin
+visual. Victory occurs at 900 game seconds, then the player may continue endlessly.
+Speed controls change game time, not the victory threshold.
 
-Local crowd separation is cached at five hertz and bounded to 40 nearby bodies
-per search. Spatial indexes cache expanded building rectangles and attack
-candidates. Stationary attackers reuse their target for 0.2 seconds while
-checking that the same live structure still blocks them. Towers prioritize
-threats near the hall; cannons damage groups.
+Walls use 80-unit sections, Manhattan drag strokes, and at most 64 sections per
+confirmation. Validation of the full stroke precedes payment. Live endpoints are
+reused without charging twice. Cardinal neighbors share textured stone faces,
+wooden walkways and continuous UVs. Internal end faces are omitted; corners and
+junctions have reinforced piers. Destruction opens a breach; a newly built section
+joins its neighbors and inherits global wall research.
 
-Walls use 80-unit segments on the construction grid. A drag previews a Manhattan
-stroke, with a maximum of 64 sections per confirmation. Existing live endpoints
-are reused without charging twice. The complete stroke is validated before any
-materials are spent. Cardinal neighbors share a textured prism footprint. Stone front/side faces,
-wooden walkways, parapets and crenels produce the raised fortification. Hidden
-internal end faces are omitted; straight interiors have no repeated end piers.
-Corners and junctions have reinforced piers. Original masonry and plank textures
-are sampled with continuous world-coordinate UVs instead of cropping wall strips.
-Destroyed sections leave a breach; repairing them reconnects the course. Each
-section retains its own health, level, upgrade and repair actions.
+## Rendering and mobile interaction
 
-Kills award rounded gold based on wave, with higher rewards for brutes and
-siege carts. Each death is paid once and carries a coin reward visual.
+A macro ground painting and sharp raster materials are composed into a cached
+4,096 × 2,560 ground target. Forest sprites retain native imported resolution
+above it. Water is separately animated. Entities are culled and sorted by their
+feet; workers, smoke, four-frame unit strips, projectiles and brief collapse FX
+provide animation. The minimap is rendered from actual terrain. Layout three
+retains its original overview, while layout four uses the revised overview.
 
-Victory occurs at 900 in-game seconds if the hall survives. The player can
-continue into endless survival. The 1×/2×/5×/10× cycle changes simulation speed, so
-victory is measured in game time.
+With nothing selected, the right rail shows seven large construction cards.
+Selecting a tool or structure hides the whole catalogue. The full rail becomes a
+placement, building or Workshop panel. Preview and confirmation are separate;
+Cancel never spends supplies. Producer tools draw bright green tiles and an outer
+rectangle on available matching sites. Tower previews include their range.
+Building panels offer local repair with its own fixed price row and navigation to
+the Workshop, never a per-building upgrade. Workshop tabs separate global
+research from maintenance of the Workshop itself. Paused controls cannot activate
+underlying gameplay buttons.
 
-## Rendering and controls
+One finger pans except during wall strokes; two fingers pan and pinch during
+placement. Hall and the minimap navigate quickly. Speed cycles 1×/2×/5×/10×.
+Back cancels placement or toggles pause. Mouse, wheel and desktop hotkeys use the
+same logical canvas. No Guide or mobile zoom buttons are shown.
 
-An original ground painting sets broad geography and color. Sharp raster ground
-materials follow an offline surface mask for trails, meadow, rocky ground, wet
-shore and leaf litter along forest edges. Stochastic overlapping texture samples break up visible tile boundaries. They are composed once into a 4,096 × 2,560 cached
-texture. The irregular lake has a separate animated raster material clipped to
-its bounds. The minimap is rendered from the actual authored world. Large
-forest masses retain their original texture resolution as static world sprites above the cached ground. Entities are culled against the camera and depth sorted by foot position. Four-frame character sprites,
-workers, smoke, projectiles, brief death animations and building collapse provide
-motion without geometric placeholder characters.
+## Saves and reproducibility
 
-Ground shadows are batched together before units. Interface frames use native
-nine-patch rendering, with a bounded cache of texture styles. The stress fixture
-and renderer instrumentation distinguish simulation cost from draw-command cost.
+Format seven records global levels, paid research progress, local repair jobs,
+trade cooldowns, terrain revision, structures, enemies, retaliation targets,
+economy, mission time, random state, camera and zoom. Transient A* routes are
+rebuilt rather than serialized. JSON uses full precision, validates fields, and
+is atomically renamed over the prior save. Backgrounding pauses and saves;
+foregrounding requires resume.
 
-The construction cards and inspector occupy the right rail. Selecting a card
-shows the grid; a world tap previews a location without spending. The separate
-Build confirmation revalidates resources, the foundation and deposit ownership.
-A successful build exits placement mode. Cancel spends nothing. Tower
-previews show a range circle at the proposed position. Upgrade and Repair
-keep distinct, permanent price rows; damage cannot swap the displayed upgrade
-price to a repair quote. Building sprites and dirt decals share the same
-ground-centred anchor.
+Versions 2–6 preserve their original terrain (layouts 0–3), positions and producer
+sites. The highest surviving legacy level per type becomes its global research
+level; health fractions are normalized to current stats. Old non-hall ruins are
+removed. Version-one fixed-plot files remain untouched and are not loaded.
+A new settlement is required for the eight-site map.
 
-One-finger drag or mouse/WASD moves the camera, except that the wall tool uses
-a world drag to draw a preview. Two-finger input pans and zooms during wall
-placement and never confirms construction. Pinch or wheel input changes scale. The mobile +/− controls and Guide buttons
-are removed. Hall sits in the top bar, and speed cycles 1×, 2×, 5× and 10×. The minimap and Hall button provide navigation. Tap release is
-separated from dragging so panning does not place buildings. Two-finger input
-suppresses tap placement. Desktop and Android use the same logical canvas.
-
-## Saves and lifecycle
-
-Save version 6 stores free building positions, ruins, levels, health, enemy
-world positions, cached movement/attack state and explicit terrain revision,
-wave state, random-generator state, resource cooldowns, cleared vegetation,
-camera and zoom. Full-precision JSON reduces rounding; restoration validates
-all fields before accepting the settlement. Versions 2–4 retain their compatible
-terrain layout (0 or 1); existing buildings and enemies are not moved to the
-new map. Version 2 converts road progress into actual enemy positions. Legacy
-buildings crossing the old mountain pass retain the earlier ridge-free layout.
-Version-five settlements retain their explicit layout 0–2.
-New settlements use revision 3, the connected woodland basin. A new settlement is therefore
-required to see the new geography. Enemies caught in an old blocked resource
-cell recover to the nearest open cell on their next step. JSON numeric version
-values are normalized before validation. Files are atomically renamed over
-the previous save. JSON round trips are compared within floating-point precision.
-
-The frontier uses `frontier-settlement.json`; version-1 fixed-plot saves are left
-intact but are not loaded into the new map. Settings and best time persist.
-
-App backgrounding pauses and saves. Foregrounding requires explicit resume and
-refreshes the cached ground target. Actor and projectile animations pause with
-the simulation. Back cancels construction or toggles pause, with automatic engine
-quit-on-Back disabled.
+`tools/bake_world.gd` reproducibly stores all five terrain/navigation fields.
+Tests compare each cache against fresh geography and shortest-path searches,
+exercise actual movement, research through level 100, saves, damage, destruction,
+mobile controls and native Android lifecycle handling. Balance uses paid player
+orders; explicitly labeled stress and visual fixtures may grant resources.
