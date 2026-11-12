@@ -235,6 +235,18 @@ def native_checks(back_only=False):
                 adb("shell", "input", "keyevent", "4")
                 time.sleep(8)
             check(True, "Native touch constructs an operational Workshop")
+            # Research is paid. Wait for production and combat gold, without grants.
+            end = time.monotonic() + 600
+            while any(workshop_save["resources"][kind] < amount for kind, amount in
+                      [("wood", 110), ("stone", 70), ("gold", 40)]):
+                print("WAITING FOR RESEARCH SUPPLIES:", workshop_save["resources"],
+                      "game seconds:", workshop_save["elapsed"], flush=True)
+                if time.monotonic() >= end:
+                    raise TimeoutError("Native defender did not earn its research supplies")
+                adb("shell", "input", "keyevent", "4")
+                time.sleep(15)
+                tap(1338, 43)
+                workshop_save = save()
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
             tap(1352, 330)  # Arrow research subject.
@@ -293,6 +305,14 @@ def native_checks(back_only=False):
     except BaseException as problem:
         error = str(problem)
         print("NATIVE ERROR:", error, flush=True)
+        try:
+            diagnostic = save()
+            (OUT / "failed-save.json").write_text(json.dumps(diagnostic, indent=2))
+            print("FAILED STATE:", {key: diagnostic.get(key) for key in
+                  ["elapsed", "resources", "research_levels", "research_job"]}, flush=True)
+            screen("failed-state")
+        except Exception:
+            pass
     finally:
         try:
             log = adb("logcat", "-d", "-t", "500", "-v", "brief", timeout=90)

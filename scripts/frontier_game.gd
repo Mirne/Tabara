@@ -858,7 +858,7 @@ func draw_credits()->void:
  button(Rect2(363,600,714,52),"Return","back",true)
 
 func draw_trade()->void:
- overlay(Rect2(360,110,720,590),"PINEWATCH MARKETPLACE","Keep the stores supplied.","Buy what you need or sell surplus production. The settlement is paused while you trade.")
+ overlay(Rect2(360,110,720,590),"MARKETPLACE","Keep the stores supplied.","Buy what you need or sell surplus production. The settlement is paused while you trade.")
  var level:=1
  for b in sim.buildings:
   if b!=null and b.kind=="market" and b.hp>0: level=maxi(level,b.level)
@@ -866,9 +866,12 @@ func draw_trade()->void:
  for i in 3:
   Art.icon(self,i,Rect2(402+i*221,283,36,36))
   label(pretty(sim.resources[Sim.RESOURCE_NAMES[i]]),Vector2(447+i*221,311),24,IVORY)
- button(Rect2(401,349,310,60),"Buy 60 wood · 60 gold","buy_wood",true,sim.resources.gold>=60,17)
- button(Rect2(731,349,310,60),"Buy 60 stone · 60 gold","buy_stone",true,sim.resources.gold>=60,17)
- button(Rect2(401,430,310,60),"Sell 60 wood · +%d gold"%proceeds,"trade_wood",false,sim.resources.wood>=60,16)
- button(Rect2(731,430,310,60),"Sell 60 stone · +%d gold"%proceeds,"trade_stone",false,sim.resources.stone>=60,16)
- wrapped(trade_feedback if trade_feedback!="" else "Trades need time between orders. Global market research improves sale prices.",Vector2(402,543),630,16,GOLD,26)
+ var ready:bool=sim.trade_clock<=0
+ button(Rect2(401,349,310,60),"Buy 60 wood · 90 gold","buy_wood",true,ready and sim.resources.gold>=90,17)
+ button(Rect2(731,349,310,60),"Buy 60 stone · 90 gold","buy_stone",true,ready and sim.resources.gold>=90,17)
+ button(Rect2(401,430,310,60),"Sell 60 wood · +%d gold"%proceeds,"trade_wood",false,ready and sim.resources.wood>=60,16)
+ button(Rect2(731,430,310,60),"Sell 60 stone · +%d gold"%proceeds,"trade_stone",false,ready and sim.resources.stone>=60,16)
+ var feedback:String=trade_feedback if trade_feedback!="" else "Global market research improves sale prices."
+ if not ready: feedback="Next order in %.0fs. Return to the frontier to let time pass."%ceilf(sim.trade_clock)
+ wrapped(feedback,Vector2(402,543),630,16,GOLD,26)
  button(Rect2(401,610,640,51),"Return to the frontier","back",true)

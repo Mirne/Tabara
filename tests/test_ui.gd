@@ -169,7 +169,29 @@ func run()->void:
  check(visible_action("repair") and not visible_action("research:arrow"),"Workshop building tab retains its own local repair controls")
  await action("workshop")
  check(visible_action("research:stone"),"Workshop navigation returns to research")
- await action("construction")
+ # Trading quotes and disabled states follow the real 90-gold purchase/cooldown.
+ check(game.sim.build_at(Vector2(6100,2800),"market")=="","Trade fixture builds a paid marketplace")
+ var market_index:int=game.sim.buildings.size()-1
+ game.sim.buildings[market_index].age=10
+ game.selected=market_index
+ game.sim.resources.gold=89
+ await frame()
+ await action("trade")
+ for control in game.buttons:
+  if control.action in ["buy_wood","buy_stone"]: check(not control.enabled,"Purchase is disabled below its quoted 90 gold")
+ game.sim.resources.gold=90
+ var timber_before:float=game.sim.resources.wood
+ await frame()
+ await action("buy_wood")
+ check(game.sim.resources.gold==0 and game.sim.resources.wood==timber_before+60,"Purchase spends exactly 90 gold for 60 timber")
+ await frame()
+ for control in game.buttons:
+  if control.action.begins_with("trade_"): check(not control.enabled,"Sale controls respect the shared order cooldown")
+ await action("back")
+ game.sim.clear_at(market_index)
+ game.selected=-1
+ game.sim.resources={"wood":10000.0,"stone":10000.0,"gold":10000.0}
+ await frame()
  # Wall gestures preserve preview/confirmation and shared endpoints.
  game.camera_center=Vector2(6200,2900)
  game.zoom=0.85
