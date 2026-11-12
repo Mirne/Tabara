@@ -11,15 +11,18 @@ const GOLD=Color("d5b775")
 const MUTED=Color("b2af9a")
 const GREEN=Color("aabd7c")
 const RED=Color("df9573")
-const VIEW=Rect2(0,84,1152,726)
+const VIEW=Rect2(0,84,1104,726)
 const MINIMAP=Rect2(22,648,226,140)
-const ORDER=["wood","stone","arrow","wall","cannon","market"]
+const ORDER=["wood","stone","arrow","wall","cannon","market","workshop"]
+const RESEARCH_ORDER=["hall","wood","stone","arrow","wall","cannon","market","workshop"]
 const SAVE_PATH="user://frontier-settlement.json"
 const SETTINGS_PATH="user://settings.json"
 var sim
 var screen:="menu"
 var return_screen:="menu"
-var selected:=0
+var selected:=-1
+var research_kind:="arrow"
+var workshop_tab:="research"
 var build_kind:=""
 var placement_ready:=false
 var wall_points:Array=[]
@@ -250,7 +253,7 @@ func _input(event:InputEvent)->void:
   if event.keycode==KEY_ESCAPE: go_back()
   elif event.keycode==KEY_SPACE and screen in ["mission","pause"]: act("pause" if screen=="mission" else "resume")
   elif screen=="mission":
-   if event.keycode>=KEY_1 and event.keycode<=KEY_6: act("build:"+ORDER[event.keycode-KEY_1])
+   if event.keycode>=KEY_1 and event.keycode<=KEY_7: act("build:"+ORDER[event.keycode-KEY_1])
    if event.keycode==KEY_U: act("upgrade")
    if event.keycode==KEY_R: act("repair")
    if event.keycode==KEY_F: act("hall")
@@ -310,6 +313,7 @@ func click_world(point:Vector2)->void:
  if not candidates.is_empty():
   candidates.sort_custom(func(a,b):return sim.buildings[a].pos.y>sim.buildings[b].pos.y)
   selected=candidates[0]
+  workshop_tab="research"
   return
  selected=-1
 
@@ -349,8 +353,14 @@ func confirm_placement()->void:
  consume_events()
 
 func act(action:String)->void:
+ if action.begins_with("research:"):
+  var kind:=action.trim_prefix("research:")
+  if Sim.DEFINITIONS.has(kind): research_kind=kind
+  return
  if action.begins_with("build:"):
+  if screen!="mission" or sim==null: return
   var kind:String=action.trim_prefix("build:")
+  if kind not in ORDER: return
   build_kind="" if build_kind==kind else kind
   placement_ready=false
   wall_points.clear()
@@ -382,8 +392,31 @@ func act(action:String)->void:
    screen=action
    trade_feedback=""
   "back": screen=return_screen
-  "upgrade","repair":
-   var error:String=sim.upgrade_at(selected) if action=="upgrade" else sim.repair_at(selected)
+  "construction":
+   selected=-1
+   build_kind=""
+   placement_ready=false
+   wall_points.clear()
+  "workshop","upgrade":
+   if selected>=0 and selected<sim.buildings.size() and sim.buildings[selected]!=null and sim.buildings[selected].kind!="workshop": research_kind=sim.buildings[selected].kind
+   var found:=-1
+   for i in sim.buildings.size():
+    if sim.buildings[i]!=null and sim.buildings[i].kind=="workshop": found=i
+   if found<0: act("build:workshop")
+   else:
+    selected=found
+    build_kind=""
+    workshop_tab="research"
+  "workshop_research": workshop_tab="research"
+  "workshop_building": workshop_tab="building"
+  "start_research":
+   var error:String=sim.start_research(research_kind)
+   if error!="": notify(error)
+   else:
+    consume_events()
+    play_sound("build")
+  "repair":
+   var error:String=sim.repair_at(selected)
    if error!="": notify(error)
    else:
     consume_events()
@@ -427,9 +460,9 @@ func act(action:String)->void:
    world.water.material.set_shader_parameter("motion_rate",0.0 if reduced_motion else 1.0)
    save_settings()
   "trade_wood","trade_stone":
-   trade_feedback="Supplies sold." if sim.trade(action.trim_prefix("trade_")) else "An active marketplace and 60 supplies are required."
+   trade_feedback="Supplies sold." if sim.trade(action.trim_prefix("trade_")) else "An active marketplace, 60 supplies and a ready trade order are required."
   "buy_wood","buy_stone":
-   trade_feedback="Supplies purchased." if sim.buy(action.trim_prefix("buy_")) else "An active marketplace and 60 gold are required."
+   trade_feedback="Supplies purchased." if sim.buy(action.trim_prefix("buy_")) else "An active marketplace, 90 gold and a ready trade order are required."
 
 func go_back()->void:
  match screen:
@@ -449,7 +482,7 @@ func go_back()->void:
 func start_mission()->void:
  sim=Sim.new(int(Time.get_unix_time_from_system())%100000)
  screen="mission"
- selected=0
+ selected=-1
  speed=1
  build_kind=""
  camera_center=Map.HALL-Vector2(120,0)
@@ -468,7 +501,7 @@ func consume_events()->void:
    e.duration=e.time
    if fx.size()<180: fx.append(e)
   if e.type=="ruin":
-   notify("Ground cleared. New foundations can be placed here." if e.text=="Ground cleared" else "A structure has collapsed. Repair its ruins or clear the ground.")
+   notify("Ground cleared. New foundations can be placed here." if e.text=="Ground cleared" else "A structure was destroyed. Its ground is free to build on.")
    play_sound("cannon")
   if e.type=="shot" and e.cannon and clock-float(get_meta("last_boom",-10.0))>0.35:
    play_sound("cannon")
@@ -585,7 +618,7 @@ func _draw()->void:
  elif screen=="credits": draw_credits()
  elif screen=="trade": draw_trade()
  elif screen=="dismantle":
-  overlay(Rect2(410,215,620,370),"DISMANTLE STRUCTURE","Clear these foundations?","The building and its upgrades are removed. Standing structures return 25% of their original construction materials. Ruins can also be repaired.")
+  overlay(Rect2(410,215,620,370),"DISMANTLE STRUCTURE","Clear these foundations?","This structure is removed and 25% of its original building cost is returned. Global Workshop research remains available to replacement buildings.")
   button(Rect2(450,495,250,55),"Keep building","cancel_clear")
   button(Rect2(720,495,270,55),"Clear the ground","confirm_clear",true)
  if toast_left>0 and screen=="mission":
@@ -628,76 +661,124 @@ func draw_hud()->void:
  button(Rect2(1066,15,69,55),"%d×"%speed,"speed",false,true,18)
  button(Rect2(1145,15,101,55),"Hall","hall",false,true,16)
  button(Rect2(1257,15,162,55),"Ⅱ  Pause","pause",false,true,18)
- # A dedicated right-hand construction rail keeps mobile actions together.
- Art.skin(self,Rect2(1150,82,294,732),Color(0.83,0.89,0.82),14)
- label("CONSTRUCTION",Vector2(1171,110),14,GOLD,true)
+ Art.skin(self,Rect2(1102,82,342,732),Color(0.83,0.89,0.82),14)
+ if build_kind!="" or (selected>=0 and selected<sim.buildings.size() and sim.buildings[selected]!=null): draw_inspector()
+ else: draw_construction()
+ draw_minimap()
+ if screen!="mission": buttons.clear()
+
+func draw_construction()->void:
+ label("BUILD STRUCTURES",Vector2(1121,124),21,GOLD,true)
  for i in ORDER.size():
   var kind:String=ORDER[i]
-  var definition:Dictionary=Sim.DEFINITIONS[kind]
-  var rect:=Rect2(1164+(i%2)*133,123+(i/2)*128,124,121)
-  var active:bool=build_kind==kind
-  Art.skin(self,rect,Color(1.4,1.22,0.86) if active else Color(0.8,0.86,0.8),8)
-  var art_scale:float=0.22 if kind not in ["arrow","cannon"] else 0.2
+  var d:Dictionary=Sim.DEFINITIONS[kind]
+  var wide:bool=kind=="workshop"
+  var rect:=Rect2(1120+(i%2)*158,145+(i/2)*158,148,146)
+  if wide: rect.size.x=306
+  Art.skin(self,rect,Color(0.82,0.88,0.82),9)
   if kind=="wall" and Art.wall_icon!=null:
-   draw_texture_rect(Art.wall_icon,Rect2(rect.position+Vector2(28,7),Vector2(68,56)),false)
-  else: Art.building(self,definition.art,Vector2(rect.position.x+62,rect.position.y+63),art_scale)
-  centered(definition.name,Rect2(rect.position.x,rect.position.y+67,124,23),13,GOLD if active else IVORY)
+   draw_texture_rect(Art.wall_icon,Rect2(rect.position+Vector2(38,8),Vector2(74,60)),false)
+  else:
+   var scale_value:float=0.29 if kind not in ["arrow","cannon"] else 0.25
+   Art.building(self,d.art,Vector2(rect.get_center().x,rect.position.y+75),scale_value)
+  centered(d.name,Rect2(rect.position.x,rect.position.y+78,rect.size.x,25),17,IVORY)
+  var left:float=rect.get_center().x-66
   for r in 3:
-   Art.icon(self,r,Rect2(rect.position.x+7+r*39,rect.position.y+99,14,14))
-   label(pretty(definition.cost[r]),rect.position+Vector2(21+r*39,111),12,IVORY if sim.resources[Sim.RESOURCE_NAMES[r]]>=definition.cost[r] else RED)
+   Art.icon(self,r,Rect2(left+r*46,rect.position.y+115,16,16))
+   label(pretty(d.cost[r]),Vector2(left+17+r*46,rect.position.y+130),13,IVORY if sim.resources[Sim.RESOURCE_NAMES[r]]>=d.cost[r] else RED)
   buttons.append({"rect":rect,"action":"build:"+kind,"enabled":true})
- draw_inspector()
- draw_minimap()
 
 func draw_inspector()->void:
- Art.skin(self,Rect2(1161,516,267,283),Color(0.85,0.9,0.82),9)
  if build_kind!="":
   var d:Dictionary=Sim.DEFINITIONS[build_kind]
-  label(d.name,Vector2(1177,546),21,IVORY,true)
-  wrapped(d.desc,Vector2(1177,572),234,13,MUTED,19)
+  label("PLACE STRUCTURE",Vector2(1120,121),14,GOLD)
+  wrapped(d.name,Vector2(1120,164),306,25,IVORY,30)
+  wrapped(d.desc,Vector2(1120,216),304,18,MUTED,27)
   var wall:Dictionary=sim.wall_preview(wall_points) if build_kind=="wall" else {}
   var error:String=wall.error if build_kind=="wall" else sim.placement_error(ghost,build_kind)
   var cost:Array=wall.cost if build_kind=="wall" else d.cost
   var ready:bool=placement_ready and error=="" and sim.can_afford(cost) and VIEW.has_point(world_to_screen(ghost))
-  var status:String="Drag a line; two fingers pan." if build_kind=="wall" else "Tap a grid location to preview."
+  if build_kind in ["wood","stone"]:
+   wrapped("Green tiles show available sites. Two are in the base and two are exposed outposts.",Vector2(1120,360),304,17,GREEN,25)
+  else:
+   wrapped("Tap the grid to preview. Drag to move the map; pinch to zoom.",Vector2(1120,360),304,17,MUTED,25)
+  var status:String="Drag a wall line. Use two fingers to pan." if build_kind=="wall" else "Choose a location on the map."
   if placement_ready:
    status=error if error!="" else ("Ready to build." if sim.can_afford(cost) else "Not enough supplies.")
    if not VIEW.has_point(world_to_screen(ghost)): status="Bring the preview into view."
-  if build_kind=="wall" and placement_ready:
-   status=("%d new pieces"%wall.count) if error=="" else error
-   cost_row(cost,Vector2(1177,659),12)
-  wrapped(status,Vector2(1177,625),234,13,GREEN if ready else GOLD,19)
-  button(Rect2(1176,680,237,48),"Build · Confirm","confirm_build",true,ready,17)
-  button(Rect2(1176,739,237,45),"Cancel","cancel",false,true,16)
+   if build_kind=="wall" and error=="": status="%d connected pieces"%wall.count
+  wrapped(status,Vector2(1120,477),304,18,GREEN if ready else GOLD,27)
+  label("CONSTRUCTION COST",Vector2(1120,583),13,GOLD)
+  cost_row(cost,Vector2(1122,618),15)
+  button(Rect2(1120,652,306,66),"Build · Confirm","confirm_build",true,ready,21)
+  button(Rect2(1120,734,306,58),"Cancel","cancel",false,true,20)
   return
- if selected<0 or selected>=sim.buildings.size() or sim.buildings[selected]==null:
-  label("THE FRONTIER",Vector2(1177,547),19,GOLD,true)
-  wrapped("Select a building above, tap the map to preview its grid location, then confirm Build.",Vector2(1177,580),233,15,MUTED,23)
-  return
+ if selected<0 or selected>=sim.buildings.size() or sim.buildings[selected]==null: return
  var b:Dictionary=sim.buildings[selected]
  var d:Dictionary=Sim.DEFINITIONS[b.kind]
- label(d.name,Vector2(1177,546),21,IVORY,true)
- label("LEVEL %d / 100"%b.level,Vector2(1177,568),12,GOLD)
- var status:String="RUINS · REPAIR TO RESTORE" if b.hp<=0 else "%s / %s HP"%[pretty(b.hp),pretty(sim.stat(b,"hp"))]
- if b.hp>0 and d.has("income"): status+="\n+%.1f %s / sec"%[sim.stat(b,"income")*sim.production_bonus(b),d.resource]
- elif b.hp>0 and d.has("damage"): status+="  ·  %s damage"%pretty(sim.stat(b,"damage"))
- if b.hp>0 and b.age<Sim.BUILD_TIME: status="CONSTRUCTION · %.1fs"%(Sim.BUILD_TIME-b.age)
- wrapped(status,Vector2(1177,590),233,12,RED if b.hp<=0 else MUTED,18)
- var upgrade:Array=sim.upgrade_cost(b) if b.level<100 else [0,0,0]
- # Each action owns a permanent cost row; taking damage never swaps the price.
- button(Rect2(1176,626,237,38),"Upgrade to level %d"%(b.level+1) if b.level<100 else "Maximum level","upgrade",true,b.hp>0 and b.age>=Sim.BUILD_TIME and b.level<100 and sim.can_afford(upgrade),14)
- cost_row(upgrade,Vector2(1180,685),11)
- button(Rect2(1176,700,237,38),"Repair to full health","repair",false,b.hp<sim.stat(b,"hp")-0.01 and sim.can_afford(sim.repair_cost(b)),14)
- cost_row(sim.repair_cost(b),Vector2(1180,759),11)
- if b.hp>=sim.stat(b,"hp")-0.01: label("No repairs needed",Vector2(1180,759),11,MUTED)
- if b.kind=="market" and b.hp>0:
-  button(Rect2(1176,773,115,28),"Trade","trade",true,true,13)
-  button(Rect2(1298,773,115,28),"Dismantle","clear",false,true,12)
- else: button(Rect2(1176,773,237,28),"Clear ruins" if b.hp<=0 else "Dismantle","clear",false,selected>0,13)
+ if b.kind=="workshop" and workshop_tab=="research":
+  draw_research_panel(b)
+  return
+ label(d.name,Vector2(1120,133),25,IVORY,true)
+ label("GLOBAL LEVEL %d / 100"%b.level,Vector2(1120,166),16,GOLD)
+ label("%s / %s HP"%[pretty(b.hp),pretty(sim.stat(b,"hp"))],Vector2(1120,211),20,IVORY)
+ draw_rect(Rect2(1120,229,306,10),Color("252a20"))
+ draw_rect(Rect2(1120,229,306*clampf(b.hp/sim.stat(b,"hp"),0,1),10),GREEN)
+ var description:String=d.desc
+ if b.kind=="wall": description="Joins nearby wall sections to hold the line."
+ elif b.kind=="market": description="Emergency supply trades. Orders need 6–8 seconds."
+ elif b.kind=="workshop": description="Research speed ×%.2f. One global order at a time."%sim.stat(b,"research")
+ if b.age<sim.build_time(b.kind): description="Construction · %.1f seconds remaining"%(sim.build_time(b.kind)-b.age)
+ elif d.has("income"): description="Produces %.1f %s per second."%[sim.stat(b,"income")*sim.production_bonus(b),d.resource]
+ elif d.has("damage"): description="%s damage · %d attack range"%[pretty(sim.stat(b,"damage")),sim.stat(b,"range")]
+ wrapped(description,Vector2(1120,278),304,17,MUTED,25)
+ if b.kind=="market": button(Rect2(1120,337,306,58),"Trade supplies","trade",true,true,20)
+ else: wrapped("Upgrades are researched for all buildings of this type at the Workshop.",Vector2(1120,345),304,17,GOLD,25)
+ var repairing:bool=float(b.get("repair_left",0))>0
+ var repair_cost:Array=sim.repair_cost(b)
+ var repairable:bool=b.hp>0 and b.hp<sim.stat(b,"hp")-0.01 and b.age>=sim.build_time(b.kind) and not repairing and sim.can_afford(repair_cost)
+ button(Rect2(1120,424,306,64),"Repairing · %.0fs"%b.repair_left if repairing else "Repair this building","repair",true,repairable,20)
+ if repairing: label("Repairs continue over time.",Vector2(1120,518),16,GREEN)
+ elif b.hp>=sim.stat(b,"hp")-0.01: label("No repairs needed",Vector2(1120,518),16,MUTED)
+ else: cost_row(repair_cost,Vector2(1122,518),15)
+ button(Rect2(1120,554,306,60),"Open research" if b.kind=="workshop" else "Workshop upgrades","workshop",false,true,20)
+ button(Rect2(1120,643,306,58),"Dismantle structure","clear",false,selected>0,19)
+ button(Rect2(1120,734,306,58),"Build structures","construction",false,true,20)
+
+func draw_research_panel(b:Dictionary)->void:
+ label("WORKSHOP",Vector2(1120,128),25,IVORY,true)
+ button(Rect2(1120,149,150,48),"Research","workshop_research",true,true,17)
+ button(Rect2(1278,149,148,48),"Building","workshop_building",false,true,17)
+ for i in RESEARCH_ORDER.size():
+  var kind:String=RESEARCH_ORDER[i]
+  var rect:=Rect2(1120+(i%2)*158,216+(i/2)*79,148,70)
+  var active:bool=research_kind==kind
+  Art.skin(self,rect,Color(1.25,1.16,0.82) if active else Color(0.79,0.85,0.79),8)
+  centered(Sim.DEFINITIONS[kind].name,Rect2(rect.position+Vector2(0,9),Vector2(148,25)),16,IVORY)
+  centered("Level %d"%sim.research_levels[kind],Rect2(rect.position+Vector2(0,38),Vector2(148,20)),14,GOLD)
+  buttons.append({"rect":rect,"action":"research:"+kind,"enabled":true})
+ var current:int=sim.research_levels[research_kind]
+ var available:bool=sim.workshop_index()>=0 and sim.research_job.is_empty() and current<100
+ if not sim.research_job.is_empty():
+  var job:Dictionary=sim.research_job
+  var progress:float=1.0-float(job.remaining)/float(job.duration)
+  label("%s · level %d"%[Sim.DEFINITIONS[job.kind].name,job.level],Vector2(1120,566),18,GOLD)
+  draw_rect(Rect2(1120,582,306,10),Color("272d22"))
+  draw_rect(Rect2(1120,582,306*progress,10),GREEN)
+  label("%.0fs remaining"%ceilf(job.remaining/sim.stat(b,"research")),Vector2(1120,618),16,MUTED)
+ else:
+  label("%s · global level %d"%[Sim.DEFINITIONS[research_kind].name,mini(current+1,100)],Vector2(1120,563),17,GOLD)
+  label("%.0fs research · applies to future builds"%sim.research_duration(research_kind),Vector2(1120,587),14,MUTED)
+  cost_row(sim.research_cost(research_kind),Vector2(1122,619),15)
+ var caption:="Research upgrade" if sim.research_job.is_empty() else "Research in progress"
+ if sim.workshop_index()<0: caption="Workshop under construction"
+ button(Rect2(1120,646,306,64),caption,"start_research",true,available and sim.can_afford(sim.research_cost(research_kind)),20)
+ button(Rect2(1120,734,306,58),"Build structures","construction",false,true,20)
 
 func draw_minimap()->void:
  Art.skin(self,Rect2(10,635,251,165),Color(0.9,0.93,0.86),10)
- if sim.terrain_revision==3 and world.overview!=null: draw_texture_rect(world.overview,MINIMAP,false,Color(0.9,0.94,0.88))
+ var map_image:Texture2D=world.legacy_overview if sim.terrain_revision==3 else world.overview
+ if sim.terrain_revision>=3 and map_image!=null: draw_texture_rect(map_image,MINIMAP,false,Color(0.9,0.94,0.88))
  elif world.ground_view!=null: draw_texture_rect(world.ground_view.get_texture(),MINIMAP,false,Color(0.79,0.88,0.75))
  for b in sim.buildings:
   if b!=null: draw_rect(Rect2(MINIMAP.position+b.pos/Map.SIZE*MINIMAP.size-Vector2(1.5,1.5),Vector2(3,3)),GOLD if b.hp>0 else RED)
@@ -718,7 +799,7 @@ func overlay(rect:Rect2,tag:String,title:String,description:String="")->void:
 
 func draw_briefing()->void:
  overlay(Rect2(355,105,730,600),"MISSION 01  /  THE HEARTHVALE BASIN","Carve a foothold in the valley.","The western road carries the first raiders. Keep your main hall standing for fifteen minutes, then continue the endless siege.")
- var rows:=[["01","Expand freely","Preview buildings on the grid, then confirm. Woodcutters require forests and stonemasons require quarries, with one producer per deposit."],["02","Build a defensive line","Walls, arrow towers and cannons can be placed wherever your strategy needs them. Great hordes arrive every fifth wave."],["03","Recover from destruction","Collapsed buildings leave ruins. Repair them to keep their upgrades, or clear the ground and rebuild."]]
+ var rows:=[["01","Secure limited supplies","Two timber sites and two quarries are inside the base. Two more of each lie outside. Green tiles mark valid sites when placing a producer."],["02","Build a defensive line","Drag joined walls and cover them with arrow towers and cannons. Great hordes bring stronger elite raiders. Enemies retaliate against firing defenses."],["03","Keep the settlement standing","Repair damaged buildings locally. Destroyed buildings disappear. Research slower global upgrades at a Workshop; replacements inherit their levels."]]
  for i in 3:
   var y:float=343+i*88
   label(rows[i][0],Vector2(395,y),27,GOLD,true)
@@ -762,12 +843,12 @@ func draw_settings()->void:
 
 func draw_guide()->void:
  overlay(Rect2(235,65,970,680),"FIELD MANUAL","Build a settlement worth defending.")
- var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a marked timber site or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","All seven structures reach level 100. Destroyed buildings leave repairable ruins. Dismantling frees the ground but loses the upgrades."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
+ var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a marked timber site or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","The Workshop researches global levels up to 100. Repair standing buildings locally. Destroyed structures disappear; replacements inherit research."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
  for i in entries.size():
   var p:=Vector2(274+(i%2)*462,245+(i/2)*141)
   label("0%d  %s"%[i+1,entries[i][0]],p,19,IVORY,true)
   wrapped(entries[i][1],p+Vector2(0,30),414,14,MUTED,24)
- label("DESKTOP   WASD / drag: pan   ·   Wheel: zoom   ·   1–6: build   ·   U: upgrade   ·   R: repair   ·   F: hall",Vector2(274,692),11,MUTED)
+ label("DESKTOP   WASD / drag: pan   ·   Wheel: zoom   ·   1–7: build   ·   U: Workshop   ·   R: repair   ·   F: hall",Vector2(274,692),11,MUTED)
  button(Rect2(994,675,171,46),"Understood","back",true,true,16)
 
 func draw_credits()->void:
@@ -789,5 +870,5 @@ func draw_trade()->void:
  button(Rect2(731,349,310,60),"Buy 60 stone · 60 gold","buy_stone",true,sim.resources.gold>=60,17)
  button(Rect2(401,430,310,60),"Sell 60 wood · +%d gold"%proceeds,"trade_wood",false,sim.resources.wood>=60,16)
  button(Rect2(731,430,310,60),"Sell 60 stone · +%d gold"%proceeds,"trade_stone",false,sim.resources.stone>=60,16)
- wrapped(trade_feedback if trade_feedback!="" else "Marketplace upgrades improve your selling price.",Vector2(402,543),630,16,GOLD,26)
+ wrapped(trade_feedback if trade_feedback!="" else "Trades need time between orders. Global market research improves sale prices.",Vector2(402,543),630,16,GOLD,26)
  button(Rect2(401,610,640,51),"Return to the frontier","back",true)

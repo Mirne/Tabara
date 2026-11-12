@@ -1,19 +1,21 @@
 @static_unload
 class_name FrontierArt
 extends RefCounted
+const ELITES=preload("res://assets/frontier/elites.png")
+const WORKSHOP=preload("res://assets/art/workshop.png")
 const BUILDINGS=preload("res://assets/art/buildings.png")
 const PROPS=preload("res://assets/frontier/props.png")
 const UNITS=preload("res://assets/frontier/units.png")
 const ICONS=preload("res://assets/frontier/icons.png")
 const PANEL=preload("res://assets/frontier/panel.png")
 const BUILD_RECTS=[Rect2(8,40,385,465),Rect2(404,117,368,380),Rect2(784,119,373,381),Rect2(1230,42,260,463),Rect2(30,645,345,310),Rect2(416,566,303,391),Rect2(750,600,390,367)]
-const BUILD_SIZES=[Vector2(235,232),Vector2(170,148),Vector2(174,148),Vector2(115,202),Vector2(98,70),Vector2(132,158),Vector2(190,142)]
+const BUILD_SIZES=[Vector2(235,232),Vector2(170,148),Vector2(174,148),Vector2(115,202),Vector2(98,70),Vector2(132,158),Vector2(190,142),Vector2(235,180)]
 # The logical position is the centre of the visible ground footprint, not the image bottom.
-const BUILD_PIVOTS=[Vector2(0.5,0.88),Vector2(0.5,0.88),Vector2(0.51,0.88),Vector2(0.5,0.93),Vector2(0.5,0.86),Vector2(0.5,0.89),Vector2(0.5,0.88)]
-const DIRT_SIZES=[Vector2(275,112),Vector2(195,84),Vector2(200,86),Vector2(120,56),Vector2(96,44),Vector2(158,70),Vector2(216,92)]
+const BUILD_PIVOTS=[Vector2(0.5,0.88),Vector2(0.5,0.88),Vector2(0.51,0.88),Vector2(0.5,0.93),Vector2(0.5,0.86),Vector2(0.5,0.89),Vector2(0.5,0.88),Vector2(0.5,0.88)]
+const DIRT_SIZES=[Vector2(275,112),Vector2(195,84),Vector2(200,86),Vector2(120,56),Vector2(96,44),Vector2(158,70),Vector2(216,92),Vector2(260,104)]
 const PROP_RECTS=[Rect2(0,0,360,405),Rect2(365,65,345,337),Rect2(712,0,390,403),Rect2(1104,0,344,408),Rect2(0,410,359,337),Rect2(366,416,345,331),Rect2(716,419,364,331),Rect2(1088,420,360,330),Rect2(0,758,360,328),Rect2(365,758,345,328),Rect2(715,758,365,328),Rect2(1088,758,360,328)]
 const PROP_SIZES=[Vector2(145,220),Vector2(145,168),Vector2(220,215),Vector2(150,160),Vector2(150,108),Vector2(135,110),Vector2(125,100),Vector2(170,115),Vector2(90,65),Vector2(72,65),Vector2(120,105),Vector2(80,53)]
-const UNIT_SIZES=[Vector2(67,80),Vector2(67,80),Vector2(83.75,100),Vector2(118,114),Vector2(50,64)]
+const UNIT_SIZES=[Vector2(67,80),Vector2(67,80),Vector2(83.75,100),Vector2(118,114),Vector2(50,64),Vector2(84,100)]
 static var unit_regions:Array[Rect2]=[]
 static var style_cache:Dictionary={}
 static var wall_icon:Texture2D
@@ -32,7 +34,8 @@ static func dirt_rect(index:int,base:Vector2)->Rect2:
  return Rect2(base-DIRT_SIZES[index]*0.5,DIRT_SIZES[index])
 
 static func building(canvas:CanvasItem,index:int,base:Vector2,scale_value:float=1.0,tint:Color=Color.WHITE)->void:
- canvas.draw_texture_rect_region(BUILDINGS,building_rect(index,base,scale_value),BUILD_RECTS[index],tint)
+ if index==7: canvas.draw_texture_rect(WORKSHOP,building_rect(index,base,scale_value),false,tint)
+ else: canvas.draw_texture_rect_region(BUILDINGS,building_rect(index,base,scale_value),BUILD_RECTS[index],tint)
 
 static func prop(canvas:CanvasItem,index:int,base:Vector2,scale_value:float=1.0,flip:bool=false,tint:Color=Color.WHITE)->void:
  var size:Vector2=PROP_SIZES[index]*scale_value
@@ -44,7 +47,10 @@ static func unit(canvas:CanvasItem,row:int,frame:int,base:Vector2,scale_value:fl
  var size:Vector2=UNIT_SIZES[row]*scale_value
  var target:=Rect2(base-Vector2(size.x/2,size.y),size)
  if flip: target.size.x=-target.size.x
- canvas.draw_texture_rect_region(UNITS,target,unit_regions[row*4+frame],tint)
+ if row==5:
+  var cell:=Vector2(ELITES.get_size())/Vector2(4,1)
+  canvas.draw_texture_rect_region(ELITES,target,Rect2(Vector2(frame,0)*cell,cell),tint)
+ else: canvas.draw_texture_rect_region(UNITS,target,unit_regions[row*4+frame],tint)
 
 static func icon(canvas:CanvasItem,index:int,rect:Rect2,tint:Color=Color.WHITE)->void:
  var cell:=Vector2(ICONS.get_size())/Vector2(4,2)

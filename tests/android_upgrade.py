@@ -1,4 +1,4 @@
-"""Verify an actual v0.6 -> v0.7 Android update on the disposable emulator.
+"""Verify an actual v0.7 -> v0.8 Android update on the disposable emulator.
 
 Run after android_smoke.py. Requires ANDROID_PREVIOUS_APK and ANDROID_BASE_REPORT;
 uses the same adb/device/report variables as android_smoke.py. Both APKs must
@@ -53,14 +53,36 @@ def run():
         native.check(base['passed'] and base['apk_sha256'] == native.APK_SHA256,
                      'Upgrade test begins after the exact current APK passes native checks')
         original = native.save()
-        native.check(original['version'] == 6 and original['terrain_revision'] == 3,
+        native.check(original['version'] == 7 and original['terrain_revision'] == 4,
                      'Current native settlement uses the authored map')
         native.adb('shell', 'am', 'force-stop', native.PACKAGE)
         result = native.adb('install', '--no-incremental', '-r', '-d', PREVIOUS, timeout=360)
-        native.check('Success' in result, 'Previous signed v0.6 APK installs on the disposable emulator')
+        native.check('Success' in result, 'Previous signed v0.7 APK installs on the disposable emulator')
         legacy = copy.deepcopy(original)
-        legacy['version'] = 5
-        legacy['terrain_revision'] = 2
+        legacy['version'] = 6
+        legacy['terrain_revision'] = 3
+        legacy['deposits'] = [0.0] * 28
+        for key in ['research_levels', 'research_job', 'trade_clock']:
+            legacy.pop(key, None)
+        old_bases = {'hall': 4200.0, 'wood': 300.0, 'stone': 380.0, 'arrow': 500.0,
+                     'wall': 1250.0, 'cannon': 650.0, 'market': 350.0}
+        for index, building in enumerate(legacy['buildings']):
+            if building is None:
+                continue
+            if building['kind'] == 'workshop':
+                legacy['buildings'][index] = None
+                continue
+            building['hp'] = min(building['hp'], old_bases[building['kind']] * 1.11 ** (building['level'] - 1))
+            building.pop('repair_left', None)
+            building.pop('repair_rate', None)
+        # An actual older settlement can have different individual tower levels.
+        legacy['buildings'].append({'kind': 'arrow', 'pos': [4920.0, 2520.0], 'level': 3,
+                                    'hp': 500.0 * 1.11 ** 2, 'cooldown': 0.15,
+                                    'age': 10.0, 'ruined_at': -1.0})
+        legacy['enemies'] = [enemy for enemy in legacy['enemies'] if enemy['kind'] != 'elite']
+        for enemy in legacy['enemies']:
+            for key in ['anger', 'anger_left', 'anger_path', 'anger_step']:
+                enemy.pop(key, None)
         legacy['mountains_enabled'] = True
         write_save(legacy)
         injected = native.save()
@@ -70,20 +92,28 @@ def run():
         (native.OUT / 'old-observed.json').write_text(json.dumps(old, indent=2))
         native.screen('01-old-app-settlement')
         print('OLD SAVE OBSERVED:', old.get('version'), old.get('mountains_enabled'), old.get('elapsed'), flush=True)
-        native.check(old['version'] == 5 and old['terrain_revision'] == 2,
-                     'Actual v0.6 app restores and writes its legacy terrain save')
-        native.check(signature(old) == signature(original),
+        native.check(old['version'] == 6 and old['terrain_revision'] == 3,
+                     'Actual v0.7 app restores and writes its legacy terrain save')
+        native.check(signature(old) == signature(legacy),
                      'Actual old app retains all building positions and levels')
         native.adb('shell', 'am', 'force-stop', native.PACKAGE)
         result = native.adb('install', '--no-incremental', '-r', native.APK, timeout=360)
-        native.check('Success' in result, 'New v0.7 APK updates v0.6 without clearing app data')
+        native.check('Success' in result, 'New v0.8 APK updates v0.7 without clearing app data')
         retained = native.save()
         native.check(retained == old, 'Android update retains the complete legacy save file')
         migrated = continue_and_pause()
-        native.check(migrated['version'] == 6 and migrated['terrain_revision'] == 2,
+        native.check(migrated['version'] == 7 and migrated['terrain_revision'] == 3,
                      'New app migrates the actual old save while retaining its terrain')
-        native.check(signature(migrated) == signature(old),
-                     'Upgrade preserves every building kind, position and level')
+        levels = {}
+        for building in old['buildings']:
+            if building and building['hp'] > 0:
+                levels[building['kind']] = max(levels.get(building['kind'], 1), int(building['level']))
+        expected = [(building['kind'], building['pos'], levels[building['kind']])
+                    if building and building['hp'] > 0 else None for building in old['buildings']]
+        native.check(signature(migrated) == expected,
+                     'Upgrade preserves foundations and migrates the highest old level per building type globally')
+        native.check(migrated['research_levels']['arrow'] == 3 and len(migrated['deposits']) == 28,
+                     'Legacy terrain retains its sites and existing tower research is never downgraded')
         native.check(migrated['elapsed'] >= old['elapsed'] and migrated['kills'] >= old['kills'],
                      'Upgrade preserves mission progress and kills')
         native.check(all(migrated['resources'][k] >= old['resources'][k] for k in ['wood', 'stone', 'gold']),

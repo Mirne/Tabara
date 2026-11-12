@@ -30,11 +30,15 @@ func run()->void:
  game.sound_on=false
  game.music_player.stop()
  game.sim.resources={"wood":1e12,"stone":1e12,"gold":1e12}
- var kinds:=["arrow","cannon","wall","wood","stone","market"]
- for y in range(192,5000,192):
-  for x in range(192,8100,192):
+ var kinds:=["arrow","wall"]
+ for y in range(160,5000,80):
+  for x in range(160,8100,80):
    if game.sim.active_building_count()>=512: break
-   game.sim.build_at(Vector2(x,y),kinds[(x/192+y/192)%kinds.size()])
+   game.sim.build_at(Vector2(x,y),kinds[(x/80+y/80)%kinds.size()])
+ if game.sim.active_building_count()!=512:
+  printerr("Stress fixture did not create its declared 512 structures")
+  quit(1)
+  return
  for b in game.sim.buildings:
   if b!=null: b.age=10
  game.sim.enemies.clear()

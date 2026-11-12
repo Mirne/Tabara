@@ -10,7 +10,7 @@ const LANDMARKS=preload("res://assets/world/landmarks.png")
 const CLIFF_ART=preload("res://assets/world/cliffs.png")
 const UNIQUE_RIDGES={"north_crown":preload("res://assets/world/north_crown.png"),"north_gate":preload("res://assets/world/north_gate.png"),"south_gate":preload("res://assets/world/south_gate.png"),"south_buttress":preload("res://assets/world/south_buttress.png")}
 const Body=preload("res://assets/fonts/Body.ttf")
-const UNIT_ROWS={"raider":0,"runner":1,"brute":2,"siege":3}
+const UNIT_ROWS={"raider":0,"runner":1,"brute":2,"siege":3,"elite":5}
 var game
 var scenery:Array=[]
 var ground_view:SubViewport
@@ -33,6 +33,7 @@ var water_masks:Dictionary={}
 var surface_mask:ImageTexture
 var floor_source:Sprite2D
 var overview:Texture2D
+var legacy_overview:Texture2D
 var environment_layer:Node2D
 var woodland_surface:ImageTexture
 
@@ -42,6 +43,7 @@ func _ready()->void:
  legacy_ridges=Map.legacy_mountain_sprites()
  landmarks=Map.authored_landmarks()
  if ResourceLoader.exists("res://assets/world/overview.png"): overview=load("res://assets/world/overview.png")
+ if ResourceLoader.exists("res://assets/world/overview-v07.png"): legacy_overview=load("res://assets/world/overview-v07.png")
  texture_repeat=CanvasItem.TEXTURE_REPEAT_ENABLED
  texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
  for prop in scenery:
@@ -137,7 +139,7 @@ func _draw()->void:
   if visible_world.has_point(prop.pos): entities.append({"y":prop.pos.y,"prop":prop})
  for i in sim.resource_nodes.size():
   var d:Dictionary=sim.resource_nodes[i]
-  if sim.terrain_revision==3 and d.kind=="wood": continue
+  if sim.terrain_revision>=3 and d.kind=="wood": continue
   if visible_world.has_point(d.pos): entities.append({"y":d.pos.y,"deposit":i})
  for i in sim.buildings.size():
   var b=sim.buildings[i]
@@ -242,24 +244,28 @@ func draw_grid()->void:
    var node:Dictionary=game.sim.resource_nodes[i]
    if node.kind!=game.build_kind or not area.grow(180).has_point(node.pos): continue
    var site:Rect2=game.sim.foundation_rect(game.sim.snap_position(node.pos,game.build_kind),game.build_kind)
-   draw_rect(site,Color(0.91,0.72,0.34,0.18))
-   draw_rect(site,Color("b59455") if game.sim.deposit_owner(i)>=0 else Color("c4d295"),false,2/game.zoom)
+   var allowed:bool=game.sim.placement_error(site.get_center(),game.build_kind)==""
+   var color:=Color("78e698") if allowed else Color("d17152")
+   for y in range(int(site.position.y),int(site.end.y),int(grid)):
+    for x in range(int(site.position.x),int(site.end.x),int(grid)):
+     var tile:=Rect2(x,y,grid,grid)
+     draw_rect(tile,Color(color,0.34 if allowed else 0.15))
+     draw_rect(tile,Color(color,0.85),false,1.2/game.zoom)
+   draw_rect(site,color,false,2.5/game.zoom)
 
 func draw_building(index:int)->void:
  var sim=game.sim
  var b:Dictionary=sim.buildings[index]
+ if b.hp<=0: return
  var p:Vector2=b.pos
  var radius:float=sim.footprint(b.kind)
- if b.hp<=0:
-  Art.prop(self,7,p,0.7+radius/180.0)
-  if sim.elapsed-b.ruined_at<8 and not game.reduced_motion: smoke(p,1.6)
- else:
+ if b.hp>0:
   var tint:=Color(0.94,0.96,0.89)
-  if b.age<sim.BUILD_TIME: tint=Color(0.75,0.7,0.56,0.55+b.age/sim.BUILD_TIME*0.45)
+  if b.age<sim.build_time(b.kind): tint=Color(0.75,0.7,0.56,0.55+b.age/sim.build_time(b.kind)*0.45)
   if b.kind=="wall": draw_joined_wall(index,tint)
   else: Art.building(self,sim.DEFINITIONS[b.kind].art,p,1,tint)
   if not game.reduced_motion:
-   if b.kind in ["hall","wood","stone","market"]: smoke(p-Vector2(15,Art.BUILD_SIZES[sim.DEFINITIONS[b.kind].art].y*0.75),0.5)
+   if b.kind in ["hall","wood","stone","market","workshop"]: smoke(p-Vector2(15,Art.BUILD_SIZES[sim.DEFINITIONS[b.kind].art].y*0.75),0.5)
    if b.kind in ["wood","stone","market"]:
     var phase:float=game.animation_clock*0.55+index
     var worker:Vector2=p+Vector2(sin(phase)*65,24+cos(phase)*22)
@@ -282,8 +288,8 @@ func draw_enemy(e:Dictionary,p:Vector2)->void:
  if game.reduced_motion: frame=0
  Art.unit(self,row,frame,p)
  if e.hp<e.max_hp*0.97:
-  draw_rect(Rect2(p-Vector2(17,83 if row!=2 else 102),Vector2(34,4)),Color("2b2520"))
-  draw_rect(Rect2(p-Vector2(17,83 if row!=2 else 102),Vector2(34*e.hp/e.max_hp,4)),Color("ad6f4c"))
+  draw_rect(Rect2(p-Vector2(17,102 if row in [2,5] else 83),Vector2(34,4)),Color("2b2520"))
+  draw_rect(Rect2(p-Vector2(17,102 if row in [2,5] else 83),Vector2(34*e.hp/e.max_hp,4)),Color("ad6f4c"))
 
 func atlas_object(texture:Texture2D,index:int,grid:Vector2i,position:Vector2,size:Vector2,pivot:Vector2=Vector2(0.5,0.84))->void:
  var cell:=Vector2(texture.get_size())/Vector2(grid)
@@ -292,7 +298,7 @@ func atlas_object(texture:Texture2D,index:int,grid:Vector2i,position:Vector2,siz
 
 func draw_deposit(index:int)->void:
  var node:Dictionary=game.sim.resource_nodes[index]
- var art:Dictionary=Map.unique_resource(index)
+ var art:Dictionary=Map.unique_resource(index,game.sim.terrain_revision)
  atlas_object(RESOURCE_ATLASES[int(art.atlas)],int(art.frame),Vector2i(3,2) if int(art.atlas)==4 else Vector2i(2,3),node.pos,art.size)
 
 func draw_joined_wall(index:int,tint:Color)->void:
@@ -315,18 +321,18 @@ func configure_ground(revision:int)->void:
  configure_environment(revision)
  if revision>=2:
   floor_source.texture=AUTHORED_FLOOR
-  material.shader=preload("res://scripts/woodland_ground.gdshader") if revision==3 else preload("res://scripts/authored_ground.gdshader")
+  material.shader=preload("res://scripts/woodland_ground.gdshader") if revision>=3 else preload("res://scripts/authored_ground.gdshader")
   material.set_shader_parameter("micro_materials",preload("res://assets/frontier/terrain.png"))
   material.set_shader_parameter("water_mask",mask_texture(revision))
   if surface_mask==null:
    var bytes:PackedByteArray=Marshalls.base64_to_raw(Map.authored.get("surface_pixels",""))
    if bytes.size()==Map.GRID_WIDTH*Map.GRID_HEIGHT*4:
     surface_mask=ImageTexture.create_from_image(Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_RGBA8,bytes))
-  if revision==3 and woodland_surface==null:
+  if revision>=3 and woodland_surface==null:
    var bytes:PackedByteArray=Marshalls.base64_to_raw(Map.woodland.get("surface_pixels",""))
    if bytes.size()==Map.GRID_WIDTH*Map.GRID_HEIGHT*4:
     woodland_surface=ImageTexture.create_from_image(Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_RGBA8,bytes))
-  material.set_shader_parameter("surface_mask",woodland_surface if revision==3 else surface_mask)
+  material.set_shader_parameter("surface_mask",woodland_surface if revision>=3 else surface_mask)
   water.texture=AUTHORED_FLOOR
   var bounds:Array=Map.authored.water_bounds
   var region:=Rect2(bounds[0],bounds[1],bounds[2],bounds[3])
@@ -367,7 +373,7 @@ func configure_environment(revision:int)->void:
  for node in environment_layer.get_children():
   environment_layer.remove_child(node)
   node.queue_free()
- if revision!=3: return
+ if revision<3: return
  for region in Map.forest_regions():
   var sprite:=Sprite2D.new()
   sprite.texture=load(region.texture)
@@ -376,6 +382,14 @@ func configure_environment(revision:int)->void:
   sprite.position=region.rect.position
   sprite.scale=region.rect.size/Vector2(sprite.texture.get_size())
   environment_layer.add_child(sprite)
+ if revision>=4:
+  for item in Map.forest_infills():
+   var sprite:=Sprite2D.new()
+   sprite.texture=preload("res://assets/woodland/canopy-infill.png")
+   sprite.texture_repeat=CanvasItem.TEXTURE_REPEAT_DISABLED
+   sprite.position=item.pos
+   sprite.scale=item.size/Vector2(sprite.texture.get_size())
+   environment_layer.add_child(sprite)
  # All escarpments use the same grey limestone as the exposed resource outcrops.
  for ridge in Map.mountain_sprites():
   var sprite:=Sprite2D.new()

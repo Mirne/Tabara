@@ -17,7 +17,7 @@ from PIL import Image, ImageChops, ImageStat
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "com.tabara.lasthearth"
-APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.7.apk"))
+APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.8.apk"))
 OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android-frontier")).name
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
@@ -70,6 +70,10 @@ def wait_menu():
         time.sleep(4)
     screen("menu-timeout")
     raise TimeoutError("Native menu did not match the rendered frontier art")
+
+def world_point(x, y):
+    # Default mission camera and logical game viewport, before any drag/pinch.
+    return round((x - 4680) * .85 + 552), round((y - 2800) * .85 + 447)
 
 def physical(x, y):
     width, height = size
@@ -149,60 +153,97 @@ def native_checks(back_only=False):
             tap(805, 650)
             time.sleep(5)
             screen("03-initial-mission")
-            # Right construction rail; map taps preview, confirmation is separate.
-            tap(1226, 183)
-            tap(321, 643)  # Forest at (4380,3030), snapped to (4400,3040).
-            screen("03a-grid-preview")
-            tap(1338, 43)  # Pause forces a save, cancelling the unconfirmed preview.
+            # Full-height catalogue; selecting and placing hides it until Build structures.
+            tap(1194, 218)
+            tap(*world_point(4380, 3030))
+            image = screen("03a-green-grid-preview")
+            wx, wy = world_point(4400, 3040)
+            patch = image.crop((wx-60, wy-60, wx+60, wy+60))
+            green = sum(g > r*1.2 and g > b*1.15 and g > 75 for r, g, b in patch.getdata())
+            check(green > 400, "Native producer preview renders green buildable tiles")
+            tap(1338, 43)
             preview_save = save()
             check(len(preview_save["buildings"]) == 1, "Native preview never constructs before confirmation")
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
-            tap(1226, 183)
-            tap(321, 643)
-            tap(1294, 704)  # Confirm Build.
-            tap(1359, 183)
-            tap(976, 711)  # Quarry at (5150,3110), snapped to (5160,3120).
-            tap(1294, 704)
-            tap(1226, 311)
-            tap(433, 257)  # Tower on free grid ground, snapped to (4520,2560).
-            tap(1294, 704)
+            tap(1194, 218)
+            tap(*world_point(4380, 3030))
+            tap(1273, 685)
+            tap(1273, 763)  # Selected-building panel: Build structures.
+            tap(1352, 218)
+            tap(*world_point(5150, 3110))
+            tap(1273, 685)
+            tap(1273, 763)
+            tap(1194, 376)
+            tap(*world_point(4520, 2560))
+            tap(1273, 685)
             tap(1338, 43)
             before_wall = save()
-            check(len(before_wall["buildings"]) == 4, "Native initial grid buildings are stored before wall dragging")
+            check(len(before_wall["buildings"]) == 4, "Native full-height panels construct the initial three buildings")
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
-            tap(1359, 311)
-            adb("shell", "input", "swipe", *physical(168,379), *physical(168,515), "700")
+            tap(1273, 763)
+            tap(1352, 376)
+            start = world_point(4160, 2600)
+            finish = world_point(4160, 3000)
+            adb("shell", "input", "swipe", *physical(*start), *physical(*finish), "700")
             time.sleep(4)
             screen("03b-wall-preview")
             tap(1338, 43)
             check(len(save()["buildings"]) == 4, "Native wall drag previews without constructing")
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
-            tap(1359, 311)
-            adb("shell", "input", "swipe", *physical(168,379), *physical(168,515), "700")
+            tap(1352, 376)
+            adb("shell", "input", "swipe", *physical(*start), *physical(*finish), "700")
             time.sleep(4)
-            tap(1294, 704)
+            tap(1273, 685)
             screen("03c-wall-built")
         tap(1338, 43)  # Explicit known pause.
         screen("04-built-and-paused")
-        data = wait_saved_structure(6, "wall")
-        check(data["version"] == 6, "Native app writes the world-position save format")
+        data = wait_saved_structure(9, "wall")
+        check(data["version"] == 7 and data["terrain_revision"] == 4, "Native app writes global research and the new eight-site terrain format")
         for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow")]:
             check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
             check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")
         expected = [(4400,3040),(5160,3120),(4520,2560)]
         for index, position in enumerate(expected, 1):
             check(tuple(data["buildings"][index]["pos"]) == position, "Native confirmed building follows the grid at " + str(position))
-        for index, position in [(4,(4200,2720)),(5,(4200,2800)),(6,(4200,2880))]:
+        for index, position in [(4,(4160,2600)),(5,(4160,2680)),(6,(4160,2760)),(7,(4160,2840)),(8,(4160,2920)),(9,(4160,3000))]:
             check(data["buildings"][index]["kind"] == "wall" and tuple(data["buildings"][index]["pos"]) == position, "Native wall stroke creates joined piece at " + str(position))
+        check(len(data["deposits"]) == 8, "Native mission contains only eight producer sites")
         check(data["elapsed"] > 0 and data["wave"] >= 1, "Native mission advances")
         before = data["elapsed"]
         time.sleep(12)
         check(save()["elapsed"] == before, "Native pause freezes the saved clock beyond autosave interval")
         back_sequence()
         if not back_only:
+            # Add the Workshop using its larger catalogue card and research controls.
+            adb("shell", "input", "keyevent", "4")
+            time.sleep(4)
+            tap(1273, 763)
+            tap(1273, 692)
+            tap(*world_point(5200, 2800))
+            tap(1273, 685)
+            end = time.monotonic() + 240
+            while True:
+                tap(1338, 43)
+                workshop_save = wait_saved_structure(10, "workshop")
+                if workshop_save["buildings"][10]["age"] >= 6:
+                    break
+                if time.monotonic() >= end:
+                    raise TimeoutError("Native Workshop did not finish construction")
+                adb("shell", "input", "keyevent", "4")
+                time.sleep(8)
+            check(True, "Native touch constructs an operational Workshop")
+            adb("shell", "input", "keyevent", "4")
+            time.sleep(4)
+            tap(1352, 330)  # Arrow research subject.
+            tap(1273, 678)
+            tap(1338, 43)
+            research_save = save()
+            check(research_save["research_levels"]["arrow"] == 1 and research_save["research_job"].get("kind") == "arrow" and research_save["research_job"]["remaining"] > 0,
+                  "Native Workshop starts a timed global upgrade without an instant level")
+            screen("04b-workshop-research")
             retained = save()
             adb("shell", "am", "force-stop", PACKAGE)
             launch()
@@ -213,8 +254,11 @@ def native_checks(back_only=False):
             tap(1338, 43)
             restored = save()
             check(restored["elapsed"] >= retained["elapsed"], "Cold restart retains elapsed time")
-            signature = lambda rows: [(b["kind"], b["pos"], b["level"]) if b else None for b in rows]
-            check(signature(restored["buildings"]) == signature(retained["buildings"]), "Cold restart retains free-placed kinds, coordinates, and upgrades")
+            signature = lambda rows: [(b["kind"], b["pos"]) if b else None for b in rows]
+            check(signature(restored["buildings"]) == signature(retained["buildings"]), "Cold restart retains all confirmed structures and coordinates")
+            check(restored["research_levels"]["arrow"] >= retained["research_levels"]["arrow"] and
+                  (restored["research_levels"]["arrow"] > retained["research_levels"]["arrow"] or
+                   restored["research_job"].get("kind") == "arrow"), "Cold restart retains global research or its paid in-progress order")
             screen("06-restored-and-paused")
             # Test camera movement with a real drag; this must not construct anything.
             adb("shell", "input", "keyevent", "4")

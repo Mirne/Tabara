@@ -6,9 +6,15 @@ extends RefCounted
 const VICTORY_TIME := 900.0
 const MAX_LEVEL := 100
 const WAVE_SECONDS := 30.0
-const SAVE_VERSION := 6
+const SAVE_VERSION := 7
 const Navigator=preload("res://scripts/assault_navigation.gd")
 static var shared_navigation:Dictionary={}
+static var shared_retaliation:Dictionary={}
+var retaliation_grid:AStarGrid2D
+var research_levels:Dictionary={}
+var research_job:Dictionary={}
+var trade_clock:=0.0
+var foundations_dirty:=false
 var mountains_enabled:=true
 var terrain_revision:=World.AUTHORED_REVISION
 var foundation_cells:Dictionary={}
@@ -26,17 +32,18 @@ const MAX_BUILDINGS := 512
 const MAX_ENEMIES := 2400
 const BUILD_TIME := 2.5
 const GRID_SIZE := 40.0
-const FOUNDATION_WIDTHS := {"hall":240.0,"wood":160.0,"stone":160.0,"arrow":80.0,"wall":80.0,"cannon":160.0,"market":160.0}
-const FOOTPRINTS := {"hall":100.0,"wood":65.0,"stone":68.0,"arrow":45.0,"wall":34.0,"cannon":52.0,"market":76.0}
-const BODY_GAPS := {"raider":30.0,"runner":28.0,"brute":43.0,"siege":60.0}
+const FOUNDATION_WIDTHS := {"hall":240.0,"wood":160.0,"stone":160.0,"arrow":80.0,"wall":80.0,"cannon":160.0,"market":160.0,"workshop":200.0}
+const FOOTPRINTS := {"hall":100.0,"wood":65.0,"stone":68.0,"arrow":45.0,"wall":34.0,"cannon":52.0,"market":76.0,"workshop":84.0}
+const BODY_GAPS := {"raider":30.0,"runner":28.0,"brute":43.0,"siege":60.0,"elite":43.0}
 const DEFINITIONS := {
- "hall": {"name":"Main hall", "tag":"THE HEART OF TABARA", "desc":"Your last line of defense. Fires arrows and provides a small steady income.", "cost":[0,0,0], "upgrade":[65,45,25], "hp":4200.0, "damage":50.0, "range":560.0, "period":0.9, "art":0},
+ "hall": {"name":"Main hall", "tag":"THE HEART OF TABARA", "desc":"Your last line of defense. Fires arrows and provides a small steady income.", "cost":[0,0,0], "upgrade":[65,45,25], "hp":4200.0, "damage":42.0, "range":500.0, "period":1.1, "art":0},
  "wood": {"name":"Woodcutter", "tag":"WOOD PRODUCTION", "desc":"Harvests timber automatically. Build in a marked timber working pocket. One woodcutter per site.", "cost":[60,20,10], "upgrade":[50,25,15], "hp":300.0, "income":4.0, "resource":"wood", "art":1},
- "stone": {"name":"Stonemason", "tag":"STONE PRODUCTION", "desc":"Quarries stone automatically. Must be built on a stone deposit. One stonemason per quarry.", "cost":[70,15,15], "upgrade":[45,40,15], "hp":380.0, "income":3.0, "resource":"stone", "art":2},
- "arrow": {"name":"Arrow tower", "tag":"FAST SINGLE TARGET", "desc":"Accurate, rapid arrows. Best against scouts and lone raiders.", "cost":[75,40,20], "upgrade":[55,35,20], "hp":500.0, "damage":24.0, "range":460.0, "period":0.85, "art":3},
- "wall": {"name":"Wall", "tag":"HOLD THE LINE", "desc":"Build freely to form a defensive line. Enemies attack walls in their way.", "cost":[25,65,10], "upgrade":[20,55,10], "hp":1250.0, "art":4},
- "cannon": {"name":"Cannon tower", "tag":"AREA DAMAGE", "desc":"Explosive shells damage every enemy in a wide blast. Strong against groups.", "cost":[100,100,55], "upgrade":[65,75,35], "hp":650.0, "damage":88.0, "range":590.0, "period":2.7, "splash":140.0, "art":5},
- "market": {"name":"Marketplace", "tag":"GOLD & RESOURCE TRADE", "desc":"Generates gold automatically. Unlocks trading surplus timber or stone for gold.", "cost":[85,50,25], "upgrade":[55,40,25], "hp":350.0, "income":2.0, "resource":"gold", "art":6}
+ "stone": {"name":"Stonemason", "tag":"STONE PRODUCTION", "desc":"Quarries stone automatically. Must be built on a stone deposit. One stonemason per quarry.", "cost":[70,15,15], "upgrade":[45,40,15], "hp":380.0, "income":5.0, "resource":"stone", "art":2},
+ "arrow": {"name":"Arrow tower", "tag":"FAST SINGLE TARGET", "desc":"Accurate, rapid arrows. Best against scouts and lone raiders.", "cost":[140,100,60], "upgrade":[55,35,20], "hp":650.0, "damage":30.0, "range":460.0, "period":1.0, "art":3},
+ "wall": {"name":"Wall", "tag":"HOLD THE LINE", "desc":"Build freely to form a defensive line. Enemies attack walls in their way.", "cost":[25,55,10], "upgrade":[20,55,10], "hp":2000.0, "art":4},
+ "cannon": {"name":"Cannon tower", "tag":"AREA DAMAGE", "desc":"Explosive shells damage every enemy in a wide blast. Strong against groups.", "cost":[220,200,120], "upgrade":[65,75,35], "hp":650.0, "damage":110.0, "range":560.0, "period":3.0, "splash":140.0, "art":5},
+ "market": {"name":"Marketplace", "tag":"GOLD & RESOURCE TRADE", "desc":"One marketplace for emergency supply trades. Gold comes from defeating enemies. Trades need time between orders.", "cost":[120,80,60], "upgrade":[55,40,25], "hp":450.0, "art":6},
+ "workshop": {"name":"Workshop", "tag":"GLOBAL RESEARCH", "desc":"Research upgrades for every building of a type, including future structures. One research order at a time.", "cost":[140,100,70], "upgrade":[70,60,40], "hp":750.0, "research":1.0, "build_time":6.0, "art":7}
 }
 var resources := {"wood":450.0,"stone":320.0,"gold":180.0}
 var buildings: Array = []
@@ -64,6 +71,8 @@ var total_length := 0.0
 
 func _init(seed_number:int=2026,layout:int=World.AUTHORED_REVISION)->void:
  terrain_revision=layout
+ resource_nodes=World.resource_nodes(layout)
+ for kind in DEFINITIONS: research_levels[kind]=1
  mountains_enabled=layout!=0
  reset_navigation()
  seed_value = seed_number
@@ -85,6 +94,20 @@ func _init(seed_number:int=2026,layout:int=World.AUTHORED_REVISION)->void:
 func reset_navigation()->void:
  if not shared_navigation.has(terrain_revision): shared_navigation[terrain_revision]=Navigator.new(World.HALL,terrain_revision)
  navigation=shared_navigation[terrain_revision]
+ if not shared_retaliation.has(terrain_revision):
+  var grid:=AStarGrid2D.new()
+  grid.region=Rect2i(0,0,World.GRID_WIDTH,World.GRID_HEIGHT)
+  grid.cell_size=Vector2.ONE*GRID_SIZE
+  grid.offset=Vector2.ONE*GRID_SIZE*0.5
+  grid.diagonal_mode=AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+  grid.default_compute_heuristic=AStarGrid2D.HEURISTIC_OCTILE
+  grid.default_estimate_heuristic=AStarGrid2D.HEURISTIC_OCTILE
+  grid.update()
+  for y in World.GRID_HEIGHT:
+   for x in World.GRID_WIDTH:
+    if navigation.solid(Vector2i(x,y)): grid.set_point_solid(Vector2i(x,y))
+  shared_retaliation[terrain_revision]=grid
+ retaliation_grid=shared_retaliation[terrain_revision]
 
 func grid_blocked(cell:Vector2i)->bool:
  if World.cell_terrain(cell,terrain_revision)>0: return true
@@ -92,7 +115,9 @@ func grid_blocked(cell:Vector2i)->bool:
  return index>=0 and buildings[index]!=null and buildings[index].hp>0
 
 func make_building(kind: String, position: Vector2 = Vector2.ZERO) -> Dictionary:
- return {"kind":kind,"pos":position,"level":1,"hp":float(DEFINITIONS[kind].hp),"cooldown":0.15,"age":0.0,"ruined_at":-1.0}
+ var b:Dictionary={"kind":kind,"pos":position,"level":int(research_levels.get(kind,1)),"hp":0.0,"cooldown":0.15,"age":0.0,"ruined_at":-1.0,"repair_left":0.0,"repair_rate":0.0}
+ b.hp=stat(b,"hp")
+ return b
 
 func footprint(kind: String) -> float:
  return FOOTPRINTS.get(kind,65.0)
@@ -131,20 +156,23 @@ func deposit_owner(index: int) -> int:
 func placement_error(position: Vector2, kind: String) -> String:
  if defeated: return "The main hall has fallen. Start a new settlement."
  if not DEFINITIONS.has(kind) or kind=="hall": return "Choose a construction tool."
+ if kind in ["market","workshop"]:
+  for b in buildings:
+   if b!=null and b.kind==kind: return "Only one %s may stand at a time."%DEFINITIONS[kind].name
  var foundation:=foundation_rect(position,kind)
  var radius:float=foundation.size.x/2
  var own_deposit:=-1
  if kind in ["wood","stone"]:
   own_deposit=deposit_near(position,kind,45.0)
   if own_deposit<0: return "Place this producer on a %s deposit."%("forest" if kind=="wood" else "stone")
-  if deposit_owner(own_deposit)>=0: return "This deposit already has a producer. Repair or clear its building."
+  if deposit_owner(own_deposit)>=0: return "This deposit already has a producer."
  var terrain:String=World.terrain_error(position,radius,own_deposit,terrain_revision)
  if terrain!="": return terrain
  for i in nearby_buildings(position,radius+180):
   var b=buildings[i]
   if b==null: continue
   if foundation.intersects(foundation_rect(b.pos,b.kind)):
-   return "These grid cells are occupied. Clear ruins to reuse their ground."
+   return "These grid cells are occupied."
  if active_building_count()>=MAX_BUILDINGS: return "The frontier supports up to 512 structures."
  return ""
 
@@ -229,25 +257,72 @@ func clear_at(index: int) -> String:
  return ""
 
 func production_bonus(b: Dictionary) -> float:
- var centers:Array=World.GROVES if b.kind=="wood" else World.QUARRIES
  if b.kind not in ["wood","stone"]: return 1.0
- for p in centers:
-  if p.distance_to(b.pos)<520: return 1.25
+ for node in resource_nodes:
+  if node.kind==b.kind and node.pos.distance_to(b.pos)<520: return 1.25
  return 1.0
 
 func stat(building: Dictionary, key: String) -> float:
  var base: float = DEFINITIONS[building.kind].get(key,0.0)
- var growth := 1.14
- if key == "hp": growth = 1.11
+ var growth := 1.10
+ if key == "hp": growth = 1.085
+ if key == "income": growth = 1.08
+ if key == "research": return base*(1.0+(building.level-1)*0.02)
  if key == "range": return base + minf(55.0, (building.level-1)*0.8)
  if key == "period": return base / (1.0+minf(0.5,(building.level-1)*0.007))
  return base * pow(growth,building.level-1)
 
-func upgrade_cost(building: Dictionary) -> Array:
- var out: Array = []
- for cost in DEFINITIONS[building.kind].upgrade:
-  out.append(ceilf(cost*pow(1.13,building.level-1)))
- return out
+func build_time(kind:String)->float:
+ return float(DEFINITIONS[kind].get("build_time",BUILD_TIME))
+
+func workshop_index()->int:
+ for i in buildings.size():
+  var b=buildings[i]
+  if b!=null and b.kind=="workshop" and b.hp>0 and b.age>=build_time("workshop"): return i
+ return -1
+
+func research_cost(kind:String)->Array:
+ var result:Array=[]
+ for value in DEFINITIONS[kind].upgrade: result.append(ceilf(value*2.0*pow(1.15,int(research_levels[kind])-1)))
+ return result
+
+func research_duration(kind:String)->float:
+ return 35.0+(int(research_levels[kind])-1)*8.0
+
+func upgrade_cost(building:Dictionary)->Array:
+ return research_cost(building.kind)
+
+func start_research(kind:String)->String:
+ if defeated: return "The main hall has fallen."
+ if not DEFINITIONS.has(kind): return "Choose a research subject."
+ if workshop_index()<0: return "Build a Workshop and wait for construction to finish."
+ if not research_job.is_empty(): return "The Workshop is already researching an upgrade."
+ if int(research_levels[kind])>=MAX_LEVEL: return "Maximum research level reached."
+ var cost:=research_cost(kind)
+ if not spend(cost): return "Not enough supplies for global research."
+ var duration:=research_duration(kind)
+ research_job={"kind":kind,"level":int(research_levels[kind])+1,"duration":duration,"remaining":duration}
+ events.append({"type":"build","pos":buildings[workshop_index()].pos,"text":"Research started"})
+ return ""
+
+func step_research(delta:float)->void:
+ if research_job.is_empty(): return
+ var index:=workshop_index()
+ if index<0: return
+ research_job.remaining=maxf(0.0,float(research_job.remaining)-delta*stat(buildings[index],"research"))
+ if research_job.remaining>0: return
+ var kind:String=research_job.kind
+ research_levels[kind]=int(research_job.level)
+ for b in buildings:
+  if b==null or b.kind!=kind: continue
+  var before:=stat(b,"hp")
+  var fraction:float=b.hp/before
+  b.level=int(research_levels[kind])
+  var after:=stat(b,"hp")
+  b.hp=after*fraction
+  b.repair_rate=float(b.get("repair_rate",0.0))*after/before
+ events.append({"type":"build","pos":buildings[index].pos,"text":"All %s · level %d"%[DEFINITIONS[kind].name,research_levels[kind]]})
+ research_job.clear()
 
 func repair_cost(building: Dictionary) -> Array:
  var ratio: float = 1.0-building.hp/stat(building,"hp")
@@ -264,28 +339,20 @@ func spend(cost: Array) -> bool:
  for i in 3: resources[RESOURCE_NAMES[i]] = maxf(0.0,resources[RESOURCE_NAMES[i]]-cost[i])
  return true
 
-func upgrade_at(index: int) -> String:
- if defeated: return "Start a new mission to build again."
- if index < 0 or index >= buildings.size() or buildings[index] == null: return "Select a building."
- var b: Dictionary = buildings[index]
- if b.hp <= 0: return "Repair these ruins before upgrading."
- if b.level >= MAX_LEVEL: return "Maximum level reached."
- if not spend(upgrade_cost(b)): return "Not enough resources for this upgrade."
- var fraction: float = b.hp/stat(b,"hp")
- b.level += 1
- b.hp = stat(b,"hp")*fraction
- events.append({"type":"build","pos":b.pos,"text":"Level %d" % b.level})
- return ""
+func upgrade_at(_index:int)->String:
+ return "Use the Workshop to research global upgrades."
 
-func repair_at(index: int) -> String:
- if defeated: return "The hall has fallen. Start a new mission."
- if index < 0 or index >= buildings.size() or buildings[index] == null: return "Select a building."
- var b: Dictionary = buildings[index]
- if b.hp >= stat(b,"hp")-0.01: return "This building is already at full health."
+func repair_at(index:int)->String:
+ if defeated: return "The main hall has fallen."
+ if index<0 or index>=buildings.size() or buildings[index]==null: return "Select a standing building."
+ var b:Dictionary=buildings[index]
+ if b.hp<=0: return "Destroyed buildings cannot be repaired."
+ if float(b.get("repair_left",0.0))>0: return "Repairs are already underway."
+ if b.hp>=stat(b,"hp")-0.01: return "This building is already at full health."
  if not spend(repair_cost(b)): return "Not enough wood and stone to repair."
- b.hp = stat(b,"hp")
- b.cooldown = maxf(b.cooldown,0.5)
- events.append({"type":"build","pos":b.pos,"text":"Repaired"})
+ b.repair_left=8.0
+ b.repair_rate=(stat(b,"hp")-b.hp)/8.0
+ events.append({"type":"build","pos":b.pos,"text":"Repairs started"})
  return ""
 
 func collect(_index: int) -> bool:
@@ -293,30 +360,32 @@ func collect(_index: int) -> bool:
  return false
 
 func trade(from: String) -> bool:
- if defeated or from not in ["wood","stone"]: return false
+ if defeated or trade_clock>0 or from not in ["wood","stone"]: return false
  var market_level := 0
  for b in buildings:
   if b != null and b.kind == "market" and b.hp > 0: market_level = maxi(market_level,b.level)
  if market_level == 0 or resources[from] < 60: return false
+ trade_clock=6.0
  resources[from] -= 60.0
  resources.gold += 30.0+minf(25.0,market_level-1)
  return true
 
 func buy(resource: String) -> bool:
- if defeated or resource not in ["wood","stone"] or resources.gold < 60: return false
+ if defeated or resource not in ["wood","stone"] or trade_clock>0 or resources.gold < 90: return false
  var active_market := false
  for b in buildings:
   if b != null and b.kind == "market" and b.hp > 0: active_market = true
  if not active_market: return false
- resources.gold -= 60.0
+ trade_clock=8.0
+ resources.gold -= 90.0
  resources[resource] += 60.0
  return true
 
 func income_rates() -> Dictionary:
- var rates := {"wood":1.5,"stone":0.9,"gold":0.45}
+ var rates := {"wood":0.8,"stone":0.45,"gold":0.1}
  for i in buildings.size():
   var b = buildings[i]
-  if b == null or b.hp <= 0 or b.age<BUILD_TIME: continue
+  if b == null or b.hp <= 0 or b.age<build_time(b.kind): continue
   var d: Dictionary = DEFINITIONS[b.kind]
   if not d.has("income"): continue
   var bonus := production_bonus(b)
@@ -324,7 +393,7 @@ func income_rates() -> Dictionary:
  return rates
 
 func wave_size(number:int) -> int:
- var count:=mini(220,8+int(number*2.7))
+ var count:=mini(220,10+int(number*3.1))
  return mini(300,count*2) if number%5==0 else count
 
 func begin_wave() -> void:
@@ -338,11 +407,12 @@ func spawn_enemy(initial_progress: float = 0.0) -> Dictionary:
  var roll := rng.randf()
  if wave >= 4 and roll < 0.22: kind = "runner"
  if wave >= 7 and roll > 0.78: kind = "brute"
+ if wave>=5 and (roll<minf(0.20,0.035+(wave-5)*0.006) or (wave%5==0 and spawn_remaining==wave_size(wave))): kind="elite"
  if wave >= 14 and wave % 5 == 0 and spawn_remaining == 1: kind = "siege"
- var growth := pow(1.065,minf(wave-1,600))
- var health := 42.0*growth
+ var growth := pow(1.06,minf(wave-1,600))
+ var health := 50.0*growth
  var speed := 86.0+minf(34.0,wave*0.7)
- var damage := 10.0*pow(1.055,minf(wave-1,600))
+ var damage := 12.0*pow(1.06,minf(wave-1,600))
  if kind == "runner":
   health *= 0.65
   speed *= 1.55
@@ -350,6 +420,10 @@ func spawn_enemy(initial_progress: float = 0.0) -> Dictionary:
   health *= 2.8
   speed *= 0.75
   damage *= 1.9
+ if kind=="elite":
+  health *= 5.5
+  speed *= 0.85
+  damage *= 2.0
  if kind == "siege":
   health *= 7.0
   speed *= 0.55
@@ -404,6 +478,8 @@ func step(delta: float) -> void:
   spawn_enemy()
   spawn_remaining -= 1
   spawn_clock += maxf(0.065,21.0/float(wave_size(wave)))
+ trade_clock=maxf(0,trade_clock-delta)
+ step_research(delta)
  var rates := income_rates()
  for key in RESOURCE_NAMES: resources[key] = minf(1.0e15,resources[key]+rates[key]*delta)
  for i in deposits.size(): deposits[i] = maxf(0,deposits[i]-delta)
@@ -424,7 +500,11 @@ func step(delta: float) -> void:
   var b = buildings[i]
   if b == null: continue
   b.age += delta
-  if b.hp <= 0 or b.age<BUILD_TIME: continue
+  if b.hp>0 and float(b.get("repair_left",0.0))>0:
+   var repair_dt:=minf(delta,float(b.repair_left))
+   b.hp=minf(stat(b,"hp"),b.hp+float(b.repair_rate)*repair_dt)
+   b.repair_left=maxf(0,float(b.repair_left)-repair_dt)
+  if b.hp <= 0 or b.age<build_time(b.kind): continue
   b.cooldown -= delta
   if b.cooldown > 0 or not DEFINITIONS[b.kind].has("damage"): continue
   var target = null
@@ -443,8 +523,14 @@ func step(delta: float) -> void:
   var damage := stat(b,"damage")
   if b.kind == "cannon":
    for e in nearby_enemies(impact,DEFINITIONS.cannon.splash):
-    if enemy_positions[e.id].distance_to(impact) <= DEFINITIONS.cannon.splash: e.hp -= damage
-  else: target.hp -= damage
+    if enemy_positions[e.id].distance_to(impact) <= DEFINITIONS.cannon.splash:
+     e.hp -= damage
+     provoke(e,i)
+  else:
+   target.hp -= damage
+   provoke(target,i)
+   for witness in nearby_enemies(impact,90):
+    if witness.hp>0 and witness.pos.distance_to(impact)<90: provoke(witness,i)
   b.cooldown = stat(b,"period")
   events.append({"type":"shot","from":b.pos-Vector2(0,100),"pos":impact,"cannon":b.kind=="cannon"})
  for e in enemies:
@@ -461,7 +547,13 @@ func step(delta: float) -> void:
   if e.aim>0 and held>=0 and held<buildings.size() and buildings[held]!=null and buildings[held].hp>0 and hit_rects[held].grow(body+reach).has_point(pos):
    attack_building(e,held)
    continue
-  var heading:Vector2=navigation.direction(pos)
+  var heading:Vector2=retaliation_direction(e,pos,delta)
+  var adjacent:=adjacent_target(pos,body+18.0)
+  if adjacent>=0 and (int(e.get("anger",-1))<0 or adjacent==int(e.anger)):
+   e.target=adjacent
+   e.aim=0.2
+   attack_building(e,adjacent)
+   continue
   e.scan-=delta
   var separation:Vector2=e.get("push",Vector2.ZERO)
   if e.scan<=0:
@@ -509,10 +601,13 @@ func step(delta: float) -> void:
   var e: Dictionary = enemies[i]
   if e.hp <= 0:
    kills += 1
-   var reward:float=ceilf((3.0+wave*0.45)*(2.5 if e.kind == "siege" else (1.5 if e.kind=="brute" else 1.0)))
+   var reward:float=14.0 if e.kind=="siege" else (8.0 if e.kind=="elite" else (5.0 if e.kind=="brute" else 3.0))
    resources.gold = minf(1.0e15,resources.gold+reward)
    events.append({"type":"kill","gold":reward,"pos":enemy_position(e),"text":"","kind":e.kind,"phase":e.phase})
    enemies.remove_at(i)
+ if foundations_dirty:
+  rebuild_building_grid()
+  foundations_dirty=false
  # Bound event memory even in non-visual simulations.
  if events.size() > 250: events = events.slice(-150)
 
@@ -558,8 +653,11 @@ func attack_building(enemy:Dictionary,index:int)->void:
  events.append({"type":"hit","pos":b.pos,"text":""})
  if b.hp<=0:
   b.ruined_at=elapsed
-  events.append({"type":"ruin","pos":b.pos,"text":"Building ruined","kind":b.kind})
+  events.append({"type":"ruin","pos":b.pos,"text":"Building destroyed","kind":b.kind})
   if index==0: defeated=true
+  else:
+   buildings[index]=null
+   foundations_dirty=true
 
 func wall_neighbors(index:int)->Dictionary:
  var result:Dictionary={}
@@ -636,14 +734,16 @@ func snapshot() -> Dictionary:
  for e in enemies:
   var copy:Dictionary=e.duplicate(true)
   copy.pos=[e.pos.x,e.pos.y]
+  copy.erase("anger_path")
+  copy.erase("anger_step")
   var push:Vector2=e.get("push",Vector2.ZERO)
   copy.push=[push.x,push.y]
   saved_enemies.append(copy)
- return {"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
+ return {"research_levels":research_levels.duplicate(),"research_job":research_job.duplicate(),"trade_clock":trade_clock,"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
 
 static func restore(data: Dictionary):
  if not _number(data.get("version"),2,SAVE_VERSION) or float(data.version)!=floorf(data.version): return null
- if int(data.version) not in [2,3,4,5,SAVE_VERSION]: return null
+ if int(data.version) not in [2,3,4,5,6,SAVE_VERSION]: return null
  if not data.get("buildings") is Array or data.buildings.is_empty() or data.buildings.size()>MAX_BUILDINGS: return null
  if not data.get("enemies") is Array or data.enemies.size()>MAX_ENEMIES: return null
  if not data.get("resources") is Dictionary: return null
@@ -680,15 +780,25 @@ static func restore(data: Dictionary):
   if not b.get("pos") is Array or b.pos.size()!=2: return null
   if not _number(b.pos[0],0,World.SIZE.x) or not _number(b.pos[1],0,World.SIZE.y): return null
   if not _number(b.get("level"),1,100) or float(b.level)!=floorf(b.level): return null
-  if not _number(b.get("hp"),0,sim.stat(b,"hp")+0.01): return null
+  var max_health:float=sim.stat(b,"hp") if data.version>=7 else float(DEFINITIONS[b.kind].hp)*pow(1.11,int(b.level)-1)
+  # The hall and defense base health in previous versions used the old definitions.
+  if data.version<7:
+   var old_base:float={"hall":4200.0,"market":350.0,"wall":1250.0,"arrow":500.0}.get(b.kind,float(DEFINITIONS[b.kind].hp))
+   max_health=old_base*pow(1.11,int(b.level)-1)
+  if not _number(b.get("hp"),0,max_health+0.01): return null
   if not _number(b.get("cooldown"),-1e9,20) or not _number(b.get("age"),0,1e9): return null
   if not _number(b.get("ruined_at"),-1,1e9): return null
   var copy:Dictionary=b.duplicate(true)
   copy.pos=Vector2(b.pos[0],b.pos[1])
   copy.level=int(copy.level)
-  restored.append(copy)
+  if data.version<7:
+   copy.hp=float(b.hp)/max_health
+  if not _number(copy.get("repair_left",0.0),0,8.01) or not _number(copy.get("repair_rate",0.0),0,1e30): return null
+  copy.repair_left=float(copy.get("repair_left",0.0))
+  copy.repair_rate=float(copy.get("repair_rate",0.0))
+  restored.append(copy if i==0 or b.hp>0 else null)
  for e in data.enemies:
-  if not e is Dictionary or e.get("kind","") not in ["raider","runner","brute","siege"]: return null
+  if not e is Dictionary or e.get("kind","") not in ["raider","runner","brute","siege","elite"]: return null
   for key in ["hp","max_hp","speed","damage","progress","id","cooldown","lane","phase"]:
    if not _number(e.get(key),-1e9,1e30): return null
   if e.hp<=0 or e.max_hp<=0 or e.hp>e.max_hp or e.speed<=0 or e.damage<=0: return null
@@ -698,6 +808,29 @@ static func restore(data: Dictionary):
   if data.version>=3:
    if not e.get("pos") is Array or e.pos.size()!=2: return null
    if not _number(e.pos[0],0,World.SIZE.x) or not _number(e.pos[1],0,World.SIZE.y): return null
+ if data.version>=7:
+  if not data.get("research_levels") is Dictionary or data.research_levels.size()!=DEFINITIONS.size(): return null
+  for kind in DEFINITIONS:
+   if not _number(data.research_levels.get(kind),1,MAX_LEVEL) or float(data.research_levels[kind])!=floorf(data.research_levels[kind]): return null
+   sim.research_levels[kind]=int(data.research_levels[kind])
+  if not data.get("research_job") is Dictionary: return null
+  if not data.research_job.is_empty():
+   var job:Dictionary=data.research_job
+   if job.get("kind","") not in DEFINITIONS or not _number(job.get("level"),2,MAX_LEVEL): return null
+   if float(job.level)!=floorf(job.level) or int(job.level)!=int(sim.research_levels[job.kind])+1: return null
+   if not _number(job.get("duration"),1,10000) or not _number(job.get("remaining"),0,float(job.duration)): return null
+   if not is_equal_approx(float(job.duration),sim.research_duration(job.kind)): return null
+   sim.research_job=job.duplicate()
+  if not _number(data.get("trade_clock"),0,8.01): return null
+  sim.trade_clock=float(data.trade_clock)
+ else:
+  for b in restored:
+   if b!=null: sim.research_levels[b.kind]=maxi(int(sim.research_levels[b.kind]),int(b.level))
+ for b in restored:
+  if b==null: continue
+  if data.version>=7 and int(b.level)!=int(sim.research_levels[b.kind]): return null
+  b.level=int(sim.research_levels[b.kind])
+  if data.version<7: b.hp=float(b.hp)*sim.stat(b,"hp")
  sim.resources=data.resources.duplicate(true)
  sim.cleared_ground.clear()
  for cell in data.cleared_ground: sim.cleared_ground[int(cell)]=true
@@ -719,6 +852,12 @@ static func restore(data: Dictionary):
   e.aim=float(e.get("aim",0.0))
   e.target=int(e.get("target",-1))
   e.scan=float(e.get("scan",0.0))
+  if not _number(e.get("anger",-1),-1,MAX_BUILDINGS-1) or float(e.get("anger",-1))!=floorf(e.get("anger",-1)): return null
+  if not _number(e.get("anger_left",0.0),0,8): return null
+  e.anger=int(e.get("anger",-1))
+  e.anger_left=float(e.get("anger_left",0.0))
+  e.anger_path=PackedVector2Array()
+  e.anger_step=1
  sim.deposits=data.deposits.duplicate()
  sim.elapsed=float(data.elapsed)
  sim.wave=int(data.wave)
@@ -736,3 +875,68 @@ static func restore(data: Dictionary):
 
 static func _number(value, minimum: float, maximum: float) -> bool:
  return (value is float or value is int) and is_finite(float(value)) and value>=minimum and value<=maximum
+
+func provoke(enemy:Dictionary,index:int)->void:
+ if enemy.hp<=0 or index<0 or index>=buildings.size() or buildings[index]==null: return
+ var held:int=enemy.get("anger",-1)
+ if held>=0 and held<buildings.size() and buildings[held]!=null and buildings[held].hp>0 and float(enemy.get("anger_left",0.0))>0:
+  enemy.anger_left=7.0
+  return
+ enemy.anger=index
+ enemy.anger_left=7.0
+ enemy.anger_path=PackedVector2Array()
+ enemy.anger_step=1
+
+func retaliation_direction(enemy:Dictionary,pos:Vector2,delta:float)->Vector2:
+ var target:int=enemy.get("anger",-1)
+ enemy.anger_left=maxf(0.0,float(enemy.get("anger_left",0.0))-delta)
+ if target>=0 and target<buildings.size() and buildings[target]!=null and buildings[target].hp>0 and enemy.anger_left>0:
+  var destination:Vector2=buildings[target].pos
+  if pos.distance_to(destination)<850:
+   var path:PackedVector2Array=enemy.get("anger_path",PackedVector2Array())
+   if path.is_empty():
+    var goal_cell:Vector2i=navigation.cell_of(destination)
+    if retaliation_grid.is_point_solid(goal_cell): goal_cell=navigation.cell_of(navigation.nearest_open(destination))
+    if retaliation_grid.is_point_solid(goal_cell):
+     enemy.anger=-1
+     return navigation.direction(pos)
+    path=retaliation_grid.get_point_path(navigation.cell_of(pos),goal_cell)
+    var length:=0.0
+    for i in range(1,path.size()): length+=path[i-1].distance_to(path[i])
+    if path.is_empty() or length>maxf(900,pos.distance_to(destination)*1.85):
+     enemy.anger=-1
+     return navigation.direction(pos)
+    enemy.anger_path=path
+    enemy.anger_step=1
+   var cursor:int=int(enemy.get("anger_step",1))
+   while cursor<path.size()-1 and pos.distance_to(path[cursor])<18: cursor+=1
+   enemy.anger_step=cursor
+   if cursor<path.size(): return pos.direction_to(path[cursor])
+   return pos.direction_to(destination)
+ enemy.anger=-1
+ enemy.anger_path=PackedVector2Array()
+ return navigation.direction(pos)
+
+func adjacent_target(pos:Vector2,reach:float)->int:
+ var best:=-1
+ var nearest:=reach
+ for index in nearby_buildings(pos,200):
+  var b=buildings[index]
+  if b==null or b.hp<=0: continue
+  var rect:=foundation_rect(b.pos,b.kind)
+  var point:=pos.clamp(rect.position,rect.end)
+  var distance:=pos.distance_to(point)
+  if distance>=nearest: continue
+  var own:=producer_deposit(b)
+  var clear:=true
+  var samples:=maxi(1,ceili(distance/10.0))
+  for sample in range(1,samples+1):
+   var q:=pos.lerp(point,float(sample)/samples)
+   var value:=World.cell_terrain(World.cell_of(q),terrain_revision)
+   if value>0 and value!=10+own:
+    clear=false
+    break
+  if clear:
+   nearest=distance
+   best=index
+ return best

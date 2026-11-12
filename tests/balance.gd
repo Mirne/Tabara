@@ -27,7 +27,7 @@ func run() -> void:
      return
    if sim.defeated: break
    if second%20==0: await process_frame
-  var result := {"seed":seed_number,"seconds":sim.elapsed,"wave":sim.wave,"kills":sim.kills,"victory":sim.victory,"defeated":sim.defeated,"resources":sim.resources.duplicate()}
+  var result := {"seed":seed_number,"seconds":sim.elapsed,"wave":sim.wave,"kills":sim.kills,"victory":sim.victory,"defeated":sim.defeated,"resources":sim.resources.duplicate(),"research":sim.research_levels.duplicate(),"buildings":sim.active_building_count(),"hall_hp":sim.buildings[0].hp,"paid_orders":bot.paid_orders,"plan_next":bot.next}
   results.append(result)
   print("BALANCE ",JSON.stringify(result))
  var wins := 0

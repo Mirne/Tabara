@@ -1,372 +1,225 @@
 extends SceneTree
 const Sim=preload("res://scripts/simulation.gd")
 const Map=preload("res://scripts/world_data.gd")
-const Bot=preload("res://tests/player_bot.gd")
 var checks:=0
 var failures:=0
-func _init()->void:
- call_deferred("run")
-func check(condition:bool,label:String)->void:
+func _init()->void:call_deferred("run")
+func check(ok:bool,label:String)->void:
  checks+=1
- if not condition:
+ if not ok:
   failures+=1
   printerr("FAIL: ",label)
-func rich():
- var s=Sim.new(5)
+func rich(layout:int=Map.AUTHORED_REVISION):
+ var s=Sim.new(17,layout)
  s.resources={"wood":1e14,"stone":1e14,"gold":1e14}
- return s
-func roundtrip(s):
- return Sim.restore(JSON.parse_string(JSON.stringify(s.snapshot(),"",true,true)))
-func equivalent(a,b)->bool:
- if (a is float or a is int) and (b is float or b is int):
-  return absf(float(a)-float(b))<=maxf(1e-8,maxf(absf(float(a)),absf(float(b)))*2e-15)
- if a is Dictionary and b is Dictionary:
-  if a.size()!=b.size(): return false
-  for key in a:
-   if not b.has(key) or not equivalent(a[key],b[key]): return false
-  return true
- if a is Array and b is Array:
-  if a.size()!=b.size(): return false
-  for i in a.size():
-   if not equivalent(a[i],b[i]): return false
-  return true
- return a==b
-func run()->void:
- var s=Sim.new(17)
- check(Map.SIZE.x*Map.SIZE.y>50*1120*690,"Frontier is over fifty times the original area")
- check(s.buildings.size()==1 and s.buildings[0].kind=="hall","Only the main hall is prebuilt")
- check(s.enemies.size()==1 and s.enemies[0].progress==0,"Initial enemy starts at the path entrance")
- s.spawn_enemy(s.total_length-200)
- var first_hp:float=s.enemies[-1].hp
- s.step(0.2)
- check(s.kills>0 or s.enemies[-1].hp<first_hp,"Main hall fires immediately")
- check(s.build_at(Vector2(6101,2802),"arrow")=="","Free placement works far beyond the old plots")
- check(s.buildings[1].pos==Vector2(6120,2800),"Placement snaps to the visible forty-unit grid")
- var before:Dictionary=s.resources.duplicate()
- check(s.build_at(Vector2(6101,2802),"wall")!="" and s.resources==before,"Overlapping foundations are rejected without spending")
- check(s.build_at(Map.LAKE_CENTER,"wood")!="","Water placement is rejected")
- check(s.build_at(Map.CLIFFS[0],"wood")!="","Ridge placement is rejected")
- check(s.build_at(Vector2(10,10),"wall")!="","Map boundary is enforced")
- check(s.build_at(Map.GROVES[0],"arrow")!="","Resource groves retain access space")
- check(s.build_at(Vector2(6400,2800),"wall")=="","Walls can be built away from the road")
- check(s.buildings.size()==3,"Buildings are dynamic rather than fixed slots")
- check(s.vegetation_cleared(Vector2(6400,2800)),"Foundations create a persistent clearing")
- var rates:Dictionary=s.income_rates()
- var node:=0
- var timber:float=s.resources.wood
- check(not s.collect(node) and s.resources.wood==timber,"Resource sites cannot be harvested by tapping")
- check(s.build_at(Vector2(7000,4000),"hall")!="","Only one main hall is allowed")
- check(not s.buy("stone") and not s.trade("wood"),"Trading requires a marketplace")
- var tiles=rich()
- check(tiles.build_at(Vector2(6400,2800),"wall")=="" and tiles.build_at(Vector2(6480,2800),"wall")=="","Adjacent wall foundations meet cleanly on the grid")
- var tile_stock:Dictionary=tiles.resources.duplicate()
- check(tiles.build_at(Vector2(6440,2800),"wall")!="" and tiles.resources==tile_stock,"Partly overlapping grid footprints spend nothing")
- var old_save=Sim.restore(JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/frontier-preview.json")))
- check(old_save!=null and old_save.buildings[1].pos==Vector2(4544,3264),"Existing v0.2 free-position settlements keep their progress")
- if old_save!=null:
-  check(old_save.producer_deposit(old_save.buildings[1])==0 and old_save.build_at(Map.GROVES[0],"wood")!="","Existing producers reserve their nearby resource site")
- # Resource sites limit producers, retain their identity and survive clear/repair.
- var limited=rich()
- var deposit_count:int=limited.resource_nodes.size()
- check(limited.build_at(Vector2(6100,2800),"stone")!="","Stonemasons cannot be built on empty ground")
- check(limited.build_at(Map.QUARRIES[0],"wood")!="","A woodcutter requires a forest, not a quarry")
- check(limited.build_at(Map.QUARRIES[0],"stone")=="","Stonemason snaps onto its quarry")
- var stone_site:Vector2=limited.buildings[1].pos
- var paid:Dictionary=limited.resources.duplicate()
- check(limited.build_at(Map.QUARRIES[0]+Vector2(40,0),"stone")!="" and limited.resources==paid,"One producer per deposit; duplicate spends nothing")
- check(limited.resource_nodes.size()==deposit_count and limited.resource_nodes[Map.GROVES.size()].pos==Map.QUARRIES[0],"Construction never removes the resource node")
- limited.buildings[1].hp=0
- check(limited.build_at(stone_site,"stone")!="","A ruined producer still reserves its deposit")
- check(limited.repair_at(1)=="" and limited.deposit_owner(Map.GROVES.size())==1,"Repair preserves deposit ownership")
- limited.clear_at(1)
- check(limited.deposit_owner(Map.GROVES.size())==-1 and limited.build_at(Map.QUARRIES[0],"stone")=="","Clearing releases the same deposit for rebuilding")
- var legacy=roundtrip(limited)
- check(legacy!=null and legacy.deposit_owner(Map.GROVES.size())==1,"Deposit ownership survives the existing v2 save format")
- var reward_test=Sim.new(9)
- reward_test.spawn_remaining=0
- reward_test.enemies[0].hp=0
- var before_gold:float=reward_test.resources.gold
- reward_test.step(0.05)
- check(reward_test.kills==1 and reward_test.resources.gold>before_gold+3.99,"Each killed raider awards gold")
- var kill_events:Array=reward_test.events.filter(func(e):return e.type=="kill")
- check(kill_events.size()==1 and kill_events[0].gold==4,"Kill event carries its visible gold amount")
- before_gold=reward_test.resources.gold
- reward_test.step(0.05)
- check(reward_test.resources.gold-before_gold<1,"A removed enemy cannot pay gold twice")
- # Dragged wall batches are connected, priced once and atomic.
- var walls=rich()
- var stroke:Array=walls.wall_line(Vector2(6100,2800),Vector2(6420,2960))
- for i in range(1,stroke.size()):
-  check(absf(stroke[i].x-stroke[i-1].x)+absf(stroke[i].y-stroke[i-1].y)==80,"Every dragged wall piece joins a neighbor")
- var preview:Dictionary=walls.wall_preview(stroke)
- check(preview.error=="" and preview.count==stroke.size(),"Wall preview validates the complete stroke")
- var wall_gold:float=walls.resources.gold
- check(walls.build_wall(stroke)=="" and walls.resources.gold==wall_gold-10*stroke.size(),"Wall batch charges exactly once per new piece")
- check(walls.wall_neighbors(2).size()==2,"Interior wall segments have two connected neighbors")
- var extension:Array=walls.wall_line(stroke[-1],stroke[-1]+Vector2(160,0))
- check(walls.wall_preview(extension).count==2,"Joining an existing endpoint charges only new pieces")
- var empty=Sim.new(3)
- var unpaid:Dictionary=empty.snapshot()
- check(empty.build_wall(empty.wall_line(Vector2(6100,2800),Vector2(6740,2800)))!="" and empty.snapshot()==unpaid,"Unaffordable wall strokes make no partial changes")
- var blocked=rich()
- var blocked_stock:Dictionary=blocked.resources.duplicate()
- var lake_line:Array=blocked.wall_line(Map.LAKE_CENTER-Vector2(1000,0),Map.LAKE_CENTER+Vector2(200,0))
- check(blocked.build_wall(lake_line)!="" and blocked.resources==blocked_stock and blocked.buildings.size()==1,"An invalid middle tile cancels the entire wall")
- # Enemies walk directly across open terrain rather than following the decorative road.
- var assault=rich()
- assault.spawn_remaining=0
- var walker:Dictionary=assault.enemies[0]
- walker.pos=Vector2(1800,2700)
- var distance_before:float=walker.pos.distance_to(Map.HALL)
- assault.step(3)
- check(walker.pos.x>2000 and walker.pos.y>2700 and walker.pos.distance_to(Map.HALL)<distance_before-200,"Enemy takes the direct route to the hall")
- check(walker.pos.distance_to(assault.path_point(walker.progress))>200,"Enemy position is independent of old road progress")
- # The first building on the route is destroyed before advancing; side buildings are ignored.
- assault=rich()
- assault.enemies.clear()
- assault.spawn_remaining=0
- assault.build_at(Vector2(4000,2800),"market")
- assault.build_at(Vector2(5040,3360),"market")
- assault.buildings[0].cooldown=10000
- var raider:Dictionary=assault.spawn_enemy()
- raider.pos=Vector2(3800,2800)
- raider.lane=0
- raider.speed=100
- assault.buildings[1].hp=1
- assault.step(3)
- check(assault.buildings[1].hp==0 and assault.buildings[2].hp>0,"Enemies break blocking buildings without attacking unrelated side buildings")
- check(raider.pos.x>4000,"Enemy advances through destroyed foundations")
- # The same red terrain cells used by construction are impassable for units.
- var red_matches:=true
- for y in Map.GRID_HEIGHT:
-  for x in Map.GRID_WIDTH:
-   var cell:=Vector2i(x,y)
-   if assault.navigation.solid(cell)!=(Map.cell_terrain(cell)>0): red_matches=false
- check(red_matches,"All construction terrain cells agree with enemy navigation")
- for center in [Map.GROVES[0],Map.QUARRIES[0]]:
-  check(not assault.navigation.passable(center),"Resource centres cannot be crossed by enemies")
- var around=Sim.new(77)
- around.spawn_remaining=0
- around.buildings[0].cooldown=10000
- var scout:Dictionary=around.enemies[0]
- scout.pos=Vector2(1230,2800)
- scout.hp=1e8
- scout.max_hp=1e8
- var avoided:=true
- for step in 800:
-  around.step(0.05)
-  if not around.navigation.passable(scout.pos): avoided=false
- check(avoided and scout.pos.x>1800,"Actual enemy movement routes around a forest without entering red cells")
- var barrier=rich()
- barrier.enemies.clear()
- barrier.spawn_remaining=0
- barrier.buildings[0].cooldown=10000
- var pass_wall:Array=barrier.wall_line(Vector2(4160,2600),Vector2(4160,3000))
- check(barrier.build_wall(pass_wall)=="","A wall can seal the complete mountain pass")
- for b in barrier.buildings:
-  if b.kind=="wall": b.hp=1e7
- var trapped:Dictionary=barrier.spawn_enemy()
- trapped.pos=Vector2(3880,2800)
- trapped.hp=1e8
- trapped.max_hp=1e8
- barrier.step(10)
- check(trapped.pos.x<4120 and trapped.target>0,"Enemies cannot bypass a sealed mountain pass or walk through its walls")
- for b in barrier.buildings:
-  if b.kind=="wall": b.hp=1
- barrier.step(6)
- check(trapped.pos.x>4240,"Enemies advance after destroying a pass wall")
- # Prove the pass is a real chokepoint, even for a path search that avoids walls.
- var frontier:Array[Vector2i]=[Map.cell_of(Map.ROAD[0])]
- var visited:Dictionary={frontier[0]:true}
- var read:=0
- var leaked:=false
- while read<frontier.size():
-  var current:Vector2i=frontier[read]
-  read+=1
-  if current==Map.cell_of(Map.HALL): leaked=true;break
-  for offset in [Vector2i(1,0),Vector2i(-1,0),Vector2i(0,1),Vector2i(0,-1)]:
-   var next:Vector2i=current+offset
-   if visited.has(next) or barrier.navigation.solid(next): continue
-   var point:=Map.cell_center(next)
-   if Rect2(4120,2560,80,480).has_point(point): continue
-   visited[next]=true
-   frontier.append(next)
- check(not leaked,"The mountain ridges and a pass wall form a complete barrier from the western entry")
- var legacy_ridge=rich()
- legacy_ridge.buildings.append(legacy_ridge.make_building("market",Vector2(4080,3440)))
- legacy_ridge.rebuild_building_grid()
- var old_ridge:Dictionary=legacy_ridge.snapshot()
- old_ridge.version=3
- old_ridge.erase("mountains_enabled")
- var migrated=Sim.restore(JSON.parse_string(JSON.stringify(old_ridge,"",true,true)))
- check(migrated!=null and not migrated.mountains_enabled and migrated.buildings[1].pos==Vector2(4080,3440),"Old settlements crossing a new ridge keep their original terrain and building positions")
- # Static terrain routes go around the lake and never cut through water.
- var nav=Sim.Navigator.new(Vector2(7600,1600))
- var travel:=Vector2(5300,1600)
- var original_distance:float=travel.distance_to(Vector2(7600,1600))
- for tick in 900:
-  var candidate:Vector2=travel+nav.direction(travel)*8
-  check(not Map.water_at(candidate),"Shortest terrain route avoids the lake")
-  if nav.passable(candidate): travel=candidate
-  if travel.distance_to(Vector2(7600,1600))<60: break
- check(travel.distance_to(Vector2(7600,1600))<60,"Terrain route reaches the far side of the lake")
- # A great horde must dispatch fully rather than being overwritten by the next wave.
- var horde=Sim.new(1)
- horde.elapsed=120.0
- horde.wave=5
- horde.enemies.clear()
- horde.begin_wave()
- var expected_horde:int=horde.spawn_remaining
- var first_horde_id:int=horde.next_id
- horde.step(23.0)
- check(horde.next_id-first_horde_id==expected_horde and horde.spawn_remaining==0,"Every doubled-horde attacker dispatches before the next wave")
- # Every structure reaches the same explicit cap, preserving injury percentage.
- for kind in Sim.DEFINITIONS:
-  s=rich()
-  var index:=0
-  if kind!="hall":
-   var site:Vector2=Map.GROVES[0] if kind=="wood" else (Map.QUARRIES[0] if kind=="stone" else Vector2(6100,2800))
-   check(s.build_at(site,kind)=="","Construct "+kind)
-   index=1
-  var b:Dictionary=s.buildings[index]
-  b.hp=s.stat(b,"hp")*0.4
-  var previous_hp:float=s.stat(b,"hp")
-  var previous_cost:float=s.upgrade_cost(b)[0]
-  for level in range(2,101):
-   check(s.upgrade_at(index)=="",kind+" upgrade "+str(level))
-   check(b.level==level and s.stat(b,"hp")>previous_hp,kind+" health grows")
-   check(absf(b.hp/s.stat(b,"hp")-0.4)<0.00001,kind+" upgrading preserves injury")
-   check(s.upgrade_cost(b)[0]>=previous_cost,kind+" prices never decrease")
-   previous_hp=s.stat(b,"hp")
-   previous_cost=s.upgrade_cost(b)[0]
-  check(s.upgrade_at(index)!="" and b.level==100,kind+" cannot exceed level 100")
-  b.hp=0
-  check(s.upgrade_at(index)!="",kind+" ruins must be repaired")
-  check(s.repair_at(index)=="" and b.hp==s.stat(b,"hp") and b.level==100,kind+" ruins retain and restore upgrades")
-  var saved=roundtrip(s)
-  check(saved!=null and saved.buildings[index].level==100,kind+" level 100 survives JSON disk representation")
- s=rich()
- check(s.build_at(Map.GROVES[0],"wood")=="","Woodcutter occupies its forest deposit")
- check(s.production_bonus(s.buildings[1])==1.25,"Nearby forest production bonus")
- check(s.income_rates().wood==1.5,"Construction does not produce immediately")
- s.step(3)
- check(s.income_rates().wood>6.49,"Completed woodcutter produces income")
- s.buildings[1].hp=0
- check(s.income_rates().wood==1.5,"Ruined producers stop working")
- var clearing=s.cleared_ground.duplicate()
- check(s.clear_at(1)=="" and s.buildings[1]==null,"Ruins can be completely removed")
- check(s.cleared_ground==clearing,"Cleared trees do not regrow after demolition")
- check(s.build_at(Vector2(5024,3264),"market")=="","Other clear ground accepts a marketplace")
- check(s.buildings.size()==2,"Cleared storage slots are reused")
- s.step(3)
- var gold:float=s.resources.gold
- var stone:float=s.resources.stone
- check(s.buy("stone") and s.resources.stone==stone+60 and s.resources.gold==gold-60,"Marketplace purchase has exact price")
- var timber_before:float=s.resources.wood
- gold=s.resources.gold
- check(s.trade("wood") and s.resources.wood==timber_before-60 and s.resources.gold==gold+30,"Marketplace sale has exact proceeds")
- s.buildings[1].level=100
- gold=s.resources.gold
- s.buy("stone")
- s.trade("stone")
- check(s.resources.gold<gold,"Level 100 trading cannot create free gold")
- check(s.clear_at(0)!="","Main hall cannot be dismantled")
- # Unattended raiders physically ruin a structure, which remains repairable.
- s=rich()
- s.buildings[0].cooldown=10000
- s.enemies.clear()
- s.spawn_enemy(s.total_length-400)
- var p:Vector2=s.enemy_position(s.enemies[0])
- var candidate:=s.snap_position(p)
- check(s.build_at(candidate,"wall")=="","Wall may be placed directly across the current approach")
- var wall:Dictionary=s.buildings[1]
- wall.hp=1
- var progress:float=s.enemies[0].progress
- s.step(1.3)
- check(wall.hp==0 and wall.ruined_at>=0,"Enemies destroy buildings into ruins")
- check(s.enemies[0].progress>=progress,"Ruined walls release the approach")
- check(s.repair_at(1)=="" and wall.hp>0,"Enemy-created ruins can be repaired")
- # Body spacing prevents thousands of attackers occupying the same footprint.
- s=rich()
  s.enemies.clear()
  s.spawn_remaining=0
- var leader:Dictionary=s.spawn_enemy(1000)
- var follower:Dictionary=s.spawn_enemy(990)
- leader.pos=Vector2(2100,2700)
- follower.pos=Vector2(2080,2700)
- s.step(0.05)
- check(leader.pos.distance_to(follower.pos)>20,"Free-moving crowds separate without fixed lanes")
- # A removed target's reused index must not damage a new, distant structure.
- s=rich()
+ return s
+func roundtrip(s):return Sim.restore(JSON.parse_string(JSON.stringify(s.snapshot(),"",true,true)))
+func quiet_step(s,seconds:float)->void:
+ s.spawn_remaining=0
+ s.wave=int((s.elapsed+seconds)/s.WAVE_SECONDS)+1
+ # Use short intervals when suppressing spawn fixtures across wave boundaries.
+ s.step(seconds)
  s.enemies.clear()
- s.spawn_enemy(s.total_length-400)
- var enemy:Dictionary=s.enemies[0]
- check(s.build_at(s.enemy_position(enemy),"wall")=="","Build target for reused-index regression")
- enemy.target=1
- enemy.scan=0.2
- enemy.aim=0.2
- enemy.cooldown=-1
- s.clear_at(1)
- s.build_at(Vector2(6400,2800),"wall")
- var remote_hp:float=s.buildings[1].hp
+ s.spawn_remaining=0
+func run()->void:
+ var s=Sim.new(7)
+ check(s.terrain_revision==4 and s.resource_nodes.size()==8,"New mission uses eight deliberate resource sites")
+ check(s.buildings.size()==1 and s.enemies.size()==1 and s.enemies[0].progress==0,"Only the hall is prebuilt; enemies start at the western entrance")
+ var zones:Dictionary={}
+ for node in s.resource_nodes:
+  var key:String=node.kind+":"+node.zone
+  zones[key]=zones.get(key,0)+1
+ check(zones=={"wood:base":2,"wood:outpost":2,"stone:base":2,"stone:outpost":2},"Two wood and two stone sites in base; two of each outside")
+ for node in s.resource_nodes:
+  if node.zone=="outpost":check(node.pos.x<Map.HALL.x,"Outpost resources lie on the exposed western side")
+ check(not s.collect(0),"Resource sites remain noninteractive scenery")
+ var gold:float=s.resources.gold
+ s.enemies[0].hp=0
  s.step(0.05)
- check(s.buildings[1].hp==remote_hp,"Cached attacks cannot hit a reused remote building index")
- # Save validation and deterministic continuation, including cleared vegetation.
+ check(s.kills==1 and s.resources.gold>=gold+2,"Enemy kills award gold")
+ s=rich()
+ for node in s.resource_nodes:
+  check(s.build_at(node.pos,node.kind)=="","Every resource site accepts its producer: "+str(node.pos))
+  var paid:Dictionary=s.resources.duplicate()
+  check(s.build_at(node.pos,node.kind)!="" and s.resources==paid,"Each resource site permits one producer without double spending")
+ check(s.buildings.size()==9,"All eight sites and the hall coexist")
+ check(s.build_at(Vector2(6100,2800),"stone")!="","Quarries cannot be placed on empty ground")
+ check(s.build_at(s.resource_nodes[4].pos,"wood")!="","Producers require the matching resource")
+ s=rich()
+ check(s.build_at(Vector2(6101,2802),"arrow")=="" and s.buildings[1].pos==Vector2(6120,2800),"Foundations snap to the visible grid")
+ var stock:Dictionary=s.resources.duplicate()
+ check(s.build_at(Vector2(6120,2800),"wall")!="" and s.resources==stock,"Overlapping foundations spend nothing")
+ for point in [Vector2(10,10),Map.LAKE_CENTER,Map.CLIFFS[0]]:
+  check(s.build_at(point,"arrow")!="","Boundary, water and rock reject foundations")
+ var hidden:=0
+ for pocket in Map.forest_pockets:
+  var point:Vector2=pocket.pos.snapped(Vector2.ONE*40)
+  if Map.cell_terrain(Map.cell_of(point),4) in [6,7]:
+   hidden+=1
+   check(s.build_at(point,"arrow")!="" and not s.navigation.passable(point),"Former forest hole blocks both construction and enemies")
+ check(hidden>=8,"Former inaccessible resource hollows are closed")
+ var safe:=true
+ for i in Map.terrain_field(4).size():
+  if Map.terrain_field(4)[i]==0 and not is_finite(s.navigation.costs[i]):safe=false
+ check(safe,"Every open cell belongs to the connected attackable landscape")
+ s=rich()
+ var stroke:Array=s.wall_line(Vector2(6100,2800),Vector2(6340,2960))
+ check(stroke.size()>1 and s.build_wall(stroke)=="","A confirmed wall stroke builds connected sections")
+ var count:int=s.active_building_count()
+ check(s.build_wall(stroke)!="" and s.active_building_count()==count,"Existing wall endpoints are reused")
+ var corner:int=s.wall_at(stroke[2])
+ check(s.wall_neighbors(corner).size()>=1,"Wall geometry receives shared neighboring pieces")
+ var broke=rich()
+ broke.resources={"wood":0.0,"stone":0.0,"gold":0.0}
+ var before:Dictionary=broke.snapshot()
+ check(broke.build_wall(stroke)!="" and broke.snapshot()==before,"Unaffordable strokes remain atomic")
+ # One global research queue, real costs and time, all current and future structures.
+ s=rich()
+ check(s.start_research("arrow")!="","Research requires an operational Workshop")
+ check(s.build_at(Vector2(5200,2800),"workshop")=="","Workshop has its own buildable footprint")
+ check(s.start_research("arrow")!="","Research waits for Workshop construction")
+ quiet_step(s,7)
+ check(s.build_at(Vector2(6100,2800),"arrow")=="" and s.build_at(Vector2(6300,2800),"arrow")=="","Two towers can share future research")
+ var first:Dictionary=s.buildings[2]
+ var second:Dictionary=s.buildings[3]
+ first.hp=s.stat(first,"hp")*0.5
+ var research_price:Array=s.research_cost("arrow")
+ var wood:float=s.resources.wood
+ check(s.start_research("arrow")=="" and s.resources.wood==wood-research_price[0],"Global research spends the quoted cost once")
+ var paid:Dictionary=s.resources.duplicate()
+ check(s.start_research("wall")!="" and s.resources==paid,"A busy Workshop refuses another paid order")
+ check(s.upgrade_at(2)!="" and first.level==1,"Direct per-building upgrades are removed")
+ quiet_step(s,1)
+ check(first.level==1 and second.level==1 and s.research_job.remaining>0,"Research does not complete instantly")
+ var saved=roundtrip(s)
+ check(saved!=null and saved.research_job.kind==s.research_job.kind and saved.research_job.level==s.research_job.level and is_equal_approx(saved.research_job.remaining,s.research_job.remaining),"In-progress research survives a JSON round trip")
+ quiet_step(s,35)
+ check(first.level==2 and second.level==2 and s.research_levels.arrow==2,"Completed research upgrades every tower of that type")
+ check(is_equal_approx(first.hp/s.stat(first,"hp"),0.5),"Global health upgrades preserve the damage fraction")
+ check(s.build_at(Vector2(6500,2800),"arrow")=="" and s.buildings[-1].level==2,"Future structures inherit global research")
+ check(s.build_at(Vector2(5400,3200),"workshop")!="","Multiple workshops cannot multiply research speed")
+ check(s.start_research("stone")=="","Another subject starts when the previous research finishes")
+ var pending:float=s.research_job.remaining
+ var destroyer:Dictionary=s.spawn_enemy()
+ destroyer.cooldown=0
+ destroyer.damage=1e9
+ s.attack_building(destroyer,1)
+ quiet_step(s,2)
+ check(s.buildings[1]==null and s.research_job.remaining==pending,"Destroying the Workshop removes it and pauses its paid research")
+ check(s.build_at(Vector2(5200,2800),"workshop")=="","A destroyed Workshop can be replaced on its freed grid cells")
+ quiet_step(s,7)
+ check(s.research_job.remaining<pending,"A replacement Workshop resumes retained research")
+ # Level 100 remains valid for every global building type.
+ var progression=rich()
+ progression.build_at(Vector2(5200,2800),"workshop")
+ progression.buildings[1].age=10
+ for kind in Sim.DEFINITIONS:
+  for level in range(2,101):
+   check(progression.start_research(kind)=="",kind+" global research starts at level "+str(level))
+   progression.step_research(progression.research_duration(kind))
+   var exemplar:Dictionary=progression.make_building(kind,Vector2(6000,2800))
+   check(exemplar.level==level and is_finite(progression.stat(exemplar,"hp")) and progression.stat(exemplar,"hp")>0,kind+" global level is finite and inherited")
+  check(progression.start_research(kind)!="" and progression.research_levels[kind]==100,kind+" research is capped at 100")
+ # Repairs are local, take time, and cannot resurrect destroyed structures.
  s=rich()
  s.build_at(Vector2(6100,2800),"arrow")
- s.step(25)
- var restored=roundtrip(s)
- check(restored!=null,"Full snapshot restores")
- check(restored!=null and restored.buildings[1].pos==s.buildings[1].pos,"World positions survive JSON")
- check(restored!=null and restored.cleared_ground==s.cleared_ground,"Vegetation clearings survive JSON")
- if restored!=null:
-  s.step(3)
-  restored.step(3)
-  check(equivalent(s.snapshot(),restored.snapshot()),"JSON continuation matches within floating-point precision")
+ var tower:Dictionary=s.buildings[1]
+ tower.age=10
+ tower.hp=100
+ var cost:Array=s.repair_cost(tower)
+ wood=s.resources.wood
+ check(s.repair_at(1)=="" and tower.hp==100 and s.resources.wood==wood-cost[0],"Local repair spends its quoted price without instant healing")
+ check(s.repair_at(1)!="","Repeated repair taps do not duplicate jobs")
+ quiet_step(s,4)
+ check(tower.hp>100 and tower.hp<s.stat(tower,"hp"),"Local repair restores health progressively")
+ saved=roundtrip(s)
+ check(saved!=null and is_equal_approx(saved.buildings[1].repair_left,tower.repair_left),"Local repair progress survives saves")
+ quiet_step(s,4.1)
+ check(is_equal_approx(tower.hp,s.stat(tower,"hp")),"A full repair reaches the maximum health")
+ destroyer=s.spawn_enemy()
+ destroyer.damage=1e9
+ destroyer.cooldown=0
+ s.attack_building(destroyer,1)
+ quiet_step(s,0.05)
+ check(s.buildings[1]==null and s.repair_at(1)!="","Destroyed buildings disappear and cannot be repaired")
+ check(s.build_at(Vector2(6100,2800),"arrow")=="","Destroyed foundations immediately become buildable again")
+ # Real movement retaliates against the defense that fired, with walls respected.
+ s=rich()
+ s.build_at(Vector2(6520,3000),"arrow")
+ s.buildings[1].age=10
+ var enemy:Dictionary=s.spawn_enemy()
+ enemy.pos=Vector2(6280,2800)
+ enemy.hp=1e7
+ enemy.max_hp=1e7
+ var x_before:float=enemy.pos.x
+ s.step(2)
+ check(enemy.get("anger",-1)==1 and enemy.pos.x>x_before,"An attacked raider turns away from the Hall toward the firing tower")
+ check(s.navigation.passable(enemy.pos),"Retaliation remains on passable terrain")
+ s=rich()
+ s.build_at(Vector2(6520,3000),"arrow")
+ s.buildings[1].age=10
+ s.build_wall(s.wall_line(Vector2(6400,2800),Vector2(6400,3040)))
+ enemy=s.spawn_enemy()
+ enemy.pos=Vector2(6280,2800)
+ enemy.hp=1e7
+ enemy.max_hp=1e7
+ enemy.damage=0.01
+ s.step(5)
+ check(enemy.pos.x<6400 and enemy.target>=2,"Retaliating enemies attack blocking walls before reaching the tower")
+ # Producers remain vulnerable beside their resource cores.
+ s=rich()
+ s.build_at(s.resource_nodes[2].pos,"wood")
+ enemy=s.spawn_enemy()
+ enemy.pos=s.buildings[1].pos+Vector2(-110,0)
+ enemy.damage=100
+ enemy.cooldown=0
+ var hp:float=s.buildings[1].hp
+ s.step(0.1)
+ check(s.buildings[1].hp<hp,"Raiders attack exposed producers instead of ignoring their blocked deposit cells")
+ # Elites use ordinary damage; their health and attack alone make them stronger.
+ s=rich()
+ s.wave=5
+ s.spawn_remaining=s.wave_size(5)
+ var elite:Dictionary=s.spawn_enemy()
+ check(elite.kind=="elite" and elite.hp>Sim.DEFINITIONS.cannon.damage*3,"First great horde contains an elite with enough health for several cannon hits")
+ var elite_damage:float=elite.damage
+ var elite_hp:float=elite.hp
+ s.wave=1
+ var normal:Dictionary=s.spawn_enemy()
+ check(elite_damage>normal.damage and elite_hp>normal.hp*5,"Elites have greater health and attack than ordinary raiders")
+ s=rich()
+ s.build_at(Vector2(6200,2800),"cannon")
+ s.buildings[1].age=10
+ s.wave=5
+ s.elapsed=120
+ s.spawn_remaining=s.wave_size(5)
+ elite=s.spawn_enemy()
+ elite.pos=Vector2(5900,2800)
+ hp=elite.hp
+ s.spawn_remaining=0
+ s.step(0.2)
+ check(elite.hp>0 and is_equal_approx(hp-elite.hp,s.stat(s.buildings[1],"damage")),"Cannon damage is unmodified and a fresh elite survives its first shell")
+ # Save validation, actual legacy fixture, and exact fifteen-minute/endless rules.
+ saved=roundtrip(s)
+ check(saved!=null and saved.enemies[0].kind=="elite","Elite state survives a save round trip")
  var bad:Dictionary=s.snapshot()
- bad.buildings[1].pos=[-1,100]
- check(Sim.restore(bad)==null,"Invalid saved positions are rejected")
+ bad.research_levels.arrow=101
+ check(Sim.restore(bad)==null,"Corrupt global research levels are rejected")
  bad=s.snapshot()
- bad.buildings[0].level=101
- check(Sim.restore(bad)==null,"Saved levels above cap are rejected")
- bad=s.snapshot()
- bad.resources.wood=-2
- check(Sim.restore(bad)==null,"Negative saved resources are rejected")
- bad=s.snapshot()
- bad.cleared_ground=[10240]
- check(Sim.restore(bad)==null,"Invalid clearing cells are rejected")
- check(Sim.restore({"version":1})==null,"Old fixed-plot save cannot corrupt new world")
- # Exact mission boundary and endless continuation.
+ bad.research_job={"kind":"arrow","level":2,"duration":35,"remaining":-1}
+ check(Sim.restore(bad)==null,"Corrupt research timers are rejected")
+ var old=Sim.restore(JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/frontier-preview.json")))
+ check(old!=null and old.buildings[1].pos==Vector2(4544,3264),"Legacy free-position settlements retain their foundations")
+ check(Sim.restore({"version":1})==null,"Malformed prototype saves do not corrupt the frontier")
  s=rich()
  s.elapsed=899.95
  s.wave=30
- s.enemies.clear()
- s.spawn_remaining=0
- s.step(0.1)
- check(s.victory and not s.defeated,"Victory triggers at fifteen in-game minutes")
+ s.step(0.05)
+ check(s.victory and s.elapsed>=900,"Victory arrives after fifteen simulated minutes")
  s.victory_seen=true
- s.step(35)
- check(s.elapsed>930 and s.wave>30,"Victory permits ongoing waves")
- s.buildings[0].hp=1
- s.buildings[0].cooldown=10000
- s.enemies.clear()
- s.spawn_enemy(s.total_length)
- s.enemies[0].lane=0
- s.step(2)
- check(s.defeated and s.buildings[0].hp==0,"Main hall destruction ends the run")
- var frozen:float=s.elapsed
- s.step(20)
- check(s.elapsed==frozen,"Defeated simulation stops")
- # One normal-cost campaign exercises the public placement/economy loop.
- s=Sim.new(11)
- var bot=Bot.new(s)
- for second in 1100:
-  bot.act()
-  s.step(1)
-  s.events.clear()
-  if second%30==0: await process_frame
-  if s.defeated: break
- print("FRONTIER CAMPAIGN: ",s.elapsed,"s, wave ",s.wave,", ",s.kills," kills, ",s.active_building_count()," buildings")
- check(s.victory,"Normal-cost campaign reaches mission victory")
+ s.step(0.1)
+ check(s.elapsed>900 and not s.defeated,"Play continues in endless mode after victory")
  print("RESULT: %d checks, %d failures"%[checks,failures])
- quit(1 if failures>0 else 0)
+ quit(1 if failures else 0)

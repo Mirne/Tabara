@@ -1,0 +1,84 @@
+{
+  "revision": 4,
+  "name": "Hearthvale Stronghold",
+  "base_bounds": [
+    4240,
+    2320,
+    1440,
+    1120
+  ],
+  "nodes": [
+    {
+      "kind": "wood",
+      "zone": "base",
+      "pos": [
+        4380,
+        3030
+      ],
+      "amount": 36.0
+    },
+    {
+      "kind": "wood",
+      "zone": "base",
+      "pos": [
+        5110,
+        2420
+      ],
+      "amount": 36.0
+    },
+    {
+      "kind": "wood",
+      "zone": "outpost",
+      "pos": [
+        3280,
+        2800
+      ],
+      "amount": 36.0
+    },
+    {
+      "kind": "wood",
+      "zone": "outpost",
+      "pos": [
+        960,
+        2920
+      ],
+      "amount": 36.0
+    },
+    {
+      "kind": "stone",
+      "zone": "base",
+      "pos": [
+        5150,
+        3110
+      ],
+      "amount": 30.0
+    },
+    {
+      "kind": "stone",
+      "zone": "base",
+      "pos": [
+        5480,
+        2760
+      ],
+      "amount": 30.0
+    },
+    {
+      "kind": "stone",
+      "zone": "outpost",
+      "pos": [
+        3760,
+        2800
+      ],
+      "amount": 30.0
+    },
+    {
+      "kind": "stone",
+      "zone": "outpost",
+      "pos": [
+        2400,
+        2640
+      ],
+      "amount": 30.0
+    }
+  ]
+}

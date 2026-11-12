@@ -8,7 +8,7 @@ Preserve release tags and existing APK download links. Historical APK commits ar
 merged into main so their fixed URLs remain reachable. Older reports and art
 are available through the release tags linked in `docs/HISTORY.md`.
 
-Before removing runtime art or geography, check legacy save layouts 0–2 as well
-as the current woodland layout 3. Keep signing keys outside Git. For gameplay or
+Before removing runtime art or geography, check legacy save layouts 0–3 as well
+as the current eight-site woodland layout 4. Keep signing keys outside Git. For gameplay or
 runtime asset changes, use `tools/verify.py` (add `--ui` when rendering or mobile
 interaction is affected) with an isolated `XDG_DATA_HOME`.
