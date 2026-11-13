@@ -1,0 +1,37 @@
+PASS: Android boot and package service are ready
+PASS: Frontier APK installs
+PASS: Android launcher opens the game
+PASS: Native menu renders the new illustrated landscape
+/workspace/Tabara/tests/android_smoke.py:189: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+  green = sum(g > r*1.2 and g > b*1.15 and g > 75 for r, g, b in patch.getdata())
+PASS: Native producer preview renders green buildable tiles
+PASS: Native preview never constructs before confirmation
+PASS: Native placement constructs two producers and two towers without reopening the tower catalogue
+PASS: Native wall drag previews without constructing
+PASS: Native app writes global research and the new eight-site terrain format
+PASS: Native touch constructs wood
+PASS: Native save retains wood world coordinates
+PASS: Native touch constructs stone
+PASS: Native save retains stone world coordinates
+PASS: Native touch constructs arrow
+PASS: Native save retains arrow world coordinates
+PASS: Native touch constructs arrow
+PASS: Native save retains arrow world coordinates
+PASS: Native confirmed building follows the grid at (4760, 2440)
+PASS: Native confirmed building follows the grid at (5480, 3240)
+PASS: Native confirmed building follows the grid at (4480, 2760)
+PASS: Native confirmed building follows the grid at (4640, 2760)
+PASS: Native wall stroke creates joined piece at (4160, 2600)
+PASS: Native wall stroke creates joined piece at (4160, 2680)
+PASS: Native wall stroke creates joined piece at (4160, 2760)
+PASS: Native wall stroke creates joined piece at (4160, 2840)
+PASS: Native wall stroke creates joined piece at (4160, 2920)
+PASS: Native wall stroke creates joined piece at (4160, 3000)
+PASS: Native mission contains only eight producer sites
+PASS: Native mission advances
+PASS: Native pause freezes the saved clock beyond autosave interval
+BACK CLOCKS: 135.39999999999654 -> 137.49999999999702
+PASS: Hardware Back resumes the clock before pausing again
+PASS: Hardware Back then keeps combat paused
+PASS: Back handling retains the native game activity
+PASS: Native touch constructs an operational Workshop

@@ -98,6 +98,21 @@ are placed only within the existing forest composition; their visible crown edge
 participate in collision. The new overview is rendered by the engine from layout
 four. Helmeted elite artwork does not imply a damage resistance mechanic.
 
+## Open Approach artwork (v0.9)
+
+`assets/frontier/miniboss.png` was generated on 13 November 2026 with the elite
+strip as the style reference. It contains four equal-width walking frames of an
+original hammer-wielding Warlord, with a ridged iron crown, grey beard and crimson
+cloak. The source PNG is an unchanged image-generation output. Texture import
+uses VRAM compression, a 2,048-pixel limit and no mipmaps.
+
+`assets/world/overview-v08.png` preserves the original v0.8 minimap. The current
+`overview.png` and wall icon are fresh game-engine renders. The eight revised
+resource coordinates are authored in `open-approach.json`; previous map data stays
+available for legacy saves. New wall geometry uses the existing stone/plank
+textures: one raised deck across touching rows and parapets only on the outside.
+No source PNG was retouched to achieve the wall joins or resource relocation.
+
 ## Audio and app icon
 
 Audio was synthesized for this project using the reproducible

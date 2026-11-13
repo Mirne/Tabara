@@ -27,7 +27,7 @@
       "passed": true
     },
     {
-      "label": "Native full-height panels construct the initial three buildings",
+      "label": "Native placement constructs two producers and two towers without reopening the tower catalogue",
       "passed": true
     },
     {
@@ -63,15 +63,27 @@
       "passed": true
     },
     {
-      "label": "Native confirmed building follows the grid at (4400, 3040)",
+      "label": "Native touch constructs arrow",
       "passed": true
     },
     {
-      "label": "Native confirmed building follows the grid at (5160, 3120)",
+      "label": "Native save retains arrow world coordinates",
       "passed": true
     },
     {
-      "label": "Native confirmed building follows the grid at (4520, 2560)",
+      "label": "Native confirmed building follows the grid at (4760, 2440)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (5480, 3240)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4480, 2760)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4640, 2760)",
       "passed": true
     },
     {
@@ -127,7 +139,11 @@
       "passed": true
     },
     {
-      "label": "Native Workshop starts a timed global upgrade without an instant level",
+      "label": "Native Workshop upgrades all surviving towers instantly without a queue",
+      "passed": true
+    },
+    {
+      "label": "Native Workshop purchases global automatic Regeneration",
       "passed": true
     },
     {
@@ -147,7 +163,7 @@
       "passed": true
     },
     {
-      "label": "Cold restart retains global research or its paid in-progress order",
+      "label": "Cold restart retains instant upgrades and automatic Regeneration",
       "passed": true
     },
     {
@@ -179,11 +195,33 @@
       "passed": true
     },
     {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native five-minute boundary spawns exactly one miniboss at the western entrance",
+      "passed": true
+    },
+    {
+      "label": "Native miniboss has its own stronger stats and starts on the approach",
+      "passed": true
+    },
+    {
+      "label": "Native Regeneration heals the damaged Hall without a repair tap",
+      "passed": true
+    },
+    {
       "label": "Captured native diagnostics contain no script, shader, or fatal error",
       "passed": true
     }
   ],
-  "actual_seconds": 1265.4220832749997,
-  "apk_sha256": "e1aca8a5c8b7fd36419e04d5c5f86e48eec8809ca070bfb1dde3e45ee85a0ee6",
-  "mode": "full-native"
+  "actual_seconds": 480.468538062,
+  "apk_sha256": "290de793684e628e1345f161ef310acb8827ff30a82c0aad1faa327291225972",
+  "mode": "full-native",
+  "prior_segment": null,
+  "fixtures": "Restore/lifecycle checks clear incoming attackers after paid construction. The miniboss check advances a saved clock to 299.95 seconds and damages the Hall. Neither fixture grants resources; the miniboss check restores the original native settlement"
 }

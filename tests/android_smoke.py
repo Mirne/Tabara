@@ -190,7 +190,11 @@ def native_checks(back_only=False):
             if "Native touch constructs an operational Workshop" not in labels:
                 raise RuntimeError("The previous segment did not reach an operational Workshop")
             package_path = adb("shell", "pm", "path", PACKAGE).splitlines()[0].removeprefix("package:")
-            digest = adb("shell", "sha256sum", package_path, timeout=300).split()[0]
+            # API 24 adbd can reject sync/pull stat calls for an existing file;
+            # exec-out preserves the actual package bytes without that protocol.
+            installed_bytes = adb("exec-out", "cat", package_path, binary=True, timeout=300)
+            digest = hashlib.sha256(installed_bytes).hexdigest()
+            del installed_bytes
             check(digest == APK_SHA256, "Preserved installed APK exactly matches the signed download")
             checks[:0] = [{"label": label, "passed": True} for label in labels]
             (OUT / "previous-segment.log").write_text(previous)

@@ -11,7 +11,7 @@
       "passed": true
     },
     {
-      "label": "Previous signed v0.7 APK installs on the disposable emulator",
+      "label": "Previous signed v0.8 APK installs on the disposable emulator",
       "passed": true
     },
     {
@@ -27,7 +27,7 @@
       "passed": true
     },
     {
-      "label": "Actual v0.7 app restores and writes its legacy terrain save",
+      "label": "Actual v0.8 app restores and writes its legacy terrain save",
       "passed": true
     },
     {
@@ -35,7 +35,11 @@
       "passed": true
     },
     {
-      "label": "New v0.8 APK updates v0.7 without clearing app data",
+      "label": "Old app has an already-paid upgrade still in progress before installation",
+      "passed": true
+    },
+    {
+      "label": "New v0.9 APK updates v0.8 without clearing app data",
       "passed": true
     },
     {
@@ -55,11 +59,19 @@
       "passed": true
     },
     {
-      "label": "Upgrade preserves foundations and migrates the highest old level per building type globally",
+      "label": "Update retains foundations and completes the already-paid global arrow upgrade",
       "passed": true
     },
     {
-      "label": "Legacy terrain retains its sites and existing tower research is never downgraded",
+      "label": "Old eight-site terrain is retained and its research timer is removed",
+      "passed": true
+    },
+    {
+      "label": "Old paid repairs finish without retaining manual jobs or charging for Regeneration",
+      "passed": true
+    },
+    {
+      "label": "Paid repair remainder is retained when instant global upgrade preserves the health fraction",
       "passed": true
     },
     {
@@ -71,8 +83,8 @@
       "passed": true
     }
   ],
-  "actual_seconds": 386.22339865699905,
-  "apk_sha256": "e1aca8a5c8b7fd36419e04d5c5f86e48eec8809ca070bfb1dde3e45ee85a0ee6",
-  "previous_apk_sha256": "950159db7817c55c61074a113be02b9c1eb61fcb76db013a62200822710832fa",
+  "actual_seconds": 326.30989031900026,
+  "apk_sha256": "cd4781dc551b53dcd356fc9ec43cc77496c37670676e8dcc16d6d0921a34e66b",
+  "previous_apk_sha256": "e1aca8a5c8b7fd36419e04d5c5f86e48eec8809ca070bfb1dde3e45ee85a0ee6",
   "mode": "actual-native-version-update"
 }

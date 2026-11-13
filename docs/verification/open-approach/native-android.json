@@ -27,7 +27,7 @@
       "passed": true
     },
     {
-      "label": "Native full-height panels construct the initial three buildings",
+      "label": "Native placement constructs two producers and two towers without reopening the tower catalogue",
       "passed": true
     },
     {
@@ -63,15 +63,27 @@
       "passed": true
     },
     {
-      "label": "Native confirmed building follows the grid at (4400, 3040)",
+      "label": "Native touch constructs arrow",
       "passed": true
     },
     {
-      "label": "Native confirmed building follows the grid at (5160, 3120)",
+      "label": "Native save retains arrow world coordinates",
       "passed": true
     },
     {
-      "label": "Native confirmed building follows the grid at (4520, 2560)",
+      "label": "Native confirmed building follows the grid at (4760, 2440)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (5480, 3240)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4480, 2760)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4640, 2760)",
       "passed": true
     },
     {
@@ -127,7 +139,39 @@
       "passed": true
     },
     {
-      "label": "Native Workshop starts a timed global upgrade without an instant level",
+      "label": "Android boot and package service are ready",
+      "passed": true
+    },
+    {
+      "label": "Preserved installed APK exactly matches the signed download",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Resumed checkpoint retains the current save format and map",
+      "passed": true
+    },
+    {
+      "label": "Resumed checkpoint starts before the remaining paid upgrade tests",
+      "passed": true
+    },
+    {
+      "label": "Resumed checkpoint retains the operational Workshop",
+      "passed": true
+    },
+    {
+      "label": "Native Workshop upgrades all surviving towers instantly without a queue",
+      "passed": true
+    },
+    {
+      "label": "Native Workshop purchases global automatic Regeneration",
       "passed": true
     },
     {
@@ -147,7 +191,7 @@
       "passed": true
     },
     {
-      "label": "Cold restart retains global research or its paid in-progress order",
+      "label": "Cold restart retains instant upgrades and automatic Regeneration",
       "passed": true
     },
     {
@@ -179,11 +223,37 @@
       "passed": true
     },
     {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native five-minute boundary spawns exactly one miniboss at the western entrance",
+      "passed": true
+    },
+    {
+      "label": "Native miniboss has its own stronger stats and starts on the approach",
+      "passed": true
+    },
+    {
+      "label": "Native Regeneration heals the damaged Hall without a repair tap",
+      "passed": true
+    },
+    {
       "label": "Captured native diagnostics contain no script, shader, or fatal error",
       "passed": true
     }
   ],
-  "actual_seconds": 360.15912019999996,
-  "apk_sha256": "9fab5d9717c3c30ae366e0c247d534ec99c0d843c7b45be7ee53d161e9d9f4d9",
-  "mode": "full-native"
+  "actual_seconds": 683.0673692770015,
+  "apk_sha256": "cd4781dc551b53dcd356fc9ec43cc77496c37670676e8dcc16d6d0921a34e66b",
+  "mode": "resumed-native",
+  "prior_segment": {
+    "completed_checks": 34,
+    "log_sha256": "261651c963c90059436cdab025d73d93b122d71924f5dcbbb2d1449a7b78eabb",
+    "timing": "Interrupted by environment outage; its active duration was not retained"
+  },
+  "fixtures": "Restore/lifecycle checks clear incoming attackers after paid construction. The miniboss check advances a saved clock to 299.95 seconds and damages the Hall. Neither fixture grants resources; the miniboss check restores the original native settlement"
 }
