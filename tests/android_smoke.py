@@ -157,6 +157,8 @@ def native_checks(back_only=False):
     OUT.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     error = None
+    resume_log = os.environ.get("ANDROID_RESUME_WORKSHOP_LOG") if not back_only else None
+    prior_segment = None
     try:
         end = time.monotonic() + 1800
         while time.monotonic() < end:
@@ -169,7 +171,7 @@ def native_checks(back_only=False):
         else:
             raise TimeoutError("Disposable emulator did not finish booting")
         check(True, "Android boot and package service are ready")
-        if not back_only:
+        if not back_only and not resume_log:
             installed = adb("install", "--no-incremental", "-r", APK, timeout=300)
             check("Success" in installed, "Frontier APK installs")
             adb("shell", "pm", "clear", PACKAGE)
@@ -180,102 +182,131 @@ def native_checks(back_only=False):
                 print("Optional emulator setup:", str(problem)[:250], flush=True)
         else:
             adb("shell", "am", "force-stop", PACKAGE)
+        if resume_log:
+            previous = Path(resume_log).read_text()
+            if any(line.startswith(("FAIL:", "NATIVE ERROR:")) for line in previous.splitlines()):
+                raise RuntimeError("Cannot resume a failed segment")
+            labels = [line.removeprefix("PASS: ") for line in previous.splitlines() if line.startswith("PASS: ")]
+            if "Native touch constructs an operational Workshop" not in labels:
+                raise RuntimeError("The previous segment did not reach an operational Workshop")
+            package_path = adb("shell", "pm", "path", PACKAGE).splitlines()[0].removeprefix("package:")
+            digest = adb("shell", "sha256sum", package_path, timeout=300).split()[0]
+            check(digest == APK_SHA256, "Preserved installed APK exactly matches the signed download")
+            checks[:0] = [{"label": label, "passed": True} for label in labels]
+            (OUT / "previous-segment.log").write_text(previous)
+            prior_segment = {"completed_checks": len(labels),
+                             "log_sha256": hashlib.sha256(previous.encode()).hexdigest(),
+                             "timing": "Interrupted by environment outage; its active duration was not retained"}
         launch()
         wait_menu()
         screen("01-menu")
         tap(260, 462)
-        if not back_only:
-            screen("02-briefing")
-            tap(805, 650)
-            time.sleep(5)
-            screen("03-initial-mission")
-            # Full-height catalogue; selecting and placing hides it until Build structures.
-            tap(1194, 218)
-            tap(*world_point(4760, 2440))
-            image = screen("03a-green-grid-preview")
-            wx, wy = world_point(4760, 2440)
-            patch = image.crop((wx-60, wy-60, wx+60, wy+60))
-            green = sum(g > r*1.2 and g > b*1.15 and g > 75 for r, g, b in patch.getdata())
-            check(green > 400, "Native producer preview renders green buildable tiles")
-            tap(1338, 43)
-            preview_save = save()
-            check(len(preview_save["buildings"]) == 1, "Native preview never constructs before confirmation")
-            adb("shell", "input", "keyevent", "4")
-            time.sleep(4)
-            tap(1194, 218)
-            tap(*world_point(4760, 2440))
-            tap(1273, 685)
-            tap(1273, 763)  # Selected-building panel: Build structures.
-            tap(1352, 218)
-            tap(*world_point(5480, 3240))
-            tap(1273, 685)
-            tap(1273, 763)
-            tap(1194, 376)
-            tap(*world_point(4480, 2760))
-            tap(1273, 685)
-            # Place another tower directly: no catalogue or building selection.
-            tap(*world_point(4640, 2760))
-            tap(1273, 685)
-            tap(1338, 43)
-            before_wall = save()
-            check(len(before_wall["buildings"]) == 5, "Native placement constructs two producers and two towers without reopening the tower catalogue")
-            before_wall = wait_supplies(before_wall, {"wood": 150, "stone": 330, "gold": 60})
-            adb("shell", "input", "keyevent", "4")
-            time.sleep(4)
-            tap(1352, 376)
-            start = world_point(4160, 2400)
-            finish = world_point(4160, 3200)
-            adb("shell", "input", "swipe", *physical(*start), *physical(*finish), "700")
-            time.sleep(4)
-            screen("03b-wall-preview")
-            tap(1338, 43)
-            check(len(save()["buildings"]) == 5, "Native wall drag previews without constructing")
-            adb("shell", "input", "keyevent", "4")
-            time.sleep(4)
-            tap(1352, 376)
-            adb("shell", "input", "swipe", *physical(*start), *physical(*finish), "700")
-            time.sleep(4)
-            tap(1273, 685)
-            screen("03c-wall-built")
-        tap(1338, 43)  # Explicit known pause.
-        screen("04-built-and-paused")
-        data = wait_saved_structure(10, "wall")
-        check(data["version"] == 8 and data["terrain_revision"] == 5, "Native app writes global research and the new eight-site terrain format")
-        for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow"), (4, "arrow")]:
-            check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
-            check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")
-        expected = [(4760,2440),(5480,3240),(4480,2760),(4640,2760)]
-        for index, position in enumerate(expected, 1):
-            check(tuple(data["buildings"][index]["pos"]) == position, "Native confirmed building follows the grid at " + str(position))
-        for index, position in [(5,(4160,2600)),(6,(4160,2680)),(7,(4160,2760)),(8,(4160,2840)),(9,(4160,2920)),(10,(4160,3000))]:
-            check(data["buildings"][index]["kind"] == "wall" and tuple(data["buildings"][index]["pos"]) == position, "Native wall stroke creates joined piece at " + str(position))
-        check(len(data["deposits"]) == 8, "Native mission contains only eight producer sites")
-        check(data["elapsed"] > 0 and data["wave"] >= 1, "Native mission advances")
-        before = data["elapsed"]
-        time.sleep(12)
-        check(save()["elapsed"] == before, "Native pause freezes the saved clock beyond autosave interval")
-        back_sequence()
-        if not back_only:
-            # Add the Workshop using its larger catalogue card and research controls.
-            wait_supplies(save(), {"wood": 140, "stone": 100, "gold": 70})
-            adb("shell", "input", "keyevent", "4")
-            time.sleep(4)
-            tap(1273, 692)
-            tap(*world_point(5200, 2800))
-            tap(1273, 685)
-            tap(1273, 763)  # Done building, then explicitly select the Workshop.
-            tap(*world_point(5200, 2800))
-            end = time.monotonic() + 240
-            while True:
+        if not resume_log:
+            if not back_only:
+                screen("02-briefing")
+                tap(805, 650)
+                time.sleep(5)
+                screen("03-initial-mission")
+                # Full-height catalogue; selecting and placing hides it until Build structures.
+                tap(1194, 218)
+                tap(*world_point(4760, 2440))
+                image = screen("03a-green-grid-preview")
+                wx, wy = world_point(4760, 2440)
+                patch = image.crop((wx-60, wy-60, wx+60, wy+60))
+                green = sum(g > r*1.2 and g > b*1.15 and g > 75 for r, g, b in patch.getdata())
+                check(green > 400, "Native producer preview renders green buildable tiles")
                 tap(1338, 43)
-                workshop_save = wait_saved_kind("workshop")
-                if next(b for b in workshop_save["buildings"] if b and b["kind"] == "workshop")["age"] >= 6:
-                    break
-                if time.monotonic() >= end:
-                    raise TimeoutError("Native Workshop did not finish construction")
+                preview_save = save()
+                check(len(preview_save["buildings"]) == 1, "Native preview never constructs before confirmation")
                 adb("shell", "input", "keyevent", "4")
-                time.sleep(8)
-            check(True, "Native touch constructs an operational Workshop")
+                time.sleep(4)
+                tap(1194, 218)
+                tap(*world_point(4760, 2440))
+                tap(1273, 685)
+                tap(1273, 763)  # Selected-building panel: Build structures.
+                tap(1352, 218)
+                tap(*world_point(5480, 3240))
+                tap(1273, 685)
+                tap(1273, 763)
+                tap(1194, 376)
+                tap(*world_point(4480, 2760))
+                tap(1273, 685)
+                # Place another tower directly: no catalogue or building selection.
+                tap(*world_point(4640, 2760))
+                tap(1273, 685)
+                tap(1338, 43)
+                before_wall = save()
+                check(len(before_wall["buildings"]) == 5, "Native placement constructs two producers and two towers without reopening the tower catalogue")
+                before_wall = wait_supplies(before_wall, {"wood": 150, "stone": 330, "gold": 60})
+                adb("shell", "input", "keyevent", "4")
+                time.sleep(4)
+                tap(1352, 376)
+                start = world_point(4160, 2400)
+                finish = world_point(4160, 3200)
+                adb("shell", "input", "swipe", *physical(*start), *physical(*finish), "700")
+                time.sleep(4)
+                screen("03b-wall-preview")
+                tap(1338, 43)
+                check(len(save()["buildings"]) == 5, "Native wall drag previews without constructing")
+                adb("shell", "input", "keyevent", "4")
+                time.sleep(4)
+                tap(1352, 376)
+                adb("shell", "input", "swipe", *physical(*start), *physical(*finish), "700")
+                time.sleep(4)
+                tap(1273, 685)
+                screen("03c-wall-built")
+            tap(1338, 43)  # Explicit known pause.
+            screen("04-built-and-paused")
+            data = wait_saved_structure(10, "wall")
+            check(data["version"] == 8 and data["terrain_revision"] == 5, "Native app writes global research and the new eight-site terrain format")
+            for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow"), (4, "arrow")]:
+                check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
+                check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")
+            expected = [(4760,2440),(5480,3240),(4480,2760),(4640,2760)]
+            for index, position in enumerate(expected, 1):
+                check(tuple(data["buildings"][index]["pos"]) == position, "Native confirmed building follows the grid at " + str(position))
+            for index, position in [(5,(4160,2600)),(6,(4160,2680)),(7,(4160,2760)),(8,(4160,2840)),(9,(4160,2920)),(10,(4160,3000))]:
+                check(data["buildings"][index]["kind"] == "wall" and tuple(data["buildings"][index]["pos"]) == position, "Native wall stroke creates joined piece at " + str(position))
+            check(len(data["deposits"]) == 8, "Native mission contains only eight producer sites")
+            check(data["elapsed"] > 0 and data["wave"] >= 1, "Native mission advances")
+            before = data["elapsed"]
+            time.sleep(12)
+            check(save()["elapsed"] == before, "Native pause freezes the saved clock beyond autosave interval")
+            back_sequence()
+        else:
+            tap(*world_point(5200, 2800))
+            tap(1338, 43)
+            checkpoint = save()
+            check(checkpoint["version"] == 8 and checkpoint["terrain_revision"] == 5,
+                  "Resumed checkpoint retains the current save format and map")
+            check(checkpoint["research_levels"]["arrow"] == 1 and checkpoint["regeneration_level"] == 0,
+                  "Resumed checkpoint starts before the remaining paid upgrade tests")
+            check(any(b and b["kind"] == "workshop" and b["age"] >= 6 for b in checkpoint["buildings"]),
+                  "Resumed checkpoint retains the operational Workshop")
+        if not back_only:
+            if not resume_log:
+                # Add the Workshop using its larger catalogue card and research controls.
+                wait_supplies(save(), {"wood": 140, "stone": 100, "gold": 70})
+                adb("shell", "input", "keyevent", "4")
+                time.sleep(4)
+                tap(1273, 692)
+                tap(*world_point(5200, 2800))
+                tap(1273, 685)
+                tap(1273, 763)  # Done building, then explicitly select the Workshop.
+                tap(*world_point(5200, 2800))
+                end = time.monotonic() + 240
+                while True:
+                    tap(1338, 43)
+                    workshop_save = wait_saved_kind("workshop")
+                    if next(b for b in workshop_save["buildings"] if b and b["kind"] == "workshop")["age"] >= 6:
+                        break
+                    if time.monotonic() >= end:
+                        raise TimeoutError("Native Workshop did not finish construction")
+                    adb("shell", "input", "keyevent", "4")
+                    time.sleep(8)
+                check(True, "Native touch constructs an operational Workshop")
+            else:
+                workshop_save = save()
             workshop_save = wait_supplies(workshop_save, {"wood": 110, "stone": 70, "gold": 40})
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
@@ -394,7 +425,8 @@ def native_checks(back_only=False):
             print("Diagnostic capture unavailable:", str(problem)[:250], flush=True)
         report = {"passed": error is None and bool(checks) and all(c["passed"] for c in checks),
                   "error": error, "checks": checks, "actual_seconds": time.monotonic() - started,
-                  "apk_sha256": APK_SHA256, "mode": "foreground-back" if back_only else "full-native",
+                  "apk_sha256": APK_SHA256, "mode": "foreground-back" if back_only else ("resumed-native" if resume_log else "full-native"),
+                  "prior_segment": prior_segment,
                   "fixtures": "Restore/lifecycle checks clear incoming attackers after paid construction. The miniboss check advances a saved clock to 299.95 seconds and damages the Hall. Neither fixture grants resources; the miniboss check restores the original native settlement" if not back_only else "existing settlement"}
         (OUT / "report.json").write_text(json.dumps(report, indent=2))
         print(json.dumps(report), flush=True)
