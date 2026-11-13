@@ -280,7 +280,8 @@ def native_checks(back_only=False):
             if not back_only:
                 wait_supplies(save(), {"wood": 50, "stone": 25, "gold": 15})
                 adb("shell", "input", "keyevent", "4")
-                tap(*world_point(4760, 2440))
+                time.sleep(max(4, TAP_DELAY))
+                tap(*world_point(4760, 2380))
                 tap(1273, 584)
                 screen("04a-local-producer")
                 tap(1273, 763)
@@ -288,6 +289,7 @@ def native_checks(back_only=False):
                 local_save = save()
                 wood = next(b for b in local_save["buildings"] if b and b["kind"] == "wood")
                 stone = next(b for b in local_save["buildings"] if b and b["kind"] == "stone")
+                print("LOCAL UPGRADE STATE:", {"wood": wood["level"], "stone": stone["level"], "camera": local_save["camera"]}, flush=True)
                 check(wood["level"] == 2 and stone["level"] == 1,
                       "Native producer upgrade is local and needs no Workshop")
         else:
