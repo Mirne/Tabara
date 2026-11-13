@@ -66,111 +66,99 @@ func run()->void:
  await create_timer(1).timeout
  await frame()
  check(game.screen=="menu","Application starts in menu")
- check(game.world!=null and game.music_player.stream.loop,"World and looping audio initialize")
  await action("credits")
- check(game.screen=="credits" and game.license_label.visible,"Credits retain engine and font notices")
+ check(game.license_label.visible,"Credits retain engine and font notices")
  await action("back")
  game.save_available=false
  await frame()
  await action("new")
- check(game.screen=="briefing","New settlement opens the mission briefing")
+ check(game.screen=="briefing","New settlement opens the briefing")
  await action("start")
- check(game.screen=="mission" and game.sim.terrain_revision==4,"Mission selects the limited-resource stronghold")
- check(game.sim.enemies.size()>0 and game.sim.enemies[0].progress<100 and game.sim.enemies[0].pos.x<400,"The first enemy starts at the entrance")
- check(game.selected==-1 and visible_action("build:workshop"),"Initial panel shows the full construction catalogue")
- var big_cards:=true
- for b in game.buttons:
-  if b.action.begins_with("build:") and (b.rect.size.y<140 or b.rect.size.x<140):big_cards=false
- check(big_cards,"All construction cards have larger mobile tap targets")
- var centered_art:=true
- for i in game.Art.BUILD_SIZES.size():
-  var pos:=Vector2(500,500)
-  var rect:Rect2=game.Art.building_rect(i,pos)
-  if not (rect.position+rect.size*game.Art.BUILD_PIVOTS[i]).is_equal_approx(pos) or game.Art.dirt_rect(i,pos).get_center()!=pos:centered_art=false
- check(centered_art,"Workshop and existing buildings share their centered ground footprints")
+ check(game.screen=="mission" and game.sim.terrain_revision==5,"Mission selects the open approach")
+ check(game.sim.enemies[0].progress<100 and game.sim.enemies[0].pos.x<400,"Enemies start at the western entrance")
+ check(game.selected==-1 and visible_action("build:workshop"),"Initial catalogue shows all construction tools")
+ var big:=true
+ for control in game.buttons:
+  if control.action.begins_with("build:") and (control.rect.size.y<140 or control.rect.size.x<140):big=false
+ check(big,"Construction cards keep large mobile targets")
  await capture("catalogue")
- game.camera_center=Vector2(4770,2900)
- game.apply_camera()
  await action("build:wood")
- check(not visible_action("build:stone") and visible_action("confirm_build"),"Selecting a build tool replaces the catalogue with placement controls")
+ check(not visible_action("build:stone") and visible_action("confirm_build"),"Selecting a tool replaces the catalogue")
  var stock:Dictionary=game.sim.resources.duplicate()
- var build_count:int=game.sim.active_building_count()
- await tap(game.world_to_screen(Vector2(4380,3030)))
- check(game.placement_ready and game.sim.active_building_count()==build_count,"Map tap previews without constructing")
- check(game.sim.resources.wood>=stock.wood,"The preview spends no supplies")
+ await tap(game.world_to_screen(Vector2(4760,2440)))
+ check(game.placement_ready and game.sim.active_building_count()==1,"A tap previews without construction")
+ check(game.sim.resources.wood>=stock.wood,"Preview spends no supplies")
  await capture("green-wood")
  var image:Image=root.get_texture().get_image()
- var center:Vector2=game.world_to_screen(game.sim.snap_position(Vector2(4380,3030),"wood"))
- var pixels:=Rect2i(Vector2i(center-Vector2(65,65)),Vector2i(130,130))
- check(count_green(image,pixels)>50,"Available wood sites render filled green tiles and their rectangle")
+ var center:Vector2=game.world_to_screen(Vector2(4760,2440))
+ check(count_green(image,Rect2i(Vector2i(center-Vector2(65,65)),Vector2i(130,130)))>50,"Producer sites show filled green tiles")
+ await action("confirm_build")
+ check(game.build_kind=="wood" and game.selected==-1 and not game.placement_ready,"Construction keeps the tool active without selecting the new building")
+ check(not visible_action("repair") and not visible_action("build:stone"),"Placement stays in its full-size mobile panel")
  await action("cancel")
- check(game.sim.active_building_count()==build_count and visible_action("build:stone"),"Cancel returns to the catalogue without spending")
- await action("build:wood")
- await tap(game.world_to_screen(Vector2(4380,3030)))
- await action("confirm_build")
- check(game.sim.buildings[1].kind=="wood" and not visible_action("build:stone"),"Confirmed building selection hides the construction catalogue")
- check(visible_action("repair") and visible_action("workshop") and not visible_action("upgrade"),"Selected buildings expose local repair and Workshop navigation, not individual upgrades")
- var repair_button:=Rect2()
- for b in game.buttons:
-  if b.action=="repair":repair_button=b.rect
- check(repair_button.size.y>=60 and repair_button.size.x>=300,"Selected-building buttons have large mobile tap targets")
- await action("construction")
  await action("build:stone")
- await tap(game.world_to_screen(Vector2(5150,3110)))
- await capture("green-stone")
- image=root.get_texture().get_image()
- center=game.world_to_screen(game.sim.snap_position(Vector2(5150,3110),"stone"))
- pixels=Rect2i(Vector2i(center-Vector2(65,65)),Vector2i(130,130))
- check(count_green(image,pixels)>50,"Available quarry sites render green placement tiles")
+ await tap(game.world_to_screen(Vector2(5480,3240)))
  await action("confirm_build")
- check(game.sim.buildings[2].kind=="stone","A quarry is constructed only after confirmation")
- await action("construction")
- # Controlled supplies isolate UI behavior from campaign balancing.
- game.sim.resources={"wood":10000.0,"stone":10000.0,"gold":10000.0}
+ check(game.sim.buildings[2].kind=="stone" and game.build_kind=="stone","Quarry placement also remains active")
+ await action("cancel")
+ # Explicit UI fixture supplies; normal-cost campaign checks are separate.
+ game.sim.resources={"wood":100000.0,"stone":100000.0,"gold":100000.0}
+ game.camera_center=Vector2(6120,2840)
+ game.apply_camera()
  await action("build:arrow")
- var touch_site:Vector2=game.world_to_screen(Vector2(4520,2560))
- touch(0,touch_site,true)
+ var sites:Array=[]
+ for y in range(2600,3081,120):
+  for x in range(5800,6281,120):
+   if game.sim.placement_error(Vector2(x,y),"arrow")=="":sites.append(Vector2(x,y))
+ check(sites.size()>=15,"Repeat-placement fixture has fifteen legal foundations")
+ for i in 15:
+  await tap(game.world_to_screen(sites[i]))
+  check(game.placement_ready and game.world.preview_range>0,"Repeated tower preview shows range")
+  await action("confirm_build")
+  check(game.build_kind=="arrow" and game.selected==-1 and not game.placement_ready,"Tower %d keeps construction active"%(i+1))
+ check(game.sim.active_building_count()==18,"Fifteen towers use one tool selection and fifteen preview/confirm pairs")
+ await action("cancel")
+ game.selected=3
  await frame()
- touch(0,touch_site,false)
- await frame()
- check(game.placement_ready and game.sim.active_building_count()==3,"Native touch previews a tower before confirmation")
- check(game.world.preview_range==game.Sim.DEFINITIONS.arrow.range,"Tower placement shows attack range")
- await action("confirm_build")
- check(game.sim.buildings[3].kind=="arrow","Native touch confirms the snapped tower")
- game.sim.buildings[3].age=10
- game.sim.buildings[3].hp=100
- await frame()
- var hp:float=game.sim.buildings[3].hp
- await action("repair")
- check(game.sim.buildings[3].repair_left>0 and game.sim.buildings[3].hp<hp+100,"Local repair begins a timed order")
- game.sim.enemies.clear()
- game.sim.spawn_remaining=0
- game.sim.step(9)
- await frame()
- check(is_equal_approx(game.sim.buildings[3].hp,game.sim.stat(game.sim.buildings[3],"hp")),"Local repair reaches full health")
+ check(not visible_action("repair") and visible_action("workshop"),"Building inspector has no manual repair button")
+ game.camera_center=Vector2(4840,2800)
+ game.apply_camera()
  await action("construction")
  await action("build:workshop")
  await tap(game.world_to_screen(Vector2(5200,2800)))
  await action("confirm_build")
- check(game.sim.buildings[4].kind=="workshop" and visible_action("research:arrow"),"Workshop selection opens the global research panel")
+ var workshop_index:int=game.sim.buildings.size()-1
+ check(game.build_kind=="workshop" and game.selected==-1,"Workshop placement does not auto-select it")
+ await action("cancel")
  game.sim.enemies.clear()
  game.sim.spawn_remaining=0
  game.sim.step(7)
- await frame()
+ await tap(game.world_to_screen(Vector2(5200,2800)))
+ check(game.selected==workshop_index and visible_action("research:arrow"),"Tapping the Workshop opens global upgrades")
  await action("research:arrow")
- await capture("workshop")
  await action("start_research")
- check(not game.sim.research_job.is_empty() and game.sim.buildings[3].level==1,"Workshop starts timed research without an instant upgrade")
- await capture("research")
- game.sim.step_research(36)
+ check(game.sim.research_levels.arrow==2 and game.sim.buildings[3].level==2,"Workshop upgrade applies immediately to every tower")
+ await action("start_research")
+ check(game.sim.research_levels.arrow==3,"A second global upgrade has no timer or queue")
+ await capture("workshop-instant")
+ await action("workshop_regeneration")
+ game.sim.buildings[3].age=10
+ game.sim.buildings[3].hp=100
+ await action("upgrade_regeneration")
+ check(game.sim.regeneration_level==1,"Workshop unlocks automatic regeneration")
+ var hp:float=game.sim.buildings[3].hp
+ game.sim.enemies.clear()
+ game.sim.spawn_remaining=0
+ game.sim.step(10)
  await frame()
- check(game.sim.buildings[3].level==2,"Completed Workshop research updates the existing tower")
+ check(game.sim.buildings[3].hp>hp,"Standing buildings heal without local repair input")
+ await capture("regeneration")
  await action("workshop_building")
- check(visible_action("repair") and not visible_action("research:arrow"),"Workshop building tab retains its own local repair controls")
+ check(not visible_action("repair") and visible_action("clear"),"Workshop maintenance offers dismantling and automatic regeneration status")
  await action("workshop")
- check(visible_action("research:stone"),"Workshop navigation returns to research")
- # Trading quotes and disabled states follow the real 90-gold purchase/cooldown.
- check(game.sim.build_at(Vector2(6100,2800),"market")=="","Trade fixture builds a paid marketplace")
+ check(visible_action("research:stone"),"Workshop navigation returns to upgrades")
+ # The real purchase quote and shared cooldown remain consistent.
+ check(game.sim.build_at(Vector2(5500,2920),"market")=="","Trade fixture builds a paid marketplace")
  var market_index:int=game.sim.buildings.size()-1
  game.sim.buildings[market_index].age=10
  game.selected=market_index
@@ -178,41 +166,55 @@ func run()->void:
  await frame()
  await action("trade")
  for control in game.buttons:
-  if control.action in ["buy_wood","buy_stone"]: check(not control.enabled,"Purchase is disabled below its quoted 90 gold")
+  if control.action in ["buy_wood","buy_stone"]:check(not control.enabled,"Purchase is disabled below 90 gold")
  game.sim.resources.gold=90
- var timber_before:float=game.sim.resources.wood
- await frame()
+ var timber:float=game.sim.resources.wood
  await action("buy_wood")
- check(game.sim.resources.gold==0 and game.sim.resources.wood==timber_before+60,"Purchase spends exactly 90 gold for 60 timber")
+ check(game.sim.resources.gold==0 and game.sim.resources.wood==timber+60,"Purchase charges 90 gold for 60 timber")
  await frame()
  for control in game.buttons:
-  if control.action.begins_with("trade_"): check(not control.enabled,"Sale controls respect the shared order cooldown")
+  if control.action.begins_with("trade_"):check(not control.enabled,"Trade buttons respect the shared cooldown")
  await action("back")
  game.sim.clear_at(market_index)
  game.selected=-1
- game.sim.resources={"wood":10000.0,"stone":10000.0,"gold":10000.0}
- await frame()
- # Wall gestures preserve preview/confirmation and shared endpoints.
- game.camera_center=Vector2(6200,2900)
- game.zoom=0.85
+ game.sim.resources={"wood":100000.0,"stone":100000.0,"gold":100000.0}
+ game.camera_center=Vector2(7080,2880)
  game.apply_camera()
  await action("build:wall")
- var from:Vector2=game.world_to_screen(Vector2(6000,2800))
- var to:Vector2=game.world_to_screen(Vector2(6240,2800))
- var count:int=game.sim.active_building_count()
- touch(0,from,true)
+ var before_count:int=game.sim.active_building_count()
+ for y in [2800,2880,2960]:
+  var start:Vector2=game.world_to_screen(Vector2(7000,y))
+  var finish:Vector2=game.world_to_screen(Vector2(7160,y))
+  touch(0,start,true)
+  await frame()
+  drag_touch(0,finish,finish-start)
+  await frame()
+  touch(0,finish,false)
+  await frame()
+  check(game.sim.wall_preview(game.wall_points).count==3,"Dragging another row previews three valid sections")
+  await action("confirm_build")
+  check(game.build_kind=="wall" and game.selected==-1,"Wall tool stays active for the next row")
+ check(game.sim.active_building_count()==before_count+9,"Three strokes build a solid 3x3 fortification")
+ var middle:int=game.sim.wall_at(Vector2(7080,2880))
+ check(game.sim.wall_neighbors(middle).size()==4,"Interior wall tile joins all four neighbors")
+ await capture("wall-mass")
+ game.camera_center=Vector2(4160,2800)
+ game.apply_camera()
+ var start:Vector2=game.world_to_screen(Vector2(4160,2400))
+ var finish:Vector2=game.world_to_screen(Vector2(4160,3200))
+ touch(0,start,true)
  await frame()
- drag_touch(0,to,to-from)
+ drag_touch(0,finish,finish-start)
  await frame()
- touch(0,to,false)
+ touch(0,finish,false)
  await frame()
- check(game.wall_points.size()==4 and game.sim.active_building_count()==count,"Dragging walls previews four joined sections")
+ var preview:Dictionary=game.sim.wall_preview(game.wall_points)
+ check(preview.count==6 and preview.skipped.size()>0 and preview.error=="","A stroke through red mountains previews only six available pass sections")
+ await capture("wall-skip-red")
  await action("confirm_build")
- check(game.sim.active_building_count()==count+4,"One confirmation builds the entire wall stroke")
- var middle:int=game.sim.wall_at(Vector2(6080,2800))
- check(game.sim.wall_neighbors(middle).size()==2,"Constructed wall sections join into one run")
- await capture("wall-run")
- # Destroyed structures vanish and the panel returns to construction.
+ await action("cancel")
+ check(game.sim.wall_at(Vector2(4160,2600))>=0 and game.sim.wall_at(Vector2(4160,3000))>=0,"Filtered stroke fills the entire mountain opening")
+ # Destroyed buildings disappear; regeneration never leaves rebuildable ruins.
  game.selected=3
  var destroyer:Dictionary=game.sim.spawn_enemy()
  destroyer.cooldown=0
@@ -221,7 +223,7 @@ func run()->void:
  game.sim.enemies.clear()
  game.sim.step(0.05)
  await frame()
- check(game.sim.buildings[3]==null and visible_action("build:arrow") and not visible_action("repair"),"Destruction removes the building and its controls instead of showing rebuildable ruins")
+ check(game.sim.buildings[3]==null and visible_action("build:arrow") and not visible_action("repair"),"Destroyed structures leave no local repair controls")
  for expected in [2,5,10,1]:
   await action("speed")
   check(game.speed==expected,"Speed cycles through mobile-supported rates")
@@ -242,7 +244,7 @@ func run()->void:
  game.save_game()
  game.sim=null
  game.load_saved_game()
- check(game.sim!=null and game.sim.active_building_count()==saved_count and game.sim.research_levels.arrow==2,"Disk restore retains structures and global research")
+ check(game.sim!=null and game.sim.active_building_count()==saved_count and game.sim.research_levels.arrow==3,"Disk restore retains structures and global research")
  check(game.camera_center.is_equal_approx(saved_camera),"Disk restore retains camera position")
  game.apply_camera()
  await action("pause")

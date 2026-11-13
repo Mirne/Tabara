@@ -10,7 +10,7 @@ const LANDMARKS=preload("res://assets/world/landmarks.png")
 const CLIFF_ART=preload("res://assets/world/cliffs.png")
 const UNIQUE_RIDGES={"north_crown":preload("res://assets/world/north_crown.png"),"north_gate":preload("res://assets/world/north_gate.png"),"south_gate":preload("res://assets/world/south_gate.png"),"south_buttress":preload("res://assets/world/south_buttress.png")}
 const Body=preload("res://assets/fonts/Body.ttf")
-const UNIT_ROWS={"raider":0,"runner":1,"brute":2,"siege":3,"elite":5}
+const UNIT_ROWS={"raider":0,"runner":1,"brute":2,"siege":3,"elite":5,"boss":6}
 var game
 var scenery:Array=[]
 var ground_view:SubViewport
@@ -34,6 +34,7 @@ var surface_mask:ImageTexture
 var floor_source:Sprite2D
 var overview:Texture2D
 var legacy_overview:Texture2D
+var legacy_stronghold_overview:Texture2D
 var environment_layer:Node2D
 var woodland_surface:ImageTexture
 
@@ -43,6 +44,7 @@ func _ready()->void:
  legacy_ridges=Map.legacy_mountain_sprites()
  landmarks=Map.authored_landmarks()
  if ResourceLoader.exists("res://assets/world/overview.png"): overview=load("res://assets/world/overview.png")
+ if ResourceLoader.exists("res://assets/world/overview-v08.png"): legacy_stronghold_overview=load("res://assets/world/overview-v08.png")
  if ResourceLoader.exists("res://assets/world/overview-v07.png"): legacy_overview=load("res://assets/world/overview-v07.png")
  texture_repeat=CanvasItem.TEXTURE_REPEAT_ENABLED
  texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
@@ -184,7 +186,7 @@ func _draw()->void:
   else: draw_enemy(entity.enemy,entity.pos)
  draw_effects()
  preview_range=0.0
- if game.build_kind!="" and sim.DEFINITIONS[game.build_kind].has("range"):
+ if game.build_kind!="" and game.placement_ready and sim.DEFINITIONS[game.build_kind].has("range"):
   preview_range=float(sim.DEFINITIONS[game.build_kind].range)
   draw_circle(game.ghost,preview_range,Color(0.85,0.73,0.35,0.07))
   draw_arc(game.ghost,preview_range,0,TAU,128,Color(0.96,0.82,0.4,0.85),2/game.zoom,true)
@@ -192,12 +194,13 @@ func _draw()->void:
  if game.build_kind=="wall" and not game.wall_points.is_empty():
   var preview:Dictionary=sim.wall_preview(game.wall_points)
   var tint:=Color(0.8,1,0.73,0.7) if preview.error=="" else Color(1,0.38,0.26,0.7)
-  for i in game.wall_points.size():
-   var p:Vector2=game.wall_points[i]
+  for p in preview.points:
    draw_rect(sim.foundation_rect(p,"wall"),Color(tint,0.16))
    draw_rect(sim.foundation_rect(p,"wall"),tint,false,1.5/game.zoom)
-  Ramparts.preview(self,sim,game.wall_points,tint)
- elif game.build_kind!="" and visible_world.has_point(game.ghost):
+  Ramparts.preview(self,sim,preview.points,tint)
+  for p in preview.skipped:
+   draw_rect(sim.foundation_rect(p,"wall"),Color(0.9,0.25,0.16,0.12))
+ elif game.build_kind!="" and game.placement_ready and visible_world.has_point(game.ghost):
   var error:String=sim.placement_error(game.ghost,game.build_kind)
   var tint:=Color(0.8,1,0.73,0.6) if error=="" and sim.can_afford(sim.DEFINITIONS[game.build_kind].cost) else Color(1,0.38,0.26,0.6)
   var foundation:Rect2=sim.foundation_rect(game.ghost,game.build_kind)
@@ -287,7 +290,12 @@ func draw_enemy(e:Dictionary,p:Vector2)->void:
  var frame:int=int(game.animation_clock*(10 if e.kind=="runner" else 6)+e.phase)%4
  if game.reduced_motion: frame=0
  Art.unit(self,row,frame,p)
- if e.hp<e.max_hp*0.97:
+ if e.kind=="boss":
+  var top:Vector2=p-Vector2(50,158)
+  draw_string(Body,top-Vector2(0,7),"WARLORD",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("e8c477"))
+  draw_rect(Rect2(top,Vector2(100,7)),Color("2b2520"))
+  draw_rect(Rect2(top,Vector2(100*e.hp/e.max_hp,7)),Color("c26c4e"))
+ elif e.hp<e.max_hp*0.97:
   draw_rect(Rect2(p-Vector2(17,102 if row in [2,5] else 83),Vector2(34,4)),Color("2b2520"))
   draw_rect(Rect2(p-Vector2(17,102 if row in [2,5] else 83),Vector2(34*e.hp/e.max_hp,4)),Color("ad6f4c"))
 

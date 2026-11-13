@@ -5,6 +5,9 @@ emulator. ANDROID_APK, ANDROID_ADB, ANDROID_SERIAL, ANDROID_ADB_PORT,
 ANDROID_REPORT_NAME, ANDROID_COMMAND_TIMEOUT customize the local setup.
 """
 from __future__ import annotations
+import base64
+import copy
+import shlex
 import hashlib
 import io
 import json
@@ -17,7 +20,7 @@ from PIL import Image, ImageChops, ImageStat
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "com.tabara.lasthearth"
-APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.8.apk"))
+APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.9.apk"))
 OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android-frontier")).name
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
@@ -73,7 +76,7 @@ def wait_menu():
 
 def world_point(x, y):
     # Default mission camera and logical game viewport, before any drag/pinch.
-    return round((x - 4680) * .85 + 552), round((y - 2800) * .85 + 447)
+    return round((x - 4840) * .72 + 552), round((y - 2800) * .72 + 447)
 
 def physical(x, y):
     width, height = size
@@ -100,6 +103,29 @@ def wait_saved_structure(index, kind):
             return data
         time.sleep(4)
     raise TimeoutError(f"Missing saved structure {index}: {kind}")
+
+def write_save(data):
+    # Normal shell protocol works on API 24 as well as modern adbd.
+    payload = base64.b64encode(json.dumps(data).encode()).decode("ascii")
+    inner = "printf '%s' " + shlex.quote(payload) + " | base64 -d > files/frontier-settlement.json"
+    adb("shell", "run-as " + shlex.quote(PACKAGE) + " sh -c " + shlex.quote(inner), timeout=120)
+    if save() != data:
+        raise RuntimeError("Test fixture transfer did not preserve the complete save")
+
+
+def wait_supplies(data, required):
+    # Called while paused; all supplies come from production and real kills.
+    end = time.monotonic() + 900
+    while any(data["resources"][kind] < amount for kind, amount in required.items()):
+        print("WAITING FOR SUPPLIES:", data["resources"], "game seconds:", data["elapsed"], flush=True)
+        if time.monotonic() >= end:
+            raise TimeoutError("Native defender did not earn its paid upgrade supplies")
+        adb("shell", "input", "keyevent", "4")
+        time.sleep(15)
+        tap(1338, 43)
+        data = save()
+    return data
+
 
 def back_sequence():
     before = save()["elapsed"]
@@ -155,9 +181,9 @@ def native_checks(back_only=False):
             screen("03-initial-mission")
             # Full-height catalogue; selecting and placing hides it until Build structures.
             tap(1194, 218)
-            tap(*world_point(4380, 3030))
+            tap(*world_point(4760, 2440))
             image = screen("03a-green-grid-preview")
-            wx, wy = world_point(4400, 3040)
+            wx, wy = world_point(4760, 2440)
             patch = image.crop((wx-60, wy-60, wx+60, wy+60))
             green = sum(g > r*1.2 and g > b*1.15 and g > 75 for r, g, b in patch.getdata())
             check(green > 400, "Native producer preview renders green buildable tiles")
@@ -167,30 +193,32 @@ def native_checks(back_only=False):
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
             tap(1194, 218)
-            tap(*world_point(4380, 3030))
+            tap(*world_point(4760, 2440))
             tap(1273, 685)
             tap(1273, 763)  # Selected-building panel: Build structures.
             tap(1352, 218)
-            tap(*world_point(5150, 3110))
+            tap(*world_point(5480, 3240))
             tap(1273, 685)
             tap(1273, 763)
             tap(1194, 376)
-            tap(*world_point(4520, 2560))
+            tap(*world_point(4480, 2760))
+            tap(1273, 685)
+            # Place another tower directly: no catalogue or building selection.
+            tap(*world_point(4640, 2760))
             tap(1273, 685)
             tap(1338, 43)
             before_wall = save()
-            check(len(before_wall["buildings"]) == 4, "Native full-height panels construct the initial three buildings")
+            check(len(before_wall["buildings"]) == 5, "Native placement constructs two producers and two towers without reopening the tower catalogue")
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
-            tap(1273, 763)
             tap(1352, 376)
-            start = world_point(4160, 2600)
-            finish = world_point(4160, 3000)
+            start = world_point(4160, 2400)
+            finish = world_point(4160, 3200)
             adb("shell", "input", "swipe", *physical(*start), *physical(*finish), "700")
             time.sleep(4)
             screen("03b-wall-preview")
             tap(1338, 43)
-            check(len(save()["buildings"]) == 4, "Native wall drag previews without constructing")
+            check(len(save()["buildings"]) == 5, "Native wall drag previews without constructing")
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
             tap(1352, 376)
@@ -200,15 +228,15 @@ def native_checks(back_only=False):
             screen("03c-wall-built")
         tap(1338, 43)  # Explicit known pause.
         screen("04-built-and-paused")
-        data = wait_saved_structure(9, "wall")
-        check(data["version"] == 7 and data["terrain_revision"] == 4, "Native app writes global research and the new eight-site terrain format")
-        for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow")]:
+        data = wait_saved_structure(10, "wall")
+        check(data["version"] == 8 and data["terrain_revision"] == 5, "Native app writes global research and the new eight-site terrain format")
+        for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow"), (4, "arrow")]:
             check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
             check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")
-        expected = [(4400,3040),(5160,3120),(4520,2560)]
+        expected = [(4760,2440),(5480,3240),(4480,2760),(4640,2760)]
         for index, position in enumerate(expected, 1):
             check(tuple(data["buildings"][index]["pos"]) == position, "Native confirmed building follows the grid at " + str(position))
-        for index, position in [(4,(4160,2600)),(5,(4160,2680)),(6,(4160,2760)),(7,(4160,2840)),(8,(4160,2920)),(9,(4160,3000))]:
+        for index, position in [(5,(4160,2600)),(6,(4160,2680)),(7,(4160,2760)),(8,(4160,2840)),(9,(4160,2920)),(10,(4160,3000))]:
             check(data["buildings"][index]["kind"] == "wall" and tuple(data["buildings"][index]["pos"]) == position, "Native wall stroke creates joined piece at " + str(position))
         check(len(data["deposits"]) == 8, "Native mission contains only eight producer sites")
         check(data["elapsed"] > 0 and data["wave"] >= 1, "Native mission advances")
@@ -220,42 +248,41 @@ def native_checks(back_only=False):
             # Add the Workshop using its larger catalogue card and research controls.
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
-            tap(1273, 763)
             tap(1273, 692)
             tap(*world_point(5200, 2800))
             tap(1273, 685)
+            tap(1273, 763)  # Done building, then explicitly select the Workshop.
+            tap(*world_point(5200, 2800))
             end = time.monotonic() + 240
             while True:
                 tap(1338, 43)
-                workshop_save = wait_saved_structure(10, "workshop")
-                if workshop_save["buildings"][10]["age"] >= 6:
+                workshop_save = wait_saved_structure(11, "workshop")
+                if workshop_save["buildings"][11]["age"] >= 6:
                     break
                 if time.monotonic() >= end:
                     raise TimeoutError("Native Workshop did not finish construction")
                 adb("shell", "input", "keyevent", "4")
                 time.sleep(8)
             check(True, "Native touch constructs an operational Workshop")
-            # Research is paid. Wait for production and combat gold, without grants.
-            end = time.monotonic() + 600
-            while any(workshop_save["resources"][kind] < amount for kind, amount in
-                      [("wood", 110), ("stone", 70), ("gold", 40)]):
-                print("WAITING FOR RESEARCH SUPPLIES:", workshop_save["resources"],
-                      "game seconds:", workshop_save["elapsed"], flush=True)
-                if time.monotonic() >= end:
-                    raise TimeoutError("Native defender did not earn its research supplies")
-                adb("shell", "input", "keyevent", "4")
-                time.sleep(15)
-                tap(1338, 43)
-                workshop_save = save()
+            workshop_save = wait_supplies(workshop_save, {"wood": 110, "stone": 70, "gold": 40})
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
             tap(1352, 330)  # Arrow research subject.
             tap(1273, 678)
             tap(1338, 43)
             research_save = save()
-            check(research_save["research_levels"]["arrow"] == 1 and research_save["research_job"].get("kind") == "arrow" and research_save["research_job"]["remaining"] > 0,
-                  "Native Workshop starts a timed global upgrade without an instant level")
+            check(research_save["research_levels"]["arrow"] == 2 and all(research_save["buildings"][i]["level"] == 2 for i in [3, 4]) and "research_job" not in research_save,
+                  "Native Workshop upgrades both towers instantly without a queue")
             screen("04b-workshop-research")
+            # Regeneration is a paid global upgrade, with no local repair buttons.
+            wait_supplies(save(), {"wood": 120, "stone": 90, "gold": 60})
+            adb("shell", "input", "keyevent", "4")
+            time.sleep(4)
+            tap(1273, 173)
+            tap(1273, 678)
+            tap(1338, 43)
+            check(save()["regeneration_level"] == 1, "Native Workshop purchases global automatic Regeneration")
+            screen("04c-regeneration")
             retained = save()
             adb("shell", "am", "force-stop", PACKAGE)
             launch()
@@ -268,9 +295,8 @@ def native_checks(back_only=False):
             check(restored["elapsed"] >= retained["elapsed"], "Cold restart retains elapsed time")
             signature = lambda rows: [(b["kind"], b["pos"]) if b else None for b in rows]
             check(signature(restored["buildings"]) == signature(retained["buildings"]), "Cold restart retains all confirmed structures and coordinates")
-            check(restored["research_levels"]["arrow"] >= retained["research_levels"]["arrow"] and
-                  (restored["research_levels"]["arrow"] > retained["research_levels"]["arrow"] or
-                   restored["research_job"].get("kind") == "arrow"), "Cold restart retains global research or its paid in-progress order")
+            check(restored["research_levels"]["arrow"] == 2 and restored["regeneration_level"] == 1,
+                  "Cold restart retains instant upgrades and automatic Regeneration")
             screen("06-restored-and-paused")
             # Test camera movement with a real drag; this must not construct anything.
             adb("shell", "input", "keyevent", "4")
@@ -299,6 +325,35 @@ def native_checks(back_only=False):
                 tap(1338, 43)
             # Clock resumption is checked again, exposing a stuck emulator surface.
             back_sequence()
+        if not back_only:
+            # Explicit clock-boundary fixture, not a five-minute real campaign claim.
+            # No resources are granted; restore the normal native settlement after.
+            normal = save()
+            try:
+                adb("shell", "am", "force-stop", PACKAGE)
+                boundary = copy.deepcopy(normal)
+                boundary.update(elapsed=299.95, wave=10, boss_intervals=0,
+                                spawn_remaining=0, spawn_clock=1.0, enemies=[], victory_seen=False)
+                boundary["camera"] = [500.0, 2700.0, 1.0]
+                boundary["buildings"][0]["hp"] = 2100.0
+                write_save(boundary)
+                launch()
+                wait_menu()
+                tap(260, 462)
+                time.sleep(6)
+                tap(1338, 43)
+                observed = save()
+                bosses = [e for e in observed["enemies"] if e["kind"] == "boss"]
+                check(observed["boss_intervals"] == 1 and len(bosses) == 1,
+                      "Native five-minute boundary spawns exactly one miniboss at the western entrance")
+                check(bosses[0]["pos"][0] < 1200 and bosses[0]["hp"] > 1000,
+                      "Native miniboss has its own stronger stats and starts on the approach")
+                check(observed["buildings"][0]["hp"] > 2100,
+                      "Native Regeneration heals the damaged Hall without a repair tap")
+                screen("09-miniboss-and-regeneration")
+            finally:
+                adb("shell", "am", "force-stop", PACKAGE)
+                write_save(normal)
         log = adb("logcat", "-d", "-t", "500", "-v", "brief", timeout=90)
         (OUT / "logcat.txt").write_text(log)
         check(not any(text in log for text in ["FATAL EXCEPTION", "SCRIPT ERROR:", "SHADER ERROR:", "Shader compilation failed"]), "Captured native diagnostics contain no script, shader, or fatal error")
@@ -309,7 +364,7 @@ def native_checks(back_only=False):
             diagnostic = save()
             (OUT / "failed-save.json").write_text(json.dumps(diagnostic, indent=2))
             print("FAILED STATE:", {key: diagnostic.get(key) for key in
-                  ["elapsed", "resources", "research_levels", "research_job"]}, flush=True)
+                  ["elapsed", "resources", "research_levels", "regeneration_level", "boss_intervals"]}, flush=True)
             screen("failed-state")
         except Exception:
             pass
@@ -321,7 +376,8 @@ def native_checks(back_only=False):
             print("Diagnostic capture unavailable:", str(problem)[:250], flush=True)
         report = {"passed": error is None and bool(checks) and all(c["passed"] for c in checks),
                   "error": error, "checks": checks, "actual_seconds": time.monotonic() - started,
-                  "apk_sha256": APK_SHA256, "mode": "foreground-back" if back_only else "full-native"}
+                  "apk_sha256": APK_SHA256, "mode": "foreground-back" if back_only else "full-native",
+                  "fixtures": "The miniboss check advances a saved clock to 299.95 seconds and damages the Hall; it grants no resources and restores the original native settlement" if not back_only else "existing settlement"}
         (OUT / "report.json").write_text(json.dumps(report, indent=2))
         print(json.dumps(report), flush=True)
     return 0 if report["passed"] else 1

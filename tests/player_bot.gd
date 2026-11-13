@@ -1,13 +1,13 @@
 extends RefCounted
-## A normal-cost defender: one paid order per second, local repairs and global research.
+## A normal-cost defender: one paid order per second, automatic regeneration and instant global upgrades.
 const Sim=preload("res://scripts/simulation.gd")
 const PLAN=[
- [Vector2(4380,3030),"wood"],[Vector2(5150,3110),"stone"],[Vector2(4520,2560),"arrow"],
- [Vector2(5480,2760),"stone"],
+ [Vector2(4760,2440),"wood"],[Vector2(5480,3240),"stone"],[Vector2(4480,2760),"arrow"],
+ [Vector2(5480,2600),"stone"],[Vector2(4480,2880),"cannon"],
  [Vector2(4160,2600),"wall"],[Vector2(4160,2680),"wall"],[Vector2(4160,2760),"wall"],
  [Vector2(4160,2840),"wall"],[Vector2(4160,2920),"wall"],[Vector2(4160,3000),"wall"],
- [Vector2(4480,2880),"cannon"],[Vector2(5200,2800),"workshop"],
- [Vector2(5110,2420),"wood"],[Vector2(4500,3120),"arrow"],
+ [Vector2(5200,2800),"workshop"],
+ [Vector2(5360,2440),"wood"],[Vector2(4500,3120),"arrow"],
  [Vector2(4720,3056),"cannon"],[Vector2(4520,2720),"arrow"],
  [Vector2(4700,2520),"arrow"],[Vector2(4800,3280),"market"],
  [Vector2(4920,2520),"arrow"],[Vector2(4800,2560),"cannon"],
@@ -42,18 +42,6 @@ func planned_site(position:Vector2,kind:String)->Vector2:
  return center
 func act()->void:
  if sim.defeated:return
- var repair_index:=-1
- var lowest:=0.65
- for i in sim.buildings.size():
-  var b=sim.buildings[i]
-  if b==null or b.hp<=0 or b.age<sim.build_time(b.kind) or float(b.get("repair_left",0))>0:continue
-  var ratio:float=b.hp/sim.stat(b,"hp")
-  if ratio<lowest and sim.can_afford(sim.repair_cost(b)):
-   lowest=ratio
-   repair_index=i
- if repair_index>=0 and sim.repair_at(repair_index)=="":
-  paid_orders+=1
-  return
  for key in sites:
   var kind:String=PLAN[int(key)][1]
   var point:Vector2=sites[key]
@@ -63,7 +51,12 @@ func act()->void:
   if not present and sim.can_afford(Sim.DEFINITIONS[kind].cost) and sim.build_at(point,kind)=="":
    paid_orders+=1
    return
- if sim.workshop_index()>=0 and sim.research_job.is_empty():
+ if sim.workshop_index()>=0:
+  var regen_target:=mini(6,1+int(sim.elapsed/300))
+  if sim.regeneration_level<regen_target and sim.can_afford(sim.regeneration_cost()):
+   if sim.upgrade_regeneration()=="":
+    paid_orders+=1
+    return
   var priorities:Array=["arrow","cannon","stone","wall","wood","hall"]
   var choices:Array=[]
   var target:=mini(8,2+int(sim.elapsed/240))

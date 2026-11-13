@@ -1,0 +1,84 @@
+{
+  "revision": 5,
+  "name": "Hearthvale Open Approach",
+  "base_bounds": [
+    4240,
+    2320,
+    1440,
+    1120
+  ],
+  "nodes": [
+    {
+      "kind": "wood",
+      "zone": "base",
+      "pos": [
+        4760,
+        2440
+      ],
+      "amount": 36.0
+    },
+    {
+      "kind": "wood",
+      "zone": "base",
+      "pos": [
+        5360,
+        2440
+      ],
+      "amount": 36.0
+    },
+    {
+      "kind": "wood",
+      "zone": "outpost",
+      "pos": [
+        2840,
+        3120
+      ],
+      "amount": 36.0
+    },
+    {
+      "kind": "wood",
+      "zone": "outpost",
+      "pos": [
+        1120,
+        2480
+      ],
+      "amount": 36.0
+    },
+    {
+      "kind": "stone",
+      "zone": "base",
+      "pos": [
+        5480,
+        3240
+      ],
+      "amount": 30.0
+    },
+    {
+      "kind": "stone",
+      "zone": "base",
+      "pos": [
+        5480,
+        2600
+      ],
+      "amount": 30.0
+    },
+    {
+      "kind": "stone",
+      "zone": "outpost",
+      "pos": [
+        3640,
+        3120
+      ],
+      "amount": 30.0
+    },
+    {
+      "kind": "stone",
+      "zone": "outpost",
+      "pos": [
+        3040,
+        2200
+      ],
+      "amount": 30.0
+    }
+  ]
+}

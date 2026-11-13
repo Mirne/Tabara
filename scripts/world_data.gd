@@ -17,11 +17,12 @@ const GRID_WIDTH := 205
 const GRID_HEIGHT := 128
 # Two continuous spines meet the map edges, leaving a 480-unit mountain pass.
 const MOUNTAIN_RECTS := [Rect2(3600,0,320,1440),Rect2(3680,1280,480,320),Rect2(4000,1440,240,1120),Rect2(4000,3040,240,2080)]
-const AUTHORED_REVISION:=4
+const AUTHORED_REVISION:=5
 static var terrain_fields:Dictionary={}
 static var authored:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/hearthvale.json"))
 static var woodland:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/woodland.json"))
 static var stronghold:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/stronghold.json"))
+static var open_approach:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/open-approach.json"))
 static var forest_shapes:Array=[]
 static var forest_pockets:Array=[]
 static var city_shape:=PackedVector2Array()
@@ -169,6 +170,15 @@ static func compute_field(layout:int)->PackedInt32Array:
      for monument in monuments:
       if monument.footprint.intersects(rect): value=5
    field[y*GRID_WIDTH+x]=value
+ if layout>=5:
+  # The former eight edge-site foundations remain open after their resources
+  # move away. In particular the old logging apron beside the pass can take walls.
+  for i in resource_nodes(4).size():
+   var old_rect:=resource_rect(i,4)
+   for y in range(floori(old_rect.position.y/CELL),ceili(old_rect.end.y/CELL)):
+    for x in range(floori(old_rect.position.x/CELL),ceili(old_rect.end.x/CELL)):
+     var key:=y*GRID_WIDTH+x
+     if key>=0 and key<field.size() and field[key]==6: field[key]=0
  var nodes:=resource_nodes(layout)
  for i in nodes.size():
   var rect:=resource_rect(i,layout)
@@ -256,7 +266,7 @@ static func road_distance(p: Vector2) -> float:
 static func resource_nodes(layout:int=AUTHORED_REVISION) -> Array:
  var out: Array=[]
  if layout>=4:
-  for item in stronghold.nodes:
+  for item in (open_approach if layout>=5 else stronghold).nodes:
    out.append({"pos":Vector2(item.pos[0],item.pos[1]),"kind":item.kind,"zone":item.zone,"amount":float(item.amount)})
   return out
  for group in [[GROVES,"wood",36.0],[QUARRIES,"stone",30.0],[ORES,"gold",24.0]]:

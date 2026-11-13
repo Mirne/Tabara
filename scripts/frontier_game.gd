@@ -255,7 +255,7 @@ func _input(event:InputEvent)->void:
   elif screen=="mission":
    if event.keycode>=KEY_1 and event.keycode<=KEY_7: act("build:"+ORDER[event.keycode-KEY_1])
    if event.keycode==KEY_U: act("upgrade")
-   if event.keycode==KEY_R: act("repair")
+   if event.keycode==KEY_R: act("regeneration")
    if event.keycode==KEY_F: act("hall")
 
 func screen_to_world(point:Vector2)->Vector2:
@@ -337,16 +337,14 @@ func finish_wall(point:Vector2)->void:
 
 func confirm_placement()->void:
  if not placement_ready or build_kind=="": return
- if not VIEW.has_point(world_to_screen(ghost)):
+ if build_kind!="wall" and not VIEW.has_point(world_to_screen(ghost)):
   notify("Bring the building preview back into view before confirming.")
   return
  var error:String=sim.build_wall(wall_points) if build_kind=="wall" else sim.build_at(ghost,build_kind)
  if error!="":
   notify(error)
   return
- for i in sim.buildings.size():
-  if sim.buildings[i]!=null and sim.buildings[i].pos==ghost: selected=i
- build_kind=""
+ selected=-1
  placement_ready=false
  wall_points.clear()
  play_sound("build")
@@ -366,7 +364,7 @@ func act(action:String)->void:
   wall_points.clear()
   wall_drawing=false
   ghost=sim.snap_position(camera_center,kind)
-  if build_kind!="": notify("Drag a wall line, then confirm. Use two fingers to pan or zoom." if kind=="wall" else "Tap a grid location to preview. Confirm with Build; Cancel spends nothing.")
+  if build_kind!="": notify("Drag a wall line, then confirm. Use two fingers to pan or zoom." if kind=="wall" else "Tap a grid location to preview. Confirm with Build; Done building exits the tool.")
   return
  match action:
   "confirm_build": confirm_placement()
@@ -409,14 +407,18 @@ func act(action:String)->void:
     workshop_tab="research"
   "workshop_research": workshop_tab="research"
   "workshop_building": workshop_tab="building"
-  "start_research":
-   var error:String=sim.start_research(research_kind)
+  "workshop_regeneration": workshop_tab="regeneration"
+  "regeneration":
+   act("workshop")
+   workshop_tab="regeneration"
+  "upgrade_regeneration":
+   var error:String=sim.upgrade_regeneration()
    if error!="": notify(error)
    else:
     consume_events()
     play_sound("build")
-  "repair":
-   var error:String=sim.repair_at(selected)
+  "start_research":
+   var error:String=sim.start_research(research_kind)
    if error!="": notify(error)
    else:
     consume_events()
@@ -485,8 +487,8 @@ func start_mission()->void:
  selected=-1
  speed=1
  build_kind=""
- camera_center=Map.HALL-Vector2(120,0)
- zoom=0.85
+ camera_center=Map.HALL+Vector2(40,0)
+ zoom=0.72
  apply_camera()
  fx.clear()
  accumulator=0
@@ -500,6 +502,9 @@ func consume_events()->void:
    e.time=0.35 if e.type=="shot" else 1.2
    e.duration=e.time
    if fx.size()<180: fx.append(e)
+  if e.type=="boss":
+   notify(e.text+" enters from the western approach.")
+   play_sound("cannon")
   if e.type=="ruin":
    notify("Ground cleared. New foundations can be placed here." if e.text=="Ground cleared" else "A structure was destroyed. Its ground is free to build on.")
    play_sound("cannon")
@@ -697,7 +702,7 @@ func draw_inspector()->void:
   var wall:Dictionary=sim.wall_preview(wall_points) if build_kind=="wall" else {}
   var error:String=wall.error if build_kind=="wall" else sim.placement_error(ghost,build_kind)
   var cost:Array=wall.cost if build_kind=="wall" else d.cost
-  var ready:bool=placement_ready and error=="" and sim.can_afford(cost) and VIEW.has_point(world_to_screen(ghost))
+  var ready:bool=placement_ready and error=="" and sim.can_afford(cost) and (build_kind=="wall" or VIEW.has_point(world_to_screen(ghost)))
   if build_kind in ["wood","stone"]:
    wrapped("Green tiles show available sites. Two are in the base and two are exposed outposts.",Vector2(1120,360),304,17,GREEN,25)
   else:
@@ -705,18 +710,18 @@ func draw_inspector()->void:
   var status:String="Drag a wall line. Use two fingers to pan." if build_kind=="wall" else "Choose a location on the map."
   if placement_ready:
    status=error if error!="" else ("Ready to build." if sim.can_afford(cost) else "Not enough supplies.")
-   if not VIEW.has_point(world_to_screen(ghost)): status="Bring the preview into view."
-   if build_kind=="wall" and error=="": status="%d connected pieces"%wall.count
+   if build_kind!="wall" and not VIEW.has_point(world_to_screen(ghost)): status="Bring the preview into view."
+   if build_kind=="wall" and error=="": status="%d new sections · %d blocked skipped"%[wall.count,wall.skipped.size()]
   wrapped(status,Vector2(1120,477),304,18,GREEN if ready else GOLD,27)
   label("CONSTRUCTION COST",Vector2(1120,583),13,GOLD)
   cost_row(cost,Vector2(1122,618),15)
   button(Rect2(1120,652,306,66),"Build · Confirm","confirm_build",true,ready,21)
-  button(Rect2(1120,734,306,58),"Cancel","cancel",false,true,20)
+  button(Rect2(1120,734,306,58),"Done building","cancel",false,true,20)
   return
  if selected<0 or selected>=sim.buildings.size() or sim.buildings[selected]==null: return
  var b:Dictionary=sim.buildings[selected]
  var d:Dictionary=Sim.DEFINITIONS[b.kind]
- if b.kind=="workshop" and workshop_tab=="research":
+ if b.kind=="workshop" and workshop_tab in ["research","regeneration"]:
   draw_research_panel(b)
   return
  label(d.name,Vector2(1120,133),25,IVORY,true)
@@ -727,28 +732,30 @@ func draw_inspector()->void:
  var description:String=d.desc
  if b.kind=="wall": description="Joins nearby wall sections to hold the line."
  elif b.kind=="market": description="Emergency supply trades. Orders need 6–8 seconds."
- elif b.kind=="workshop": description="Research speed ×%.2f. One global order at a time."%sim.stat(b,"research")
+ elif b.kind=="workshop": description="Instant global upgrades and automatic regeneration. Higher Workshop levels reinforce its health."
  if b.age<sim.build_time(b.kind): description="Construction · %.1f seconds remaining"%(sim.build_time(b.kind)-b.age)
  elif d.has("income"): description="Produces %.1f %s per second."%[sim.stat(b,"income")*sim.production_bonus(b),d.resource]
  elif d.has("damage"): description="%s damage · %d attack range"%[pretty(sim.stat(b,"damage")),sim.stat(b,"range")]
  wrapped(description,Vector2(1120,278),304,17,MUTED,25)
  if b.kind=="market": button(Rect2(1120,337,306,58),"Trade supplies","trade",true,true,20)
  else: wrapped("Upgrades are researched for all buildings of this type at the Workshop.",Vector2(1120,345),304,17,GOLD,25)
- var repairing:bool=float(b.get("repair_left",0))>0
- var repair_cost:Array=sim.repair_cost(b)
- var repairable:bool=b.hp>0 and b.hp<sim.stat(b,"hp")-0.01 and b.age>=sim.build_time(b.kind) and not repairing and sim.can_afford(repair_cost)
- button(Rect2(1120,424,306,64),"Repairing · %.0fs"%b.repair_left if repairing else "Repair this building","repair",true,repairable,20)
- if repairing: label("Repairs continue over time.",Vector2(1120,518),16,GREEN)
- elif b.hp>=sim.stat(b,"hp")-0.01: label("No repairs needed",Vector2(1120,518),16,MUTED)
- else: cost_row(repair_cost,Vector2(1122,518),15)
+ if sim.regeneration_level>0:
+  label("REGENERATION · LEVEL %d"%sim.regeneration_level,Vector2(1120,444),15,GOLD)
+  wrapped("Restores %.1f HP per second automatically."%(sim.stat(b,"hp")*sim.regeneration_rate()),Vector2(1120,481),304,18,GREEN,27)
+ else:
+  wrapped("Unlock Regeneration at the Workshop to heal buildings automatically.",Vector2(1120,440),304,18,MUTED,27)
  button(Rect2(1120,554,306,60),"Open research" if b.kind=="workshop" else "Workshop upgrades","workshop",false,true,20)
  button(Rect2(1120,643,306,58),"Dismantle structure","clear",false,selected>0,19)
  button(Rect2(1120,734,306,58),"Build structures","construction",false,true,20)
 
 func draw_research_panel(b:Dictionary)->void:
  label("WORKSHOP",Vector2(1120,128),25,IVORY,true)
- button(Rect2(1120,149,150,48),"Research","workshop_research",true,true,17)
- button(Rect2(1278,149,148,48),"Building","workshop_building",false,true,17)
+ for i in 3:
+  var tab:String=["research","regeneration","building"][i]
+  button(Rect2(1120+i*104,149,98,48),["Upgrades","Regen","Building"][i],"workshop_"+tab,workshop_tab==tab,true,15)
+ if workshop_tab=="regeneration":
+  draw_regeneration_panel()
+  return
  for i in RESEARCH_ORDER.size():
   var kind:String=RESEARCH_ORDER[i]
   var rect:=Rect2(1120+(i%2)*158,216+(i/2)*79,148,70)
@@ -758,26 +765,33 @@ func draw_research_panel(b:Dictionary)->void:
   centered("Level %d"%sim.research_levels[kind],Rect2(rect.position+Vector2(0,38),Vector2(148,20)),14,GOLD)
   buttons.append({"rect":rect,"action":"research:"+kind,"enabled":true})
  var current:int=sim.research_levels[research_kind]
- var available:bool=sim.workshop_index()>=0 and sim.research_job.is_empty() and current<100
- if not sim.research_job.is_empty():
-  var job:Dictionary=sim.research_job
-  var progress:float=1.0-float(job.remaining)/float(job.duration)
-  label("%s · level %d"%[Sim.DEFINITIONS[job.kind].name,job.level],Vector2(1120,566),18,GOLD)
-  draw_rect(Rect2(1120,582,306,10),Color("272d22"))
-  draw_rect(Rect2(1120,582,306*progress,10),GREEN)
-  label("%.0fs remaining"%ceilf(job.remaining/sim.stat(b,"research")),Vector2(1120,618),16,MUTED)
- else:
-  label("%s · global level %d"%[Sim.DEFINITIONS[research_kind].name,mini(current+1,100)],Vector2(1120,563),17,GOLD)
-  label("%.0fs research · applies to future builds"%sim.research_duration(research_kind),Vector2(1120,587),14,MUTED)
-  cost_row(sim.research_cost(research_kind),Vector2(1122,619),15)
- var caption:="Research upgrade" if sim.research_job.is_empty() else "Research in progress"
+ var available:bool=sim.workshop_index()>=0 and current<100
+ label("%s · global level %d"%[Sim.DEFINITIONS[research_kind].name,mini(current+1,100)],Vector2(1120,563),17,GOLD)
+ label("Instant · all current and future buildings",Vector2(1120,587),14,MUTED)
+ cost_row(sim.research_cost(research_kind),Vector2(1122,619),15)
+ var caption:="Upgrade all · instant" if current<100 else "Maximum level"
  if sim.workshop_index()<0: caption="Workshop under construction"
  button(Rect2(1120,646,306,64),caption,"start_research",true,available and sim.can_afford(sim.research_cost(research_kind)),20)
  button(Rect2(1120,734,306,58),"Build structures","construction",false,true,20)
 
+func draw_regeneration_panel()->void:
+ label("Regeneration",Vector2(1120,241),26,IVORY,true)
+ label("GLOBAL LEVEL %d / 100"%sim.regeneration_level,Vector2(1120,277),16,GOLD)
+ Art.building(self,7,Vector2(1273,392),0.55)
+ wrapped("Automatically heals all completed, standing buildings. Destroyed buildings stay destroyed.",Vector2(1120,432),304,17,MUTED,25)
+ label("Current: %.2f%% maximum HP / sec"%(sim.regeneration_rate()*100),Vector2(1120,540),16,GREEN)
+ if sim.regeneration_level<100:
+  label("Next: %.2f%% maximum HP / sec"%(sim.regeneration_rate(sim.regeneration_level+1)*100),Vector2(1120,575),16,GOLD)
+ cost_row(sim.regeneration_cost(),Vector2(1122,619),15)
+ var caption:="Unlock Regeneration" if sim.regeneration_level==0 else "Upgrade Regeneration"
+ if sim.regeneration_level>=100: caption="Maximum regeneration"
+ var available:bool=sim.workshop_index()>=0 and sim.regeneration_level<100 and sim.can_afford(sim.regeneration_cost())
+ button(Rect2(1120,646,306,64),caption,"upgrade_regeneration",true,available,20)
+ button(Rect2(1120,734,306,58),"Build structures","construction",false,true,20)
+
 func draw_minimap()->void:
  Art.skin(self,Rect2(10,635,251,165),Color(0.9,0.93,0.86),10)
- var map_image:Texture2D=world.legacy_overview if sim.terrain_revision==3 else world.overview
+ var map_image:Texture2D=world.legacy_overview if sim.terrain_revision==3 else (world.legacy_stronghold_overview if sim.terrain_revision==4 else world.overview)
  if sim.terrain_revision>=3 and map_image!=null: draw_texture_rect(map_image,MINIMAP,false,Color(0.9,0.94,0.88))
  elif world.ground_view!=null: draw_texture_rect(world.ground_view.get_texture(),MINIMAP,false,Color(0.79,0.88,0.75))
  for b in sim.buildings:
@@ -799,7 +813,7 @@ func overlay(rect:Rect2,tag:String,title:String,description:String="")->void:
 
 func draw_briefing()->void:
  overlay(Rect2(355,105,730,600),"MISSION 01  /  THE HEARTHVALE BASIN","Carve a foothold in the valley.","The western road carries the first raiders. Keep your main hall standing for fifteen minutes, then continue the endless siege.")
- var rows:=[["01","Secure limited supplies","Two timber sites and two quarries are inside the base. Two more of each lie outside. Green tiles mark valid sites when placing a producer."],["02","Build a defensive line","Drag joined walls and cover them with arrow towers and cannons. Great hordes bring stronger elite raiders. Enemies retaliate against firing defenses."],["03","Keep the settlement standing","Repair damaged buildings locally. Destroyed buildings disappear. Research slower global upgrades at a Workshop; replacements inherit their levels."]]
+ var rows:=[["01","Secure limited supplies","Two timber sites and two quarries are inside the base. Two more of each lie outside. Green tiles mark valid sites when placing a producer."],["02","Build a defensive line","Drag joined walls and cover them with arrow towers and cannons. Great hordes bring stronger elite raiders. Enemies retaliate against firing defenses."],["03","Keep the settlement standing","Destroyed buildings disappear. Keep them standing with Regeneration. Buy instant global upgrades and automatic Regeneration at a Workshop. Replacements inherit completed upgrades."]]
  for i in 3:
   var y:float=343+i*88
   label(rows[i][0],Vector2(395,y),27,GOLD,true)
@@ -843,12 +857,12 @@ func draw_settings()->void:
 
 func draw_guide()->void:
  overlay(Rect2(235,65,970,680),"FIELD MANUAL","Build a settlement worth defending.")
- var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a marked timber site or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","The Workshop researches global levels up to 100. Repair standing buildings locally. Destroyed structures disappear; replacements inherit research."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Every fifth wave is a great horde. App switching pauses and saves."]]
+ var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a marked timber site or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","The Workshop researches global levels up to 100. Unlock automatic Regeneration for damaged buildings. Replacements inherit global upgrades."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Minibosses enter every five minutes. App switching pauses and saves."]]
  for i in entries.size():
   var p:=Vector2(274+(i%2)*462,245+(i/2)*141)
   label("0%d  %s"%[i+1,entries[i][0]],p,19,IVORY,true)
   wrapped(entries[i][1],p+Vector2(0,30),414,14,MUTED,24)
- label("DESKTOP   WASD / drag: pan   ·   Wheel: zoom   ·   1–7: build   ·   U: Workshop   ·   R: repair   ·   F: hall",Vector2(274,692),11,MUTED)
+ label("DESKTOP   WASD / drag: pan   ·   Wheel: zoom   ·   1–7: build   ·   U: Workshop   ·   R: regeneration   ·   F: hall",Vector2(274,692),11,MUTED)
  button(Rect2(994,675,171,46),"Understood","back",true,true,16)
 
 func draw_credits()->void:
