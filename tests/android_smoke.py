@@ -26,6 +26,7 @@ ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
 PORT = os.environ.get("ANDROID_ADB_PORT", "5037")
 TIMEOUT = float(os.environ.get("ANDROID_COMMAND_TIMEOUT", "90"))
+TAP_DELAY = float(os.environ.get("ANDROID_TAP_DELAY", "3"))
 checks: list[dict] = []
 size = (1280, 720)
 started = 0.0
@@ -85,7 +86,7 @@ def physical(x, y):
 
 def tap(x, y):
     adb("shell", "input", "tap", *physical(x, y))
-    time.sleep(3)
+    time.sleep(TAP_DELAY)
 
 def launch():
     result = adb("shell", "am", "start", "-W", "-n", PACKAGE + "/com.godot.game.GodotAppLauncher", timeout=180)
@@ -286,6 +287,12 @@ def native_checks(back_only=False):
             screen("04c-regeneration")
             retained = save()
             adb("shell", "am", "force-stop", PACKAGE)
+            # Isolate restore/lifecycle from legitimate destruction during the
+            # subsequent UI waits. Economy, buildings, upgrades and time stay.
+            retained["enemies"] = []
+            retained["spawn_remaining"] = 0
+            retained["spawn_clock"] = 30.0
+            write_save(retained)
             launch()
             wait_menu()
             screen("05-continue-menu")
@@ -378,7 +385,7 @@ def native_checks(back_only=False):
         report = {"passed": error is None and bool(checks) and all(c["passed"] for c in checks),
                   "error": error, "checks": checks, "actual_seconds": time.monotonic() - started,
                   "apk_sha256": APK_SHA256, "mode": "foreground-back" if back_only else "full-native",
-                  "fixtures": "The miniboss check advances a saved clock to 299.95 seconds and damages the Hall; it grants no resources and restores the original native settlement" if not back_only else "existing settlement"}
+                  "fixtures": "Restore/lifecycle checks clear incoming attackers after paid construction. The miniboss check advances a saved clock to 299.95 seconds and damages the Hall. Neither fixture grants resources; the miniboss check restores the original native settlement" if not back_only else "existing settlement"}
         (OUT / "report.json").write_text(json.dumps(report, indent=2))
         print(json.dumps(report), flush=True)
     return 0 if report["passed"] else 1

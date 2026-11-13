@@ -69,7 +69,10 @@ def run():
             if building and building['kind'] == 'arrow':
                 building.update(level=2, hp=650.0 * 1.085 * .5,
                                 repair_left=6.0, repair_rate=650.0 * 1.085 * .5 / 8)
-        legacy['enemies'] = [e for e in legacy['enemies'] if e['kind'] != 'boss']
+        # Isolate migration/healing from incoming damage during the two app loads.
+        legacy['enemies'] = []
+        legacy['spawn_remaining'] = 0
+        legacy['spawn_clock'] = 30.0
         legacy['mountains_enabled'] = True
         write_save(legacy)
         injected = native.save()
