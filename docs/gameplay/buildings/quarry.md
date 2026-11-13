@@ -9,3 +9,6 @@ one. Preserve levels already purchased on existing buildings during migration.
 The resource and quarry form one stable drawing group: rocks below the quarry,
 independent of nearby enemies, construction, destruction, or equal Y positions.
 Exposed outside quarries must attract approaching enemies just like woodcutters.
+
+Level-one upgrade price: 45 wood / 40 stone / 15 gold. Later upgrade
+prices scale by 1.15^(current level - 1), rounded up per resource.

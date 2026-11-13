@@ -6,3 +6,6 @@ outer parapet; no internal junction towers. Destruction opens a breach.
 Type-wide HP upgrades remain in Workshop Upgrades, instant, through level 100.
 Existing and replacement walls inherit the purchased defense level.
 Panel shows health and the actual HP change/price; purchase caption is Upgrade.
+
+Level-one upgrade price: 40 wood / 110 stone / 20 gold. Later upgrade
+prices scale by 1.15^(current level - 1), rounded up per resource.

@@ -1,4 +1,4 @@
-# Hearthvale Basin: Open Approach
+# Hearthvale Basin: building rules
 
 ## Direction and geography
 
@@ -27,21 +27,24 @@ at most one Marketplace and Workshop. Up to 512 standing structures are supporte
 Destroyed non-hall structures become null slots immediately and release their
 foundation/site. New construction reuses free slots. No repairable ruins remain.
 
-## Economy and research
+## Economy and upgrades
 
 Starting supplies are 450 wood, 320 stone and 180 gold. The hall supplies
 0.8 wood, 0.45 stone and 0.1 gold per second. Producers have base output four
 wood or five stone per second, with a 25% matching-site bonus. Ordinary buildings
 finish construction in 2.5 game seconds; the Workshop takes six. The Marketplace
-has no passive gold income: it buys 60 supplies for 90 gold with an eight-second
-cooldown, or sells 60 for 30–55 gold with a six-second cooldown. Kills provide gold.
+restores its earlier base output of two gold per game second, increased by its
+own income upgrades. Buying/selling and trade cooldowns are removed. Kills also
+provide gold.
 
-The Workshop buys instant global levels, one paid button press per level, for
-existing and future buildings. There is no timed job or queue. Levels start at
-one and cap at 100. Costs remain twice the old per-building base price, scaled
-by `1.15^(current level − 1)` and rounded up. Completed upgrades survive Workshop
-destruction, and another operational Workshop is needed for further purchases.
-Workshop building levels improve its own health.
+The Workshop buys instant global levels for walls, arrow towers and cannon towers.
+These apply to standing and future defenses. Woodcutters, quarries, the Hall,
+Marketplace and Workshop upgrade individually on their own panels; their
+replacements start at one. Levels cap at 100. Local prices use the existing base
+upgrade price, scaled by `1.15^(current level - 1)` and rounded up. Global defense
+prices remain twice the base price with that same scaling. Completed defense
+levels and Regeneration survive Workshop destruction. Workshop health upgrades
+are local under its Building tab.
 
 Health scales by `1.085^(level − 1)`, damage by `1.10^(level − 1)`, and producer
 output by `1.08^(level − 1)`. Range and attack-period improvements are bounded.
@@ -50,7 +53,7 @@ Upgrades preserve health percentages rather than granting free healing.
 Regeneration is a separate global Workshop upgrade, initially level zero. Unlocking
 costs 120 wood, 90 stone and 60 gold, scaling by `1.15^current level` and rounded
 up. It caps at 100. Its healing fraction per second is zero while locked, otherwise
-`0.003 + 0.00015 × (level − 1)` of each building's maximum health. Completed,
+`0.003 + (level - 1) × (0.20 - 0.003) / 99` of each building's maximum health, capped at 20% per game second. Completed,
 standing buildings heal continuously, including during combat. Construction and
 destroyed structures do not heal. Completed Regeneration remains active after
 Workshop destruction and applies to future buildings. Manual repair actions and
@@ -84,6 +87,13 @@ are rejected. Dynamic structures still block that path and are attacked first.
 Adjacent exposed buildings, including producers beside resource cores, can also
 be attacked. Enemies do not cross red terrain or pass through standing walls.
 
+Producers, including passive-gold Marketplaces, attract enemies within 1,600 world
+units. Scans are staggered about one to two seconds apart. The nearest reachable
+producer is approached using passable cells along its foundation perimeter;
+resource cores remain solid. Destroying one producer allows acquisition of another.
+Firing defenses can interrupt producer aggro. Existing wall collision remains in
+force, so intervening walls are attacked before reaching the target.
+
 Spatial indexes, five-hertz local crowd separation, bounded neighbor searches,
 and short target caches limit per-step work. Towers prioritize threats near the
 hall. Kill rewards vary by enemy type, are paid once, and show a coin
@@ -111,7 +121,8 @@ victory condition is unchanged.
 A macro ground painting and sharp raster materials are composed into a cached
 4,096 × 2,560 ground target. Forest sprites retain native imported resolution
 above it. Water is separately animated. Entities are culled and sorted by their
-feet; workers, smoke, four-frame unit strips, projectiles and brief collapse FX
+feet with a deterministic tie-break at equal Y positions. Occupied resource rocks
+are drawn directly before their quarry in the same entity group; workers, smoke, four-frame unit strips, projectiles and brief collapse FX
 provide animation. The minimap is rendered from actual terrain. Layout three
 retains its original overview, while layout four retains its v0.8 overview; layout five uses the current overview.
 
@@ -128,11 +139,12 @@ Tower previews show range. Wall strokes ignore blocked cells and preview only
 eligible sections with their actual total price. A neighboring wall supplies its
 lattice to keep parallel rows aligned. Construction panels and previews clear
 without selecting a just-built section, so additional rows are quick to place.
-Selected buildings show health and the global Regeneration rate, with Workshop
-navigation and dismantling. There are no manual repair controls. The Workshop's
-Upgrades and Regen tabs provide instant global purchases; Building opens the
-Workshop's own health/dismantling details. Paused controls cannot activate the
-underlying gameplay buttons.
+Selected buildings show health, current output/attack, next-level effects and
+exact costs. Generic Workshop directions and tutorial toasts are removed. Purchase
+buttons say Upgrade. Local upgrades are paid from the selected building panel.
+The Workshop has Upgrades and Building tabs; Regeneration is one subject beside
+Wall, Arrow tower and Cannon tower. Its own health upgrade is under Building.
+Paused controls cannot activate underlying gameplay buttons.
 
 One finger pans except during wall strokes; two fingers pan and pinch during
 placement. Hall and the minimap navigate quickly. Speed cycles 1×/2×/5×/10×.
@@ -141,26 +153,31 @@ same logical canvas. No Guide or mobile zoom buttons are shown.
 
 ## Saves and reproducibility
 
-Format eight records global building levels, Regeneration, the miniboss interval
-counter, trade cooldowns, terrain revision, structures, enemies, retaliation,
-economy, mission time, random state, camera and zoom. No active research or manual
-repair jobs are stored. Transient A* paths are rebuilt after load. JSON uses full
+Format nine records per-building local levels and global defense levels, Regeneration, the miniboss interval
+counter, terrain revision, structures, enemies, retaliation,
+economy, mission time, random state, camera and zoom. No trade cooldowns, active research or manual repair jobs are stored. Transient A* paths are rebuilt after load. JSON uses full
 precision, validates fields, and is atomically renamed over the prior file.
 Backgrounding pauses and saves; foregrounding requires resume.
 
-Versions 2–7 preserve original terrain, positions and sites (layouts 0–4).
-The highest surviving pre-global level per type becomes its global level. A paid
+Versions 2–8 preserve terrain, positions and sites (layouts 0–5).
+Standing non-defense buildings retain their old purchased levels as individual
+levels; new replacements begin at one. Defenses keep shared type-wide levels. A paid
 version-seven research order completes once on migration without another charge,
 including if its Workshop is gone. Remaining paid local repair finishes once;
-then its job is removed. Regeneration starts locked for legacy saves. The old
+then its job is removed. Versions 2–7 initialize Regeneration locked; version-eight saves retain their
+purchased Regeneration level. The old
 elapsed time seeds the miniboss interval counter so past bosses are not spawned
 retroactively. Version-one fixed-plot files remain untouched and are not loaded.
-A new settlement is required for relocated resource sites.
+No new settlement is required for v0.10. The off-path sites originally added in
+v0.9 remain specific to layout five; legacy maps remain unchanged.
 
 `tools/bake_world.gd` reproducibly stores six terrain/navigation fields. The five
 legacy fields remain byte-for-byte equal to v0.8; its original minimap remains
 available separately. Tests compare all caches to fresh geography and shortest
-paths, exercise movement, all global levels through 100, miniboss boundaries,
+paths, exercise movement, all local/global levels through 100, miniboss boundaries,
 Regeneration, destruction, migration, repeated construction and mobile/native
 Android lifecycle handling. Balance uses paid player orders; explicitly labeled
 visual and boundary fixtures isolate graphics or timing behavior.
+
+Persistent owner decisions and the individual behavior contracts are recorded in
+[gameplay notes](gameplay/NOTES.md) and [building/NPC specifications](gameplay/INDEX.md).

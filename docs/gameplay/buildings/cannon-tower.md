@@ -6,3 +6,6 @@ Type-wide upgrades remain in Workshop Upgrades, instant, through level 100.
 Show actual current/next HP, damage, range and period, with exact price.
 Replacement towers inherit the defense level. Preserve range previews and repeated
 construction. Do not add resistance or per-hit damage caps to enemy types.
+
+Level-one upgrade price: 130 wood / 150 stone / 70 gold. Later upgrade
+prices scale by 1.15^(current level - 1), rounded up per resource.

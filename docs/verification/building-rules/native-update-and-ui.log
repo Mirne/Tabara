@@ -1,0 +1,509 @@
+--------- beginning of main
+D/AndroidRuntime( 3213): Shutting down VM
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/art     ( 1627): Long monitor contention with owner ActivityManager (1641) at void com.android.server.am.ActivityManagerService$MainHandler.handleMessage(android.os.Message)(ActivityManagerService.java:1928) waiters=0 in int com.android.server.am.ActivityManagerService.broadcastIntent(android.app.IApplicationThread, android.content.Intent, java.lang.String, android.content.IIntentReceiver, int, java.lang.String, android.os.Bundle, java.lang.String[], int, android.os.Bundle, boolean, boolean, int) for 209ms
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 36654469 , only wrote 36653040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 36653062 , only wrote 36653040
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+E/SurfaceFlinger( 1298): ro.sf.lcd_density must be defined as a build property
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+D/gralloc_ranchu( 1298): gralloc_alloc: Creating ashmem region of size 3686400
+D/        ( 3225): HostConnection::get() New Host Connection established 0x7f4db962d4e0, tid 3225
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37139066 , only wrote 37139040
+D/AudioFlinger( 1302): mixer(0xe8d03ec0) throttle end: throttle time(3)
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37333667 , only wrote 37333440
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37333472 , only wrote 37333440
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37529335 , only wrote 37529280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37529300 , only wrote 37529280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37530349 , only wrote 37530000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37531917 , only wrote 37531440
+D/AndroidRuntime( 3229): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+D/AndroidRuntime( 3229): CheckJNI is OFF
+W/art     ( 3229): Unexpected CPU variant for X86 using defaults: x86_64
+D/ICU     ( 3229): No timezone override file found: /data/misc/zoneinfo/current/icu/icu_tzdata.dat
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+E/memtrack( 3229): Couldn't load memtrack module (No such file or directory)
+E/android.os.Debug( 3229): failed to load memtrack module: -2
+D/AudioFlinger( 1302): mixer(0xe8d03ec0) throttle end: throttle time(2)
+I/Radio-JNI( 3229): register_android_hardware_Radio DONE
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37639702 , only wrote 37637280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37637306 , only wrote 37637280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37638093 , only wrote 37638000
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+D/AndroidRuntime( 3229): Calling main entry com.android.commands.input.Input
+I/Input   ( 3229): injectMotionEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=1189.0, y[0]=38.0, toolType[0]=TOOL_TYPE_UNKNOWN, buttonState=0, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=999716, downTime=999716, deviceId=0, source=0x1002 }
+I/Input   ( 3229): injectMotionEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=1189.0, y[0]=38.0, toolType[0]=TOOL_TYPE_UNKNOWN, buttonState=0, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=999716, downTime=999716, deviceId=0, source=0x1002 }
+D/AndroidRuntime( 3229): Shutting down VM
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37707418 , only wrote 37707120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 37707298 , only wrote 37707120
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38050192 , only wrote 38049840
+D/AudioFlinger( 1302): mixer(0xe8d03ec0) throttle end: throttle time(4)
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+D/AndroidRuntime( 3244): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+D/AndroidRuntime( 3244): CheckJNI is OFF
+W/art     ( 3244): Unexpected CPU variant for X86 using defaults: x86_64
+D/ICU     ( 3244): No timezone override file found: /data/misc/zoneinfo/current/icu/icu_tzdata.dat
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38352831 , only wrote 38350080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38351564 , only wrote 38350080
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+E/memtrack( 3244): Couldn't load memtrack module (No such file or directory)
+E/android.os.Debug( 3244): failed to load memtrack module: -2
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+I/Radio-JNI( 3244): register_android_hardware_Radio DONE
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+D/AndroidRuntime( 3244): Calling main entry com.android.commands.am.Am
+--------- beginning of system
+I/ActivityManager( 1627): Force stopping com.tabara.lasthearth appid=10062 user=0: from pid 3244
+I/ActivityManager( 1627): Killing 2815:com.tabara.lasthearth/u0a62 (adj 0): stop com.tabara.lasthearth
+D/ActivityManager( 1627): cleanUpApplicationRecord -- 2815
+W/ActivityManager( 1627): Force removing ActivityRecord{3045c0f u0 com.tabara.lasthearth/com.godot.game.GodotAppLauncher t41}: app died, no saved state
+I/WindowManager( 1627): Destroying surface Surface(name=SurfaceView - com.tabara.lasthearth/com.godot.game.GodotAppLauncher) called by com.android.server.wm.WindowStateAnimator.destroySurface:2014 com.android.server.wm.WindowStateAnimator.destroySurfaceLocked:881 com.android.server.wm.WindowState.removeLocked:1449 com.android.server.wm.WindowManagerService.removeWindowInnerLocked:2478 com.android.server.wm.WindowManagerService.removeWindowLocked:2436 com.android.server.wm.WindowManagerService.removeWindowLocked:2305 com.android.server.wm.AppWindowToken.removeAllWindows:530 com.android.server.wm.AppWindowToken.removeAppFromTaskLocked:326
+D/GraphicsStats( 1627): Buffer count: 3
+I/WindowManager( 1627): Destroying surface Surface(name=com.tabara.lasthearth/com.godot.game.GodotAppLauncher) called by com.android.server.wm.WindowStateAnimator.destroySurface:2014 com.android.server.wm.WindowStateAnimator.destroySurfaceLocked:881 com.android.server.wm.WindowState.removeLocked:1449 com.android.server.wm.WindowManagerService.removeWindowInnerLocked:2478 com.android.server.wm.WindowManagerService.removeWindowLocked:2436 com.android.server.wm.WindowManagerService.removeWindowLocked:2305 com.android.server.wm.AppWindowToken.removeAllWindows:530 com.android.server.wm.AppWindowToken.removeAppFromTaskLocked:326
+W/libprocessgroup( 1627): failed to kill pid 2815: No such process
+W/WindowManager( 1627): Failed looking up window
+W/WindowManager( 1627): java.lang.IllegalArgumentException: Requested window android.os.BinderProxy@d6bd9b8 does not exist
+W/WindowManager( 1627): 	at com.android.server.wm.WindowManagerService.windowForClientLocked(WindowManagerService.java:9100)
+W/WindowManager( 1627): 	at com.android.server.wm.WindowManagerService.windowForClientLocked(WindowManagerService.java:9091)
+W/WindowManager( 1627): 	at com.android.server.wm.WindowState$DeathRecipient.binderDied(WindowState.java:1777)
+W/WindowManager( 1627): 	at android.os.BinderProxy.sendDeathNotice(Binder.java:688)
+I/WindowManager( 1627): WIN DEATH: null
+D/AndroidRuntime( 3244): Shutting down VM
+W/art     ( 1627): Long monitor contention with owner Binder:1627_C (2225) at void com.android.server.am.ActivityManagerService.forceStopPackage(java.lang.String, int)(ActivityManagerService.java:5696) waiters=0 in void com.android.server.am.ActivityManagerService.dispatchUidsChanged() for 530ms
+D/CarrierSvcBindHelper( 1882): No carrier app for: 0
+D/EGL_emulation( 2118): eglMakeCurrent: 0x723c71c6fc60: ver 3 1 (tinfo 0x723c71c86a40)
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38493465 , only wrote 38491200
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38491218 , only wrote 38491200
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38493616 , only wrote 38491920
+D/ConnectivityService( 1627): NetworkAgentInfo [MOBILE (LTE) - 102] validation failed
+I/Choreographer( 2118): Skipped 43 frames!  The application may be doing too much work on its main thread.
+W/OpenGLRenderer( 2118): Incorrectly called buildLayer on View: ShortcutAndWidgetContainer, destroying layer...
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38622375 , only wrote 38557440
+D/AndroidRuntime( 3262): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+D/AndroidRuntime( 3262): CheckJNI is OFF
+W/art     ( 3262): Unexpected CPU variant for X86 using defaults: x86_64
+D/ICU     ( 3262): No timezone override file found: /data/misc/zoneinfo/current/icu/icu_tzdata.dat
+E/memtrack( 3262): Couldn't load memtrack module (No such file or directory)
+E/android.os.Debug( 3262): failed to load memtrack module: -2
+I/Radio-JNI( 3262): register_android_hardware_Radio DONE
+D/AndroidRuntime( 3262): Calling main entry com.android.commands.am.Am
+I/ActivityManager( 1627): START u0 {flg=0x10000000 cmp=com.tabara.lasthearth/com.godot.game.GodotAppLauncher} from uid 2000 on display 0
+W/ActivityManager( 1627): Slow operation: 166ms so far, now at startProcess: returned from zygote!
+W/ActivityManager( 1627): Slow operation: 166ms so far, now at startProcess: done updating battery stats
+W/ActivityManager( 1627): Slow operation: 167ms so far, now at startProcess: building log message
+I/ActivityManager( 1627): Start proc 3272:com.tabara.lasthearth/u0a62 for activity com.tabara.lasthearth/com.godot.game.GodotAppLauncher
+W/ActivityManager( 1627): Slow operation: 167ms so far, now at startProcess: starting to update pids map
+W/ActivityManager( 1627): Slow operation: 167ms so far, now at startProcess: done updating pids map
+W/ActivityManager( 1627): Slow operation: 205ms so far, now at startProcess: done starting proc!
+I/art     ( 3272): Late-enabling -Xcheck:jni
+W/art     ( 3272): Unexpected CPU variant for X86 using defaults: x86_64
+D/gralloc_ranchu( 1298): gralloc_alloc: Creating ashmem region of size 3686400
+D/EGL_emulation( 2118): eglMakeCurrent: 0x723c71c6fc60: ver 3 1 (tinfo 0x723c71c86a40)
+D/GodotActivity( 3272): Project command line parameters: [--xr_mode_regular, --xr-mode, off, --fullscreen, --background_color, #000000]
+D/GodotActivity( 3272): Launch intent Intent { flg=0x10000000 cmp=com.tabara.lasthearth/com.godot.game.GodotAppLauncher } with parameters []
+V/GodotActivity( 3272): Creating new Godot fragment instance.
+V/Godot   ( 3272): InitEngine with params: [--xr_mode_regular, --xr-mode, off, --fullscreen, --background_color, #000000]
+V/Godot   ( 3272): Initializing Godot plugin registry
+I/GodotPluginRegistry( 3272): Registering runtime plugin AndroidRuntime
+V/Godot   ( 3272): Godot native layer initialization completed: true
+V/Godot   ( 3272): Godot native layer setup completed
+V/Godot   ( 3272): OnInitRenderView: GodotFragment{68c8d83} (a34515ad-3c4c-402b-a756-37d7ee5a0622 id=0x7f070033)
+D/Godot   ( 3272): Render view should be transparent: false
+D/Godot   ( 3272): usesVulkan(): false
+D/Godot   ( 3272): 			renderingDevice: opengl3 (ProjectSettings)
+D/Godot   ( 3272): 			renderer: gl_compatibility (ProjectSettings)
+V/Godot   ( 3272): OnStart: GodotFragment{68c8d83} (a34515ad-3c4c-402b-a756-37d7ee5a0622 id=0x7f070033)
+V/Godot   ( 3272): OnResume: GodotFragment{68c8d83} (a34515ad-3c4c-402b-a756-37d7ee5a0622 id=0x7f070033)
+E/SurfaceFlinger( 1298): ro.sf.lcd_density must be defined as a build property
+D/        ( 3272): HostConnection::get() New Host Connection established 0x723c6c563d20, tid 3272
+D/gralloc_ranchu( 1298): gralloc_alloc: Creating ashmem region of size 3686400
+D/        ( 3272): HostConnection::get() New Host Connection established 0x723c820128a0, tid 3291
+I/OpenGLRenderer( 3272): Initialized EGL, version 1.4
+D/OpenGLRenderer( 3272): Swap behavior 1
+W/OpenGLRenderer( 3272): Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+D/OpenGLRenderer( 3272): Swap behavior 0
+D/EGL_emulation( 3272): eglCreateContext: 0x723c82049140: maj 3 min 1 rcv 4
+D/EGL_emulation( 3272): eglMakeCurrent: 0x723c82049140: ver 3 1 (tinfo 0x723c8200c680)
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x000082da
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008cdf
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008824
+D/        ( 3272): HostConnection::get() New Host Connection established 0x723c6c56e2c0, tid 3290
+W/RegularContextFactory( 3272): creating OpenGL ES 3.0 context :
+D/EGL_emulation( 3272): eglCreateContext: 0x723c6c585cc0: maj 3 min 1 rcv 4
+I/Choreographer( 3272): Skipped 36 frames!  The application may be doing too much work on its main thread.
+D/EGL_emulation( 3272): eglMakeCurrent: 0x723c6c585cc0: ver 3 1 (tinfo 0x723c6c546c80)
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x000082da
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008cdf
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008824
+I/godot   ( 3272): Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+D/EGL_emulation( 3272): eglMakeCurrent: 0x723c82049140: ver 3 1 (tinfo 0x723c8200c680)
+I/ActivityManager( 1627): Displayed com.tabara.lasthearth/com.godot.game.GodotAppLauncher: +4s805ms
+D/AndroidRuntime( 3262): Shutting down VM
+I/WindowManager( 1627): Destroying surface Surface(name=Starting com.tabara.lasthearth) called by com.android.server.wm.WindowStateAnimator.destroySurface:2014 com.android.server.wm.WindowStateAnimator.destroySurfaceLocked:881 com.android.server.wm.WindowState.destroyOrSaveSurface:2073 com.android.server.wm.AppWindowToken.destroySurfaces:363 com.android.server.wm.WindowStateAnimator.finishExit:565 com.android.server.wm.WindowStateAnimator.stepAnimationLocked:491 com.android.server.wm.WindowAnimator.updateWindowsLocked:303 com.android.server.wm.WindowAnimator.animateLocked:704
+I/WindowManager( 1627): Destroying surface Surface(name=com.android.launcher3/com.android.launcher3.Launcher) called by com.android.server.wm.WindowStateAnimator.destroySurface:2014 com.android.server.wm.WindowStateAnimator.destroySurfaceLocked:881 com.android.server.wm.WindowState.destroyOrSaveSurface:2073 com.android.server.wm.AppWindowToken.destroySurfaces:363 com.android.server.wm.AppWindowToken.notifyAppStopped:389 com.android.server.wm.WindowManagerService.notifyAppStopped:4456 com.android.server.am.ActivityStack.activityStoppedLocked:1252 com.android.server.am.ActivityManagerService.activityStopped:6903
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008a30
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00009122
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00009125
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008073
+E/godot   ( 3272): WARNING: Failed to load cached shader, recompiling.
+E/godot   ( 3272):    at: _load_from_cache (drivers/gles3/shader_gles3.cpp:612)
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+I/godot   ( 3272): OpenGL API OpenGL ES 3.1 (OpenGL ES 3.1.0 (ANGLE 2.1.17841 git hash: 5fa2e61da947)) - Compatibility - Using Device: Google (Google Inc. (Google)) - Android Emulator OpenGL ES Translator (ANGLE (Google, Vulkan 1.2.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0))
+I/libOpenSLES( 3272): Emulating old channel mask behavior (ignoring positional mask 0x3, using default mask 0x3 based on channel count of 2)
+W/AudioTrack( 3272): AUDIO_OUTPUT_FLAG_FAST denied by client; transfer 1, track 44100 Hz, output 48000 Hz
+D/AudioTrack( 3272): Client defaulted notificationFrames to 708 for frameCount 2124
+I/godot   ( 3272):
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38557713 , only wrote 38557440
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38657165 , only wrote 38656080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38656774 , only wrote 38656080
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38656982 , only wrote 38656800
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38729686 , only wrote 38729520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38729538 , only wrote 38729520
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38730330 , only wrote 38730240
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38842563 , only wrote 38842560
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38842576 , only wrote 38842560
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38843356 , only wrote 38843280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38888884 , only wrote 38888640
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 38894402 , only wrote 38894400
+I/art     ( 3272): Background sticky concurrent mark sweep GC freed 38377(3MB) AllocSpace objects, 1(48KB) LOS objects, 63% free, 2MB/6MB, paused 2.453ms total 189.975ms
+I/art     ( 3272): Background partial concurrent mark sweep GC freed 27223(3MB) AllocSpace objects, 4(344KB) LOS objects, 39% free, 2MB/4MB, paused 641us total 136.912ms
+I/art     ( 3272): Background sticky concurrent mark sweep GC freed 8401(1180KB) AllocSpace objects, 0(0B) LOS objects, 23% free, 3MB/4MB, paused 1.113ms total 124.386ms
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39027836 , only wrote 39027600
+E/SurfaceFlinger( 1298): ro.sf.lcd_density must be defined as a build property
+D/gralloc_ranchu( 1298): gralloc_alloc: Creating ashmem region of size 3686400
+D/        ( 3301): HostConnection::get() New Host Connection established 0x7f4a8302d4e0, tid 3301
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39061753 , only wrote 39060720
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39060750 , only wrote 39060720
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39190205 , only wrote 39189600
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39189625 , only wrote 39189600
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39299510 , only wrote 39299040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39299057 , only wrote 39299040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39299975 , only wrote 39299760
+D/AudioFlinger( 1302): mixer(0xe8d03ec0) throttle end: throttle time(3)
+E/SurfaceFlinger( 1298): ro.sf.lcd_density must be defined as a build property
+D/gralloc_ranchu( 1298): gralloc_alloc: Creating ashmem region of size 3686400
+D/        ( 3306): HostConnection::get() New Host Connection established 0x7e30bd62d4e0, tid 3306
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39465908 , only wrote 39461040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39461066 , only wrote 39461040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39461912 , only wrote 39461760
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+E/SurfaceFlinger( 1298): ro.sf.lcd_density must be defined as a build property
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39677776 , only wrote 39677760
+D/gralloc_ranchu( 1298): gralloc_alloc: Creating ashmem region of size 3686400
+D/        ( 3311): HostConnection::get() New Host Connection established 0x7223ef22d4e0, tid 3311
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 39792939 , only wrote 39792240
+V/Godot   ( 3272): OnGodotSetupCompleted
+V/Godot   ( 3272): OnGodotMainLoopStarted
+E/SurfaceFlinger( 1298): ro.sf.lcd_density must be defined as a build property
+D/gralloc_ranchu( 1298): gralloc_alloc: Creating ashmem region of size 3686400
+D/        ( 3316): HostConnection::get() New Host Connection established 0x77d869c2d4e0, tid 3316
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40171721 , only wrote 40171680
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40171704 , only wrote 40171680
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40177326 , only wrote 40172400
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40176063 , only wrote 40176000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40176018 , only wrote 40176000
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40176987 , only wrote 40176720
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40192138 , only wrote 40180320
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40180648 , only wrote 40180320
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40181067 , only wrote 40181040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40181054 , only wrote 40181040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40183729 , only wrote 40181760
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40186884 , only wrote 40186800
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40191232 , only wrote 40191120
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+D/AudioFlinger( 1302): mixer(0xe8d03ec0) throttle end: throttle time(2)
+E/SurfaceFlinger( 1298): ro.sf.lcd_density must be defined as a build property
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+D/gralloc_ranchu( 1298): gralloc_alloc: Creating ashmem region of size 3686400
+D/        ( 3321): HostConnection::get() New Host Connection established 0x7e25f842d4e0, tid 3321
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40534768 , only wrote 40534560
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40641124 , only wrote 40640400
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40720082 , only wrote 40719600
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40721054 , only wrote 40721040
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40789198 , only wrote 40785120
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 40785138 , only wrote 40785120
+E/SurfaceFlinger( 1298): ro.sf.lcd_density must be defined as a build property
+D/gralloc_ranchu( 1298): gralloc_alloc: Creating ashmem region of size 3686400
+D/        ( 3327): HostConnection::get() New Host Connection established 0x7a91ac62d4e0, tid 3327
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 41040813 , only wrote 41040720
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 41147402 , only wrote 41147280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 41147302 , only wrote 41147280
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 41148219 , only wrote 41148000
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 41432382 , only wrote 41431680
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 41431703 , only wrote 41431680
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 41432402 , only wrote 41432400
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 41503004 , only wrote 41502240
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+D/AndroidRuntime( 3330): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+D/AndroidRuntime( 3330): CheckJNI is OFF
+W/art     ( 3330): Unexpected CPU variant for X86 using defaults: x86_64
+D/ICU     ( 3330): No timezone override file found: /data/misc/zoneinfo/current/icu/icu_tzdata.dat
+E/memtrack( 3330): Couldn't load memtrack module (No such file or directory)
+E/android.os.Debug( 3330): failed to load memtrack module: -2
+I/Radio-JNI( 3330): register_android_hardware_Radio DONE
+D/AndroidRuntime( 3330): Calling main entry com.android.commands.input.Input
+I/Input   ( 3330): injectMotionEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=231.0, y[0]=411.0, toolType[0]=TOOL_TYPE_UNKNOWN, buttonState=0, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=1098485, downTime=1098485, deviceId=0, source=0x1002 }
+I/Input   ( 3330): injectMotionEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=231.0, y[0]=411.0, toolType[0]=TOOL_TYPE_UNKNOWN, buttonState=0, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=1098485, downTime=1098485, deviceId=0, source=0x1002 }
+D/AndroidRuntime( 3330): Shutting down VM
+I/art     ( 3272): Background partial concurrent mark sweep GC freed 5561(573KB) AllocSpace objects, 3(1540KB) LOS objects, 40% free, 2MB/3MB, paused 13.941ms total 251.785ms
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+E/eglCodecCommon( 3272): glUtilsParamSize: unknow param 0x00008741
+D/AudioFlinger( 1302): mixer(0xe8d03ec0) throttle end: throttle time(2)
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 42126580 , only wrote 42126480
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+D/AudioFlinger( 1302): mixer(0xe8d03ec0) throttle end: throttle time(1)
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 42691035 , only wrote 42690960
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+D/AndroidRuntime( 3340): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+D/AndroidRuntime( 3340): CheckJNI is OFF
+W/art     ( 3340): Unexpected CPU variant for X86 using defaults: x86_64
+D/ICU     ( 3340): No timezone override file found: /data/misc/zoneinfo/current/icu/icu_tzdata.dat
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 42835490 , only wrote 42834240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 42834263 , only wrote 42834240
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 42835011 , only wrote 42834960
+E/memtrack( 3340): Couldn't load memtrack module (No such file or directory)
+E/android.os.Debug( 3340): failed to load memtrack module: -2
+I/Radio-JNI( 3340): register_android_hardware_Radio DONE
+D/AndroidRuntime( 3340): Calling main entry com.android.commands.input.Input
+I/Input   ( 3340): injectMotionEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=1189.0, y[0]=38.0, toolType[0]=TOOL_TYPE_UNKNOWN, buttonState=0, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=1118945, downTime=1118945, deviceId=0, source=0x1002 }
+I/Input   ( 3340): injectMotionEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=1189.0, y[0]=38.0, toolType[0]=TOOL_TYPE_UNKNOWN, buttonState=0, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=1118945, downTime=1118945, deviceId=0, source=0x1002 }
+D/AndroidRuntime( 3340): Shutting down VM
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 43205204 , only wrote 43205040
+W/audio_hw_generic( 1302): Not supplying enough data to HAL, expected position 43205068 , only wrote 43205040
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames
+W/audio_hw_generic( 1302): Hardware backing HAL too slow, could only write 0 of 720 frames

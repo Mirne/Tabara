@@ -1,0 +1,231 @@
+{
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "label": "Android boot and package service are ready",
+      "passed": true
+    },
+    {
+      "label": "Frontier APK installs",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native producer preview renders green buildable tiles",
+      "passed": true
+    },
+    {
+      "label": "Native preview never constructs before confirmation",
+      "passed": true
+    },
+    {
+      "label": "Native placement constructs two producers and two towers without reopening the tower catalogue",
+      "passed": true
+    },
+    {
+      "label": "Native wall drag previews without constructing",
+      "passed": true
+    },
+    {
+      "label": "Native app writes global research and the new eight-site terrain format",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs wood",
+      "passed": true
+    },
+    {
+      "label": "Native save retains wood world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs stone",
+      "passed": true
+    },
+    {
+      "label": "Native save retains stone world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs arrow",
+      "passed": true
+    },
+    {
+      "label": "Native save retains arrow world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs arrow",
+      "passed": true
+    },
+    {
+      "label": "Native save retains arrow world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4760, 2440)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (5480, 3240)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4480, 2760)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4640, 2760)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4160, 2600)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4160, 2680)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4160, 2760)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4160, 2840)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4160, 2920)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates joined piece at (4160, 3000)",
+      "passed": true
+    },
+    {
+      "label": "Native mission contains only eight producer sites",
+      "passed": true
+    },
+    {
+      "label": "Native mission advances",
+      "passed": true
+    },
+    {
+      "label": "Native pause freezes the saved clock beyond autosave interval",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back resumes the clock before pausing again",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back then keeps combat paused",
+      "passed": true
+    },
+    {
+      "label": "Back handling retains the native game activity",
+      "passed": true
+    },
+    {
+      "label": "Native producer upgrade is local and needs no Workshop",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs an operational Workshop",
+      "passed": true
+    },
+    {
+      "label": "Native Workshop upgrades all surviving towers instantly without a queue",
+      "passed": true
+    },
+    {
+      "label": "Native Workshop purchases global automatic Regeneration",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Cold restart retains elapsed time",
+      "passed": true
+    },
+    {
+      "label": "Cold restart retains all confirmed structures and coordinates",
+      "passed": true
+    },
+    {
+      "label": "Cold restart retains instant upgrades and automatic Regeneration",
+      "passed": true
+    },
+    {
+      "label": "Native one-finger drag moves the camera",
+      "passed": true
+    },
+    {
+      "label": "Native drag creates no accidental building",
+      "passed": true
+    },
+    {
+      "label": "Backgrounding persists the current settlement",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back resumes the clock before pausing again",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back then keeps combat paused",
+      "passed": true
+    },
+    {
+      "label": "Back handling retains the native game activity",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native five-minute boundary spawns exactly one miniboss at the western entrance",
+      "passed": true
+    },
+    {
+      "label": "Native miniboss has its own stronger stats and starts on the approach",
+      "passed": true
+    },
+    {
+      "label": "Native Regeneration heals the damaged Hall without a repair tap",
+      "passed": true
+    },
+    {
+      "label": "Captured native diagnostics contain no script, shader, or fatal error",
+      "passed": true
+    }
+  ],
+  "actual_seconds": 505.571783052,
+  "apk_sha256": "4802c5305c2ac497ca56a80271decf8e32e367ae201da1994720c3e13d3d161b",
+  "mode": "full-native",
+  "prior_segment": null,
+  "fixtures": "Restore/lifecycle checks clear incoming attackers after paid construction. The miniboss check advances a saved clock to 299.95 seconds and damages the Hall. Neither fixture grants resources; the miniboss check restores the original native settlement"
+}

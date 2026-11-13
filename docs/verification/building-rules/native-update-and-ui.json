@@ -1,0 +1,119 @@
+{
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "label": "Published v0.9 APK installs without clearing its settlement",
+      "passed": true
+    },
+    {
+      "label": "Existing v0.9 settlement is present on the test device",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Actual old app loads and writes the global-level fixture",
+      "passed": true
+    },
+    {
+      "label": "Signed v0.10 APK updates v0.9 with the existing certificate",
+      "passed": true
+    },
+    {
+      "label": "Android installation retains the complete old save file",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "New app migrates the save format and preserves its map",
+      "passed": true
+    },
+    {
+      "label": "Migration preserves every foundation and purchased building level",
+      "passed": true
+    },
+    {
+      "label": "Migration preserves defense levels and purchased Regeneration",
+      "passed": true
+    },
+    {
+      "label": "Migration preserves the original economy",
+      "passed": true
+    },
+    {
+      "label": "Migration preserves mission progress and kills",
+      "passed": true
+    },
+    {
+      "label": "New save has no trade cooldown or research timer",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native producer upgrade affects one building and a new producer starts at one",
+      "passed": true
+    },
+    {
+      "label": "Unselected quarry keeps its old purchased level",
+      "passed": true
+    },
+    {
+      "label": "Native input builds a new Marketplace at level one",
+      "passed": true
+    },
+    {
+      "label": "Native Marketplace panel upgrades passive gold income locally",
+      "passed": true
+    },
+    {
+      "label": "Native Marketplace credits upgraded passive gold without trade input",
+      "passed": true
+    },
+    {
+      "label": "Native Workshop purchases Regeneration from its shared Upgrades list",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Cold restart retains mixed local levels, Marketplace and Regeneration",
+      "passed": true
+    },
+    {
+      "label": "Native diagnostics have no script, shader or fatal error",
+      "passed": true
+    }
+  ],
+  "actual_seconds": 1058.4039606059996,
+  "apk_sha256": "2895f181a5a705c4c053c4db769418e110b6457002a9adb032b3b1a0f4ce5844",
+  "previous_apk_sha256": "cd4781dc551b53dcd356fc9ec43cc77496c37670676e8dcc16d6d0921a34e66b",
+  "mode": "actual-v09-update-and-native-ui",
+  "fixtures": "Old global levels and a cooldown are set in a v0.9 save, then written by the actual old app. Migration retains its economy. Subsequent native UI checks explicitly grant 1000 of each resource and clear attackers. The migrated pre-grant settlement is restored afterward."
+}

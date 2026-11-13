@@ -8,3 +8,6 @@ Upgrade production and HP; show current -> next values and the exact local cost.
 Destroyed producers disappear; their site becomes available for a new level-one
 producer. Standing producers keep their purchased levels across updates.
 Exposed outside producers must all attract approaching enemies, not just one site.
+
+Level-one upgrade price: 50 wood / 25 stone / 15 gold. Later upgrade
+prices scale by 1.15^(current level - 1), rounded up per resource.

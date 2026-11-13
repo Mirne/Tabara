@@ -7,6 +7,7 @@ previous releases and chat messages.
 
 | Release | Source | Verification |
 | --- | --- | --- |
+| 0.10 building rules | [v0.10.0](https://github.com/Mirne/Tabara/tree/v0.10.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.10.0/docs/QA.md) |
 | 0.9 open approach | [v0.9.0](https://github.com/Mirne/Tabara/tree/v0.9.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.9.0/docs/QA.md) |
 | 0.8 stronghold | [v0.8.0](https://github.com/Mirne/Tabara/tree/v0.8.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.8.0/docs/QA.md) |
 | 0.7 woodland basin | [v0.7.0](https://github.com/Mirne/Tabara/tree/v0.7.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.7.0/docs/QA.md) |

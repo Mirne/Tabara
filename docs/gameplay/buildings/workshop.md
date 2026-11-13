@@ -12,3 +12,6 @@ growth than v0.9. It heals completed standing buildings, never resurrects them.
 Completed defense levels and Regeneration persist if Workshop is destroyed.
 Workshop health upgrades are local under Building; Hall and Marketplace upgrades
 are on their respective panels. Only defense levels and Regeneration are global.
+
+Level-one upgrade price: 70 wood / 60 stone / 40 gold. Later upgrade
+prices scale by 1.15^(current level - 1), rounded up per resource.

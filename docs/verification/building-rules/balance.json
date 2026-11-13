@@ -1,0 +1,88 @@
+{
+  "actual_seconds": 144.216,
+  "campaigns": [
+    {
+      "buildings": 11,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 2169,
+      "paid_orders": 199,
+      "plan_next": 24,
+      "research": {
+        "arrow": 4,
+        "cannon": 3,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 3,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 5461.90499999923,
+        "stone": 1221.04649999851,
+        "wood": 15.6336000000752
+      },
+      "seconds": 987.04999999965,
+      "seed": 1,
+      "victory": true,
+      "wave": 33
+    },
+    {
+      "buildings": 8,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 2166,
+      "paid_orders": 201,
+      "plan_next": 24,
+      "research": {
+        "arrow": 4,
+        "cannon": 3,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 3,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 5570.7749999991,
+        "stone": 1119.11749999856,
+        "wood": 16.9288000000754
+      },
+      "seconds": 984.749999999652,
+      "seed": 2,
+      "victory": true,
+      "wave": 33
+    },
+    {
+      "buildings": 4,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 2145,
+      "paid_orders": 190,
+      "plan_next": 24,
+      "research": {
+        "arrow": 4,
+        "cannon": 3,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 3,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 5260.88499999935,
+        "stone": 1619.76749999834,
+        "wood": 12.0444000000699
+      },
+      "seconds": 987.849999999649,
+      "seed": 3,
+      "victory": true,
+      "wave": 33
+    }
+  ],
+  "total": 3,
+  "wins": 3
+}
