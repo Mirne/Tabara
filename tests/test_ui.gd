@@ -83,6 +83,7 @@ func run()->void:
  check(big,"Construction cards keep large mobile targets")
  await capture("catalogue")
  await action("build:wood")
+ check(game.toast=="","Selecting a construction tool adds no tutorial toast")
  check(not visible_action("build:stone") and visible_action("confirm_build"),"Selecting a tool replaces the catalogue")
  var stock:Dictionary=game.sim.resources.duplicate()
  await tap(game.world_to_screen(Vector2(4760,2440)))
@@ -136,12 +137,15 @@ func run()->void:
  await tap(game.world_to_screen(Vector2(5200,2800)))
  check(game.selected==workshop_index and visible_action("research:arrow"),"Tapping the Workshop opens global upgrades")
  await action("research:arrow")
+ for control in game.buttons:
+  if control.action=="start_research": check(control.caption=="Upgrade","Workshop purchase caption is simply Upgrade")
  await action("start_research")
  check(game.sim.research_levels.arrow==2 and game.sim.buildings[3].level==2,"Workshop upgrade applies immediately to every tower")
  await action("start_research")
  check(game.sim.research_levels.arrow==3,"A second global upgrade has no timer or queue")
  await capture("workshop-instant")
- await action("workshop_regeneration")
+ await action("research:regeneration")
+ check(not visible_action("workshop_regeneration") and not visible_action("research:wood") and not visible_action("research:stone"),"Workshop only lists defenses and Regeneration, with no Regen tab")
  game.sim.buildings[3].age=10
  game.sim.buildings[3].hp=100
  await action("upgrade_regeneration")
@@ -155,29 +159,64 @@ func run()->void:
  await capture("regeneration")
  await action("workshop_building")
  check(not visible_action("repair") and visible_action("clear"),"Workshop maintenance offers dismantling and automatic regeneration status")
- await action("workshop")
- check(visible_action("research:stone"),"Workshop navigation returns to upgrades")
- # The real purchase quote and shared cooldown remain consistent.
- check(game.sim.build_at(Vector2(5500,2920),"market")=="","Trade fixture builds a paid marketplace")
+ await action("workshop_research")
+ check(visible_action("research:regeneration"),"Workshop navigation returns to upgrades")
+ # Marketplace shows concrete income upgrades and no trade actions.
+ check(game.sim.build_at(Vector2(5500,2920),"market")=="","Fixture builds a paid marketplace")
  var market_index:int=game.sim.buildings.size()-1
  game.sim.buildings[market_index].age=10
  game.selected=market_index
- game.sim.resources.gold=89
  await frame()
- await action("trade")
+ check(visible_action("upgrade_local") and not visible_action("trade"),"Marketplace offers income upgrades and no trade screen")
  for control in game.buttons:
-  if control.action in ["buy_wood","buy_stone"]:check(not control.enabled,"Purchase is disabled below 90 gold")
- game.sim.resources.gold=90
- var timber:float=game.sim.resources.wood
- await action("buy_wood")
- check(game.sim.resources.gold==0 and game.sim.resources.wood==timber+60,"Purchase charges 90 gold for 60 timber")
- await frame()
- for control in game.buttons:
-  if control.action.begins_with("trade_"):check(not control.enabled,"Trade buttons respect the shared cooldown")
- await action("back")
+  if control.action=="upgrade_local": check(control.caption=="Upgrade","Local purchase caption is simply Upgrade")
+ var previous_income:float=game.sim.income_rates().gold
+ await action("upgrade_local")
+ check(game.sim.income_rates().gold>previous_income,"Marketplace upgrade increases displayed passive gold")
+ await capture("marketplace")
  game.sim.clear_at(market_index)
  game.selected=-1
  game.sim.resources={"wood":100000.0,"stone":100000.0,"gold":100000.0}
+ # Producer panels expose local upgrades and concrete next-level effects.
+ game.selected=1
+ await frame()
+ check(visible_action("upgrade_local") and not visible_action("workshop"),"Woodcutter upgrades are local")
+ var producer_level:int=game.sim.buildings[1].level
+ await action("upgrade_local")
+ check(game.sim.buildings[1].level==producer_level+1,"Producer panel upgrades only that building")
+ await capture("local-producer")
+ # Equal-depth entity additions cannot move a quarry's rocks in front of it.
+ game.selected=2
+ game.sim.enemies.clear()
+ game.sim.events.clear()
+ game.accumulator=0
+ game.sim.buildings[2].age=10
+ var old_camera:Vector2=game.camera_center
+ var old_motion:bool=game.reduced_motion
+ game.reduced_motion=true
+ game.set_process(false)
+ var quarry:Vector2=game.sim.buildings[2].pos
+ game.camera_center=quarry-Vector2(100,100)
+ game.apply_camera()
+ game.queue_redraw()
+ game.world.queue_redraw()
+ await frame()
+ var area:=Rect2i(game.world_to_screen(quarry)-Vector2(110,180),Vector2(220,240))
+ var baseline:PackedByteArray=root.get_texture().get_image().get_region(area).get_data()
+ var old_count:int=game.sim.buildings.size()
+ for i in 16:
+  var extra:Dictionary=game.sim.make_building("arrow",quarry-Vector2(500,0))
+  extra.age=10
+  game.sim.buildings.append(extra)
+  game.world.queue_redraw()
+  await frame()
+  check(root.get_texture().get_image().get_region(area).get_data()==baseline,"Quarry/rocks keep identical layering after equal-depth entity "+str(i+1))
+ await capture("quarry-layering")
+ game.sim.buildings.resize(old_count)
+ game.reduced_motion=old_motion
+ game.set_process(true)
+ game.selected=-1
+ game.camera_center=old_camera
  game.camera_center=Vector2(7080,2880)
  game.apply_camera()
  await action("build:wall")

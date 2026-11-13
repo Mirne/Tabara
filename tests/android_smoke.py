@@ -20,7 +20,7 @@ from PIL import Image, ImageChops, ImageStat
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "com.tabara.lasthearth"
-APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.9.apk"))
+APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.10.apk"))
 OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android-frontier")).name
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
@@ -262,7 +262,7 @@ def native_checks(back_only=False):
             tap(1338, 43)  # Explicit known pause.
             screen("04-built-and-paused")
             data = wait_saved_structure(10, "wall")
-            check(data["version"] == 8 and data["terrain_revision"] == 5, "Native app writes global research and the new eight-site terrain format")
+            check(data["version"] == 9 and data["terrain_revision"] == 5, "Native app writes global research and the new eight-site terrain format")
             for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow"), (4, "arrow")]:
                 check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
                 check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")
@@ -277,11 +277,24 @@ def native_checks(back_only=False):
             time.sleep(12)
             check(save()["elapsed"] == before, "Native pause freezes the saved clock beyond autosave interval")
             back_sequence()
+            if not back_only:
+                wait_supplies(save(), {"wood": 50, "stone": 25, "gold": 15})
+                adb("shell", "input", "keyevent", "4")
+                tap(*world_point(4760, 2440))
+                tap(1273, 584)
+                screen("04a-local-producer")
+                tap(1273, 763)
+                tap(1338, 43)
+                local_save = save()
+                wood = next(b for b in local_save["buildings"] if b and b["kind"] == "wood")
+                stone = next(b for b in local_save["buildings"] if b and b["kind"] == "stone")
+                check(wood["level"] == 2 and stone["level"] == 1,
+                      "Native producer upgrade is local and needs no Workshop")
         else:
             tap(*world_point(5200, 2800))
             tap(1338, 43)
             checkpoint = save()
-            check(checkpoint["version"] == 8 and checkpoint["terrain_revision"] == 5,
+            check(checkpoint["version"] == 9 and checkpoint["terrain_revision"] == 5,
                   "Resumed checkpoint retains the current save format and map")
             check(checkpoint["research_levels"]["arrow"] == 1 and checkpoint["regeneration_level"] == 0,
                   "Resumed checkpoint starts before the remaining paid upgrade tests")
@@ -314,7 +327,7 @@ def native_checks(back_only=False):
             workshop_save = wait_supplies(workshop_save, {"wood": 110, "stone": 70, "gold": 40})
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
-            tap(1352, 330)  # Arrow research subject.
+            tap(1194, 250)  # Arrow upgrade subject.
             tap(1273, 678)
             tap(1338, 43)
             research_save = save()
@@ -325,7 +338,7 @@ def native_checks(back_only=False):
             wait_supplies(save(), {"wood": 120, "stone": 90, "gold": 60})
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
-            tap(1273, 173)
+            tap(1352, 330)  # Regeneration is in the same Upgrades list.
             tap(1273, 678)
             tap(1338, 43)
             check(save()["regeneration_level"] == 1, "Native Workshop purchases global automatic Regeneration")

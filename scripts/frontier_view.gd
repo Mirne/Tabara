@@ -142,6 +142,8 @@ func _draw()->void:
  for i in sim.resource_nodes.size():
   var d:Dictionary=sim.resource_nodes[i]
   if sim.terrain_revision>=3 and d.kind=="wood": continue
+  # An occupied deposit is drawn with its producer, below the building sprite.
+  if sim.deposit_owner(i)>=0: continue
   if visible_world.has_point(d.pos): entities.append({"y":d.pos.y,"deposit":i})
  for i in sim.buildings.size():
   var b=sim.buildings[i]
@@ -149,7 +151,8 @@ func _draw()->void:
  for e in sim.enemies:
   var p:Vector2=sim.enemy_position(e)
   if visible_world.has_point(p): entities.append({"y":p.y,"enemy":e,"pos":p})
- entities.sort_custom(func(a,b):return a.y<b.y)
+ for i in entities.size(): entities[i].order=i
+ entities.sort_custom(func(a,b):return a.y<b.y if a.y!=b.y else a.order<b.order)
  drawn_entities=entities.size()
  for b in sim.buildings:
   if b==null or not visible_world.has_point(b.pos): continue
@@ -181,7 +184,11 @@ func _draw()->void:
   elif entity.has("prop"):
    var item:Dictionary=entity.prop
    Art.prop(self,item.art,item.pos,item.scale,item.flip)
-  elif entity.has("building"): draw_building(entity.building)
+  elif entity.has("building"):
+   var b:Dictionary=sim.buildings[entity.building]
+   var deposit:int=sim.producer_deposit(b)
+   if deposit>=0 and (b.kind=="stone" or sim.terrain_revision<3): draw_deposit(deposit)
+   draw_building(entity.building)
   elif entity.has("deposit"): draw_deposit(entity.deposit)
   else: draw_enemy(entity.enemy,entity.pos)
  draw_effects()

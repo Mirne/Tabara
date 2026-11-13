@@ -105,9 +105,9 @@ func run()->void:
  check(s.start_research("arrow")=="" and s.resources.wood==wood-cost[0],"A global upgrade spends its displayed price once")
  check(first.level==2 and second.level==2 and s.research_levels.arrow==2,"All existing towers upgrade immediately without a timer")
  check(is_equal_approx(first.hp/s.stat(first,"hp"),0.5),"Instant upgrades preserve damage instead of granting free healing")
- check(s.start_research("stone")=="" and s.research_levels.stone==2,"Another type can upgrade immediately without a queue")
+ check(s.start_research("wall")=="" and s.research_levels.wall==2,"Another type can upgrade immediately without a queue")
  check(s.build_at(Vector2(6500,2800),"arrow")=="" and s.buildings[-1].level==2,"Future towers inherit completed global upgrades")
- check(s.upgrade_at(2)!="","Individual upgrade actions remain removed")
+ check(s.upgrade_at(2)!="","Defense upgrades stay in the Workshop")
  var saved=roundtrip(s)
  check(saved!=null and saved.research_levels==s.research_levels,"Instant global levels survive JSON saves")
  var destroyer:Dictionary=s.spawn_enemy()
@@ -115,16 +115,67 @@ func run()->void:
  destroyer.cooldown=0
  s.attack_building(destroyer,1)
  check(s.start_research("arrow")!="" and s.research_levels.arrow==2,"Destroyed Workshop stops new purchases without losing completed upgrades")
- # Every building type still reaches level 100, now without waiting between levels.
+ # Global defenses and independently upgraded buildings both retain the level cap.
  var progression=rich()
  progression.build_at(Vector2(5200,2800),"workshop")
  progression.buildings[1].age=10
  for kind in Sim.DEFINITIONS:
+  var local:bool=kind in Sim.LOCAL_UPGRADES
+  var index:int=progression.buildings.size()
+  if local:
+   var building:Dictionary=progression.make_building(kind,Vector2(6200,2800))
+   building.age=10
+   progression.buildings.append(building)
   for level in range(2,101):
-   check(progression.start_research(kind)=="",kind+" immediate upgrade purchases level "+str(level))
-   var exemplar:Dictionary=progression.make_building(kind,Vector2(6000,2800))
-   check(exemplar.level==level and is_finite(progression.stat(exemplar,"hp")) and progression.stat(exemplar,"hp")>0,kind+" global level is finite and inherited")
-  check(progression.start_research(kind)!="" and progression.research_levels[kind]==100,kind+" remains capped at 100")
+   var error:String=progression.upgrade_at(index) if local else progression.start_research(kind)
+   check(error=="",kind+" purchases level "+str(level))
+   var exemplar:Dictionary=progression.buildings[index] if local else progression.make_building(kind,Vector2(6000,2800))
+   check(exemplar.level==level and is_finite(progression.stat(exemplar,"hp")) and progression.stat(exemplar,"hp")>0,kind+" level is finite")
+  var error:String=progression.upgrade_at(index) if local else progression.start_research(kind)
+  check(error!="",kind+" remains capped at 100")
+  if local:check(progression.make_building(kind).level==1,kind+" replacement starts at level one")
+ # Producer purchases affect one building, preserve damage, and survive mixed-level saves.
+ s=rich()
+ s.build_at(s.resource_nodes[4].pos,"stone")
+ s.build_at(s.resource_nodes[5].pos,"stone")
+ quiet_step(s,3)
+ first=s.buildings[1]
+ second=s.buildings[2]
+ first.hp=s.stat(first,"hp")*0.5
+ var local_cost:Array=s.upgrade_cost(first)
+ wood=s.resources.wood
+ check(s.upgrade_at(1)=="" and first.level==2 and second.level==1,"Quarry upgrades are local and require no Workshop")
+ check(is_equal_approx(first.hp/s.stat(first,"hp"),0.5) and s.resources.wood==wood-local_cost[0],"Local upgrade pays its quote once and preserves damage")
+ check(s.start_research("stone")!="","Workshop cannot buy producer levels")
+ saved=roundtrip(s)
+ check(saved!=null and saved.buildings[1].level==2 and saved.buildings[2].level==1,"Different local levels survive save/load")
+ var hammer:Dictionary=s.spawn_enemy()
+ hammer.damage=1e9
+ hammer.cooldown=0
+ s.attack_building(hammer,1)
+ s.rebuild_building_grid()
+ check(s.build_at(s.resource_nodes[4].pos,"stone")=="" and s.buildings[1].level==1,"A destroyed quarry is rebuilt on its site at level one")
+ s=rich()
+ s.build_at(s.resource_nodes[0].pos,"wood")
+ s.apply_global_level("wood",4)
+ var v09:Dictionary=s.snapshot()
+ v09.version=8
+ v09.trade_clock=7.0
+ saved=Sim.restore(v09)
+ check(saved!=null and saved.buildings[1].level==4 and saved.make_building("wood").level==1,"v0.9 producer levels are retained, with local replacement levels")
+ check(saved!=null and not saved.snapshot().has("trade_clock"),"Removed Marketplace cooldown is cleared on old saves")
+ # Marketplace restores the old passive output and exposes income upgrades.
+ s=rich()
+ s.build_at(Vector2(5200,2800),"market")
+ check(is_equal_approx(s.income_rates().gold,0.1),"Marketplace construction does not produce gold")
+ s.buildings[1].age=10
+ check(is_equal_approx(s.income_rates().gold,2.1),"Completed Marketplace restores 2 gold per second plus the Hall income")
+ check(s.upgrade_at(1)=="" and is_equal_approx(s.income_rates().gold,2.0*1.08+0.1),"Marketplace local upgrade increases passive gold income")
+ s.resources.gold=1000.0
+ gold=s.resources.gold
+ quiet_step(s,10)
+ check(is_equal_approx(s.resources.gold-gold,(2.0*1.08+0.1)*10),"Passive upgraded gold is actually credited over time")
+ check(not s.has_method("buy") and not s.has_method("trade"),"Marketplace buying and selling are completely removed")
  # Regeneration is a permanent global upgrade; no manual repair or resurrection.
  s=rich()
  check(s.upgrade_regeneration()!="","Regeneration is unlocked at an operational Workshop")
@@ -160,10 +211,12 @@ func run()->void:
  progression.buildings[1].age=10
  for level in range(1,101):
   check(progression.upgrade_regeneration()=="" and progression.regeneration_level==level,"Regeneration purchases global level "+str(level))
- check(progression.upgrade_regeneration()!="" and progression.regeneration_rate()>0,"Regeneration is capped at 100")
+ check(progression.upgrade_regeneration()!="" and is_equal_approx(progression.regeneration_rate(),0.2),"Regeneration is capped at 100 and reaches 20 percent HP per second")
+ check(is_equal_approx(progression.regeneration_rate(1),0.003) and progression.regeneration_rate(5)>0.01 and progression.regeneration_rate(50)>0.1,"Regeneration preserves its starting rate and grows materially faster")
  # Existing v0.8 paid work completes exactly once, preserving positions and HP.
  var legacy:Dictionary=saved.snapshot()
  legacy.version=7
+ legacy.trade_clock=0.0
  legacy.erase("regeneration_level")
  legacy.erase("boss_intervals")
  legacy.research_job={"kind":"arrow","level":2,"duration":35.0,"remaining":20.0}
@@ -207,6 +260,44 @@ func run()->void:
  hp=s.buildings[1].hp
  s.step(0.1)
  check(s.buildings[1].hp<hp,"Raiders attack exposed producers instead of ignoring their blocked deposit cells")
+ # All four exposed sites attract enemies from a distance and remain reachable.
+ for node in Map.resource_nodes(5):
+  if node.zone!="outpost": continue
+  s=rich()
+  s.build_at(node.pos,node.kind)
+  var producer:Dictionary=s.buildings[1]
+  enemy=s.spawn_enemy()
+  enemy.pos=s.navigation.nearest_open(node.pos+Vector2(-720,0))
+  enemy.hp=1e8
+  enemy.max_hp=1e8
+  var initial_hp:float=producer.hp
+  var passable:=true
+  for tick in 1200:
+   s.step(0.05)
+   passable=passable and s.navigation.passable(enemy.pos)
+   s.enemies=[enemy]
+   s.spawn_remaining=0
+   if producer.hp<initial_hp:break
+  check(producer.hp<initial_hp,"Long-range aggro reaches exposed "+node.kind+" at "+str(node.pos))
+  check(passable,"Producer approach never crosses blocked terrain")
+ s=rich()
+ s.build_at(s.resource_nodes[2].pos,"wood")
+ s.build_at(s.resource_nodes[6].pos,"stone")
+ enemy=s.spawn_enemy()
+ enemy.pos=s.navigation.nearest_open(Vector2(3200,2920))
+ s.step(0.05)
+ var victim:int=enemy.get("anger",-1)
+ check(victim in [1,2],"Nearby exposed producers are acquired proactively")
+ enemy.damage=1e9
+ enemy.cooldown=0
+ s.attack_building(enemy,victim)
+ enemy.producer_scan=0
+ s.step(0.05)
+ check(enemy.get("anger",-1)==(2 if victim==1 else 1),"After one outpost falls, enemies acquire the other producer")
+ s.build_at(Vector2(4000,2800),"arrow")
+ var defense:int=s.buildings.size()-1
+ s.provoke(enemy,defense)
+ check(enemy.anger==defense and enemy.anger_source=="defense","A firing defense can interrupt producer aggro")
  # Elites use ordinary damage; their health and attack alone make them stronger.
  s=rich()
  s.wave=5

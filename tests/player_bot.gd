@@ -62,17 +62,26 @@ func act()->void:
   var target:=mini(8,2+int(sim.elapsed/240))
   for i in priorities.size():
    var kind:String=priorities[i]
-   if int(sim.research_levels[kind])>=target:continue
-   var count:=0
-   for b in sim.buildings:
-    if b!=null and b.kind==kind:count+=1
-   if count>0:choices.append({"kind":kind,"score":int(sim.research_levels[kind])*10+i})
+   if kind in Sim.LOCAL_UPGRADES:
+    for index in sim.buildings.size():
+     var b=sim.buildings[index]
+     if b!=null and b.kind==kind and b.age>=sim.build_time(kind) and b.level<target:
+      choices.append({"kind":kind,"index":index,"score":b.level*10+i})
+   elif int(sim.research_levels[kind])<target:
+    for b in sim.buildings:
+     if b!=null and b.kind==kind:
+      choices.append({"kind":kind,"index":-1,"score":int(sim.research_levels[kind])*10+i})
+      break
   choices.sort_custom(func(a,b):return a.score<b.score)
   if not choices.is_empty():
-   var kind:String=choices[0].kind
-   if sim.can_afford(sim.research_cost(kind)) and sim.start_research(kind)=="":
-    paid_orders+=1
-    return
+   var choice:Dictionary=choices[0]
+   var index:int=choice.index
+   var cost:Array=sim.upgrade_cost(sim.buildings[index]) if index>=0 else sim.research_cost(choice.kind)
+   if sim.can_afford(cost):
+    var error:String=sim.upgrade_at(index) if index>=0 else sim.start_research(choice.kind)
+    if error=="":
+     paid_orders+=1
+     return
  if next<PLAN.size() and sim.can_afford(Sim.DEFINITIONS[PLAN[next][1]].cost):
   var point:=planned_site(PLAN[next][0],PLAN[next][1])
   if sim.build_at(point,PLAN[next][1])=="":
@@ -97,5 +106,3 @@ func act()->void:
      if sim.placement_error(point,kind)=="" and sim.build_at(point,kind)=="":
       paid_orders+=1
       return
- if sim.resources.stone<100 and sim.resources.gold>250:
-  if sim.buy("stone"):paid_orders+=1

@@ -6,8 +6,11 @@ extends RefCounted
 const VICTORY_TIME := 900.0
 const MAX_LEVEL := 100
 const WAVE_SECONDS := 30.0
-const SAVE_VERSION := 8
+const SAVE_VERSION := 9
+const LOCAL_UPGRADES := ["hall","wood","stone","market","workshop"]
+const GLOBAL_UPGRADES := ["arrow","wall","cannon"]
 const BOSS_INTERVAL := 300.0
+const PRODUCER_AGGRO_RANGE := 1600.0
 const Navigator=preload("res://scripts/assault_navigation.gd")
 static var shared_navigation:Dictionary={}
 static var shared_retaliation:Dictionary={}
@@ -15,7 +18,6 @@ var retaliation_grid:AStarGrid2D
 var research_levels:Dictionary={}
 var regeneration_level:=0
 var boss_intervals:=0
-var trade_clock:=0.0
 var foundations_dirty:=false
 var mountains_enabled:=true
 var terrain_revision:=World.AUTHORED_REVISION
@@ -27,6 +29,8 @@ var hit_cells:Dictionary={}
 var hit_rects:Array[Rect2]=[]
 var hit_seen:=PackedInt64Array()
 var hit_serial:=0
+var producer_indices:Array[int]=[]
+var producer_approaches:Dictionary={}
 const RESOURCE_NAMES := ["wood", "stone", "gold"]
 const World = preload("res://scripts/world_data.gd")
 const PATH = World.ROAD
@@ -44,8 +48,8 @@ const DEFINITIONS := {
  "arrow": {"name":"Arrow tower", "tag":"FAST SINGLE TARGET", "desc":"Accurate, rapid arrows. Best against scouts and lone raiders.", "cost":[140,100,60], "upgrade":[55,35,20], "hp":650.0, "damage":30.0, "range":460.0, "period":1.0, "art":3},
  "wall": {"name":"Wall", "tag":"HOLD THE LINE", "desc":"Build freely to form a defensive line. Enemies attack walls in their way.", "cost":[25,55,10], "upgrade":[20,55,10], "hp":2000.0, "art":4},
  "cannon": {"name":"Cannon tower", "tag":"AREA DAMAGE", "desc":"Explosive shells damage every enemy in a wide blast. Strong against groups.", "cost":[220,200,120], "upgrade":[65,75,35], "hp":650.0, "damage":110.0, "range":560.0, "period":3.0, "splash":140.0, "art":5},
- "market": {"name":"Marketplace", "tag":"GOLD & RESOURCE TRADE", "desc":"One marketplace for emergency supply trades. Gold comes from defeating enemies. Trades need time between orders.", "cost":[120,80,60], "upgrade":[55,40,25], "hp":450.0, "art":6},
- "workshop": {"name":"Workshop", "tag":"GLOBAL RESEARCH", "desc":"Research upgrades for every building of a type, including future structures. Upgrades apply instantly to existing and future structures. Unlock automatic regeneration here.", "cost":[140,100,70], "upgrade":[70,60,40], "hp":750.0, "build_time":6.0, "art":7}
+ "market": {"name":"Marketplace", "tag":"GOLD PRODUCTION", "desc":"Produces gold automatically.", "cost":[120,80,60], "upgrade":[55,40,25], "hp":450.0, "income":2.0, "resource":"gold", "art":6},
+ "workshop": {"name":"Workshop", "tag":"GLOBAL RESEARCH", "desc":"Wall, tower and Regeneration upgrades.", "cost":[140,100,70], "upgrade":[70,60,40], "hp":750.0, "build_time":6.0, "art":7}
 }
 var resources := {"wood":450.0,"stone":320.0,"gold":180.0}
 var buildings: Array = []
@@ -117,7 +121,7 @@ func grid_blocked(cell:Vector2i)->bool:
  return index>=0 and buildings[index]!=null and buildings[index].hp>0
 
 func make_building(kind: String, position: Vector2 = Vector2.ZERO) -> Dictionary:
- var b:Dictionary={"kind":kind,"pos":position,"level":int(research_levels.get(kind,1)),"hp":0.0,"cooldown":0.15,"age":0.0,"ruined_at":-1.0}
+ var b:Dictionary={"kind":kind,"pos":position,"level":1 if kind in LOCAL_UPGRADES else int(research_levels.get(kind,1)),"hp":0.0,"cooldown":0.15,"age":0.0,"ruined_at":-1.0}
  b.hp=stat(b,"hp")
  return b
 
@@ -189,12 +193,24 @@ func rebuild_building_grid() -> void:
  foundation_cells.clear()
  wall_cells.clear()
  hit_cells.clear()
+ producer_indices.clear()
+ producer_approaches.clear()
  hit_rects.resize(buildings.size())
  hit_seen.resize(buildings.size())
  hit_seen.fill(0)
  for i in buildings.size():
   if buildings[i]==null: continue
   var rect:=foundation_rect(buildings[i].pos,buildings[i].kind)
+  if DEFINITIONS[buildings[i].kind].has("income"):
+   producer_indices.append(i)
+   var approaches:Array[Vector2]=[]
+   var perimeter:=rect.grow(35)
+   for gy in range(floori(perimeter.position.y/GRID_SIZE),ceili(perimeter.end.y/GRID_SIZE)):
+    for gx in range(floori(perimeter.position.x/GRID_SIZE),ceili(perimeter.end.x/GRID_SIZE)):
+     var point:Vector2=navigation.center(Vector2i(gx,gy))
+     if not rect.has_point(point) and navigation.passable(point) and point.distance_to(point.clamp(rect.position,rect.end))<=45:
+      approaches.append(point)
+   producer_approaches[i]=approaches
   hit_rects[i]=rect
   for fy in range(floori(rect.position.y/GRID_SIZE),ceili(rect.end.y/GRID_SIZE)):
    for fx in range(floori(rect.position.x/GRID_SIZE),ceili(rect.end.x/GRID_SIZE)):
@@ -288,7 +304,10 @@ func research_cost(kind:String)->Array:
  return result
 
 func upgrade_cost(building:Dictionary)->Array:
- return research_cost(building.kind)
+ if building.kind not in LOCAL_UPGRADES: return research_cost(building.kind)
+ var result:Array=[]
+ for value in DEFINITIONS[building.kind].upgrade: result.append(ceilf(value*pow(1.15,int(building.level)-1)))
+ return result
 
 func apply_global_level(kind:String,level:int)->void:
  for b in buildings:
@@ -300,7 +319,7 @@ func apply_global_level(kind:String,level:int)->void:
 
 func start_research(kind:String)->String:
  if defeated: return "The main hall has fallen."
- if not DEFINITIONS.has(kind): return "Choose an upgrade."
+ if kind not in GLOBAL_UPGRADES: return "Select this building to upgrade it."
  var index:=workshop_index()
  if index<0: return "Build a Workshop and wait for construction to finish."
  if int(research_levels[kind])>=MAX_LEVEL: return "Maximum upgrade level reached."
@@ -316,7 +335,7 @@ func regeneration_cost()->Array:
 
 func regeneration_rate(level:int=-1)->float:
  var value:int=regeneration_level if level<0 else level
- return 0.0 if value<=0 else 0.003+0.00015*(value-1)
+ return 0.0 if value<=0 else minf(0.2,0.003+(mini(value,MAX_LEVEL)-1)*(0.2-0.003)/99.0)
 
 func upgrade_regeneration()->String:
  if defeated: return "The main hall has fallen."
@@ -338,34 +357,23 @@ func spend(cost: Array) -> bool:
  for i in 3: resources[RESOURCE_NAMES[i]] = maxf(0.0,resources[RESOURCE_NAMES[i]]-cost[i])
  return true
 
-func upgrade_at(_index:int)->String:
- return "Use the Workshop to research global upgrades."
+func upgrade_at(index:int)->String:
+ if defeated: return "The main hall has fallen."
+ if index<0 or index>=buildings.size() or buildings[index]==null: return "Select a building."
+ var b:Dictionary=buildings[index]
+ if b.kind not in LOCAL_UPGRADES: return "Select this upgrade in the Workshop."
+ if b.age<build_time(b.kind): return "Building under construction."
+ if b.level>=MAX_LEVEL: return "Maximum upgrade level reached."
+ if not spend(upgrade_cost(b)): return "Not enough supplies."
+ var fraction:float=b.hp/stat(b,"hp")
+ b.level+=1
+ b.hp=stat(b,"hp")*fraction
+ events.append({"type":"build","pos":b.pos,"text":"Level %d"%b.level})
+ return ""
 
 func collect(_index: int) -> bool:
  # Resource sites are passive scenery; production and combat supply the economy.
  return false
-
-func trade(from: String) -> bool:
- if defeated or trade_clock>0 or from not in ["wood","stone"]: return false
- var market_level := 0
- for b in buildings:
-  if b != null and b.kind == "market" and b.hp > 0: market_level = maxi(market_level,b.level)
- if market_level == 0 or resources[from] < 60: return false
- trade_clock=6.0
- resources[from] -= 60.0
- resources.gold += 30.0+minf(25.0,market_level-1)
- return true
-
-func buy(resource: String) -> bool:
- if defeated or resource not in ["wood","stone"] or trade_clock>0 or resources.gold < 90: return false
- var active_market := false
- for b in buildings:
-  if b != null and b.kind == "market" and b.hp > 0: active_market = true
- if not active_market: return false
- trade_clock=8.0
- resources.gold -= 90.0
- resources[resource] += 60.0
- return true
 
 func income_rates() -> Dictionary:
  var rates := {"wood":0.8,"stone":0.45,"gold":0.1}
@@ -476,7 +484,6 @@ func step(delta: float) -> void:
   if not boss.is_empty():
    boss_intervals+=1
    events.append({"type":"boss","pos":boss.pos,"text":"Miniboss · Warlord %d"%boss_intervals})
- trade_clock=maxf(0,trade_clock-delta)
  var rates := income_rates()
  for key in RESOURCE_NAMES: resources[key] = minf(1.0e15,resources[key]+rates[key]*delta)
  for i in deposits.size(): deposits[i] = maxf(0,deposits[i]-delta)
@@ -541,6 +548,7 @@ func step(delta: float) -> void:
   if e.aim>0 and held>=0 and held<buildings.size() and buildings[held]!=null and buildings[held].hp>0 and hit_rects[held].grow(body+reach).has_point(pos):
    attack_building(e,held)
    continue
+  acquire_producer(e,pos,delta)
   var heading:Vector2=retaliation_direction(e,pos,delta)
   var adjacent:=adjacent_target(pos,body+18.0)
   if adjacent>=0 and (int(e.get("anger",-1))<0 or adjacent==int(e.anger)):
@@ -763,11 +771,11 @@ func snapshot() -> Dictionary:
   var push:Vector2=e.get("push",Vector2.ZERO)
   copy.push=[push.x,push.y]
   saved_enemies.append(copy)
- return {"research_levels":research_levels.duplicate(),"regeneration_level":regeneration_level,"boss_intervals":boss_intervals,"trade_clock":trade_clock,"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
+ return {"research_levels":research_levels.duplicate(),"regeneration_level":regeneration_level,"boss_intervals":boss_intervals,"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
 
 static func restore(data: Dictionary):
  if not _number(data.get("version"),2,SAVE_VERSION) or float(data.version)!=floorf(data.version): return null
- if int(data.version) not in [2,3,4,5,6,7,SAVE_VERSION]: return null
+ if int(data.version) not in [2,3,4,5,6,7,8,SAVE_VERSION]: return null
  if not data.get("buildings") is Array or data.buildings.is_empty() or data.buildings.size()>MAX_BUILDINGS: return null
  if not data.get("enemies") is Array or data.enemies.size()>MAX_ENEMIES: return null
  if not data.get("resources") is Dictionary: return null
@@ -849,15 +857,14 @@ static func restore(data: Dictionary):
    if not _number(job.get("duration"),1,10000) or not _number(job.get("remaining"),0,float(job.duration)): return null
    if not is_equal_approx(float(job.duration),35.0+(int(sim.research_levels[job.kind])-1)*8.0): return null
    sim.set_meta("legacy_paid_upgrade",job.duplicate())
-  if not _number(data.get("trade_clock"),0,8.01): return null
-  sim.trade_clock=float(data.trade_clock)
+  if data.version<9 and not _number(data.get("trade_clock"),0,8.01): return null
  else:
   for b in restored:
    if b!=null: sim.research_levels[b.kind]=maxi(int(sim.research_levels[b.kind]),int(b.level))
  for b in restored:
   if b==null: continue
-  if data.version>=7 and int(b.level)!=int(sim.research_levels[b.kind]): return null
-  b.level=int(sim.research_levels[b.kind])
+  if data.version>=7 and (data.version<9 or b.kind not in LOCAL_UPGRADES) and int(b.level)!=int(sim.research_levels[b.kind]): return null
+  if b.kind not in LOCAL_UPGRADES: b.level=int(sim.research_levels[b.kind])
   if data.version<7: b.hp=float(b.hp)*sim.stat(b,"hp")
  if data.version>=8:
   if not _number(data.get("regeneration_level"),0,MAX_LEVEL) or float(data.regeneration_level)!=floorf(data.regeneration_level): return null
@@ -892,6 +899,8 @@ static func restore(data: Dictionary):
   e.anger_left=float(e.get("anger_left",0.0))
   e.anger_path=PackedVector2Array()
   e.anger_step=1
+  e.producer_scan=0.0
+  e.anger_source="producer" if e.anger>=0 and e.anger<restored.size() and restored[e.anger]!=null and DEFINITIONS[restored[e.anger].kind].has("income") else "defense"
  sim.deposits=data.deposits.duplicate()
  sim.elapsed=float(data.elapsed)
  sim.wave=int(data.wave)
@@ -917,22 +926,57 @@ static func _number(value, minimum: float, maximum: float) -> bool:
 func provoke(enemy:Dictionary,index:int)->void:
  if enemy.hp<=0 or index<0 or index>=buildings.size() or buildings[index]==null: return
  var held:int=enemy.get("anger",-1)
- if held>=0 and held<buildings.size() and buildings[held]!=null and buildings[held].hp>0 and float(enemy.get("anger_left",0.0))>0:
+ if held>=0 and held<buildings.size() and buildings[held]!=null and buildings[held].hp>0 and float(enemy.get("anger_left",0.0))>0 and enemy.get("anger_source","")!="producer":
   enemy.anger_left=7.0
   return
  enemy.anger=index
+ enemy.anger_source="defense"
  enemy.anger_left=7.0
  enemy.anger_path=PackedVector2Array()
  enemy.anger_step=1
+
+func acquire_producer(enemy:Dictionary,pos:Vector2,delta:float)->void:
+ enemy.producer_scan=maxf(0,float(enemy.get("producer_scan",0))-delta)
+ var held:int=enemy.get("anger",-1)
+ if held>=0 and held<buildings.size() and buildings[held]!=null and buildings[held].hp>0 and float(enemy.get("anger_left",0))>0: return
+ if enemy.producer_scan>0: return
+ enemy.producer_scan=1.0+fmod(float(enemy.id)*0.173,1.0)
+ var candidates:Array=[]
+ for index in producer_indices:
+  var b=buildings[index]
+  if b==null or b.hp<=0 or b.pos.distance_to(pos)>PRODUCER_AGGRO_RANGE: continue
+  candidates.append({"index":index,"distance":pos.distance_squared_to(b.pos)})
+ candidates.sort_custom(func(a,b):return a.distance<b.distance)
+ for candidate in candidates:
+  var index:int=candidate.index
+  var choices:Array=producer_approaches.get(index,[]).duplicate()
+  choices.sort_custom(func(a,b):return pos.distance_squared_to(a)<pos.distance_squared_to(b))
+  for point in choices:
+   var path:=retaliation_grid.get_point_path(navigation.cell_of(pos),navigation.cell_of(point))
+   if path.is_empty(): continue
+   var length:=0.0
+   for i in range(1,path.size()):length+=path[i-1].distance_to(path[i])
+   if length>maxf(1800,pos.distance_to(point)*2.5):continue
+   enemy.anger=index
+   enemy.anger_source="producer"
+   enemy.anger_left=7.0
+   enemy.anger_path=path
+   enemy.anger_step=1
+   return
 
 func retaliation_direction(enemy:Dictionary,pos:Vector2,delta:float)->Vector2:
  var target:int=enemy.get("anger",-1)
  enemy.anger_left=maxf(0.0,float(enemy.get("anger_left",0.0))-delta)
  if target>=0 and target<buildings.size() and buildings[target]!=null and buildings[target].hp>0 and enemy.anger_left>0:
   var destination:Vector2=buildings[target].pos
-  if pos.distance_to(destination)<850:
+  var producer:bool=DEFINITIONS[buildings[target].kind].has("income")
+  if pos.distance_to(destination)<(PRODUCER_AGGRO_RANGE if producer else 850.0):
    var path:PackedVector2Array=enemy.get("anger_path",PackedVector2Array())
    if path.is_empty():
+    if producer:
+     var choices:Array=producer_approaches.get(target,[]).duplicate()
+     choices.sort_custom(func(a,b):return pos.distance_squared_to(a)<pos.distance_squared_to(b))
+     if not choices.is_empty(): destination=choices[0]
     var goal_cell:Vector2i=navigation.cell_of(destination)
     if retaliation_grid.is_point_solid(goal_cell): goal_cell=navigation.cell_of(navigation.nearest_open(destination))
     if retaliation_grid.is_point_solid(goal_cell):

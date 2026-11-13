@@ -51,9 +51,9 @@ jobs:
           path.write_text('\n'.join(lines) + '\n')
           PY
           mkdir -p builds
-          "$GODOT" --headless --path . --export-debug Android builds/tabara-frontier-v0.9-unpacked.apk
-          python3 tools/package_android.py builds/tabara-frontier-v0.9-unpacked.apk builds/tabara-frontier-v0.9.apk --sdk "$ANDROID_HOME"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify builds/tabara-frontier-v0.9.apk
+          "$GODOT" --headless --path . --export-debug Android builds/tabara-frontier-v0.10-unpacked.apk
+          python3 tools/package_android.py builds/tabara-frontier-v0.10-unpacked.apk builds/tabara-frontier-v0.10.apk --sdk "$ANDROID_HOME"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify builds/tabara-frontier-v0.10.apk
       - name: Exercise actual Android app
         uses: reactivecircus/android-emulator-runner@v2
         with:
