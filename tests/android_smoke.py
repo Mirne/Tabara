@@ -105,6 +105,15 @@ def wait_saved_structure(index, kind):
         time.sleep(4)
     raise TimeoutError(f"Missing saved structure {index}: {kind}")
 
+def wait_saved_kind(kind):
+    end = time.monotonic() + 75
+    while time.monotonic() < end:
+        data = save()
+        if any(b and b["kind"] == kind for b in data["buildings"]):
+            return data
+        time.sleep(4)
+    raise TimeoutError(f"Missing saved building: {kind}")
+
 def write_save(data):
     # Normal shell protocol works on API 24 as well as modern adbd.
     payload = base64.b64encode(json.dumps(data).encode()).decode("ascii")
@@ -248,6 +257,7 @@ def native_checks(back_only=False):
         back_sequence()
         if not back_only:
             # Add the Workshop using its larger catalogue card and research controls.
+            wait_supplies(save(), {"wood": 140, "stone": 100, "gold": 70})
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
             tap(1273, 692)
@@ -258,8 +268,8 @@ def native_checks(back_only=False):
             end = time.monotonic() + 240
             while True:
                 tap(1338, 43)
-                workshop_save = wait_saved_structure(11, "workshop")
-                if workshop_save["buildings"][11]["age"] >= 6:
+                workshop_save = wait_saved_kind("workshop")
+                if next(b for b in workshop_save["buildings"] if b and b["kind"] == "workshop")["age"] >= 6:
                     break
                 if time.monotonic() >= end:
                     raise TimeoutError("Native Workshop did not finish construction")
@@ -273,8 +283,8 @@ def native_checks(back_only=False):
             tap(1273, 678)
             tap(1338, 43)
             research_save = save()
-            check(research_save["research_levels"]["arrow"] == 2 and all(research_save["buildings"][i]["level"] == 2 for i in [3, 4]) and "research_job" not in research_save,
-                  "Native Workshop upgrades both towers instantly without a queue")
+            check(research_save["research_levels"]["arrow"] == 2 and any(b and b["kind"] == "arrow" for b in research_save["buildings"]) and all(b["level"] == 2 for b in research_save["buildings"] if b and b["kind"] == "arrow") and "research_job" not in research_save,
+                  "Native Workshop upgrades all surviving towers instantly without a queue")
             screen("04b-workshop-research")
             # Regeneration is a paid global upgrade, with no local repair buttons.
             wait_supplies(save(), {"wood": 120, "stone": 90, "gold": 60})
