@@ -209,6 +209,7 @@ def native_checks(back_only=False):
             tap(1338, 43)
             before_wall = save()
             check(len(before_wall["buildings"]) == 5, "Native placement constructs two producers and two towers without reopening the tower catalogue")
+            before_wall = wait_supplies(before_wall, {"wood": 150, "stone": 330, "gold": 60})
             adb("shell", "input", "keyevent", "4")
             time.sleep(4)
             tap(1352, 376)
