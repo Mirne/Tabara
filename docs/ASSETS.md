@@ -117,8 +117,8 @@ No source PNG was retouched to achieve the wall joins or resource relocation.
 
 Audio was synthesized for this project using the reproducible
 `tools/generate_audio.py` script. No commercial samples or external music are
-included. `assets/icon.svg` is the original Tabara app icon; it is distinct from
-the raster game interface.
+included. The former vector app icon remains in the v0.10 release history;
+v0.11 uses the raster icons described below.
 
 ## Fonts
 
@@ -131,3 +131,19 @@ in `assets/fonts/OFL.txt` and the in-app credits.
 Godot is distributed under the MIT license. Exported binaries contain Godot and
 its third-party dependencies. Engine and third-party notices are accessible in
 the in-app credits and at <https://godotengine.org/license/>.
+
+## v0.11 attack animation and app identity — 19 November 2026
+
+`assets/frontier/attacks.png` is an original imagegen 1024×1536 transparent
+attack atlas: four columns, six rows (raider, runner, brute, siege cart, elite,
+Warlord). The existing `units.png`, `elites.png` and `miniboss.png` supplied the
+character reference. Imagegen refined the padding to prevent neighboring-cell
+fragments; renderer scales/pivots match the walking bodies and foot anchors. Its 24 poses provide wind-up, impact, follow-through and
+recovery; horizontal facing uses runtime mirroring of the same artwork. The PNG
+is copied unchanged from imagegen; no programmatic background replacement is used.
+
+`assets/icon.png` is the new raster Hall launcher icon. `assets/icon-adaptive.png`
+is its imagegen-edited padded variant for Android masks and the boot splash. Both
+use the existing original Main hall painting as reference, with cream limestone,
+red roofs, amber windows and a dark green setting. They replace the old vector
+launcher artwork. No reference-game artwork or logo is included.

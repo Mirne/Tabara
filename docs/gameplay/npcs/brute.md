@@ -9,3 +9,9 @@ Health/damage/speed multipliers: 2.8 / 1.9 / 0.75. Reward: 5 gold. Eligible from
 Baseline HP = 50 × 1.06^(wave-1), attack = 12 × 1.06^(wave-1),
 speed = 86 + min(34, wave×0.7). Exponents cap at 600. Attack period
 1.15 game seconds; initial attack delay 0.5 seconds. Preserve these values.
+
+Dedicated four-frame attack art replaces walking during strikes: wind-up, impact,
+follow-through and recovery. Keep existing damage and 1.15-second hit cadence.
+Face the target when attacking; mirror horizontally on leftward movement. Do not
+shift the foot anchor when mirroring. Persist facing and attack state across saves.
+Reduced motion shows a still attack pose rather than a walk cycle.

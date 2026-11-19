@@ -3,13 +3,14 @@ class_name Settlement
 extends RefCounted
 ## Deterministic, presentation-independent mission simulation. All time is seconds.
 
-const VICTORY_TIME := 900.0
+const FINAL_BOSS_TIME := 900.0
 const MAX_LEVEL := 100
 const WAVE_SECONDS := 30.0
-const SAVE_VERSION := 9
+const SAVE_VERSION := 10
 const LOCAL_UPGRADES := ["hall","wood","stone","market","workshop"]
 const GLOBAL_UPGRADES := ["arrow","wall","cannon"]
 const BOSS_INTERVAL := 300.0
+const ATTACK_ANIMATION_SECONDS := 0.66
 const PRODUCER_AGGRO_RANGE := 1600.0
 const Navigator=preload("res://scripts/assault_navigation.gd")
 static var shared_navigation:Dictionary={}
@@ -18,6 +19,9 @@ var retaliation_grid:AStarGrid2D
 var research_levels:Dictionary={}
 var regeneration_level:=0
 var boss_intervals:=0
+var final_boss_id:=0
+var final_boss_defeated:=false
+var legacy_completion:=false
 var foundations_dirty:=false
 var mountains_enabled:=true
 var terrain_revision:=World.AUTHORED_REVISION
@@ -395,7 +399,11 @@ func begin_wave() -> void:
  spawn_clock = 0.0
  events.append({"type":"wave","text":"Wave %d" % wave})
 
-func spawn_enemy(initial_progress: float = 0.0, forced_kind:String="") -> Dictionary:
+func boss_profile(interval:int,mission_boss:bool=false)->Dictionary:
+ var rank:=maxi(1,interval)
+ return {"hp":4.0 if mission_boss else 1.0+0.5*(rank-1),"damage":2.0 if mission_boss else 1.0+0.15*(rank-1)}
+
+func spawn_enemy(initial_progress: float = 0.0, forced_kind:String="",boss_stage:int=1,mission_boss:bool=false) -> Dictionary:
  if enemies.size()>=MAX_ENEMIES: return {}
  var kind := "raider"
  var roll := rng.randf()
@@ -404,10 +412,11 @@ func spawn_enemy(initial_progress: float = 0.0, forced_kind:String="") -> Dictio
  if wave>=5 and (roll<minf(0.20,0.035+(wave-5)*0.006) or (wave%5==0 and spawn_remaining==wave_size(wave))): kind="elite"
  if wave >= 14 and wave % 5 == 0 and spawn_remaining == 1: kind = "siege"
  if forced_kind!="": kind=forced_kind
- var growth := pow(1.06,minf(wave-1,600))
+ var spawn_wave:int=maxi(wave,boss_stage*10+1) if kind=="boss" else wave
+ var growth := pow(1.06,minf(spawn_wave-1,600))
  var health := 50.0*growth
- var speed := 86.0+minf(34.0,wave*0.7)
- var damage := 12.0*pow(1.06,minf(wave-1,600))
+ var speed := 86.0+minf(34.0,spawn_wave*0.7)
+ var damage := 12.0*growth
  if kind == "runner":
   health *= 0.65
   speed *= 1.55
@@ -424,10 +433,11 @@ func spawn_enemy(initial_progress: float = 0.0, forced_kind:String="") -> Dictio
   speed *= 0.55
   damage *= 3.5
  if kind=="boss":
-  health *= 26.0
+  var profile:=boss_profile(boss_stage,mission_boss)
+  health *= 26.0*float(profile.hp)
   speed *= 0.62
-  damage *= 4.5
- var enemy:={"id":next_id,"kind":kind,"hp":health,"max_hp":health,"damage":damage,"speed":speed,"progress":initial_progress,"cooldown":0.5,"lane":float(rng.randi_range(0,8)*26-104)+rng.randf_range(-3,3),"phase":rng.randf()*TAU,"target":-1,"scan":0.0}
+  damage *= 4.5*float(profile.damage)
+ var enemy:={"id":next_id,"kind":kind,"hp":health,"max_hp":health,"damage":damage,"speed":speed,"progress":initial_progress,"cooldown":0.5,"lane":float(rng.randi_range(0,8)*26-104)+rng.randf_range(-3,3),"phase":rng.randf()*TAU,"target":-1,"scan":0.0,"facing_left":false,"attacking":false,"attack_left":0.0,"boss_rank":maxi(1,boss_stage) if kind=="boss" else 0,"mission_boss":mission_boss and kind=="boss"}
  enemy.pos=path_point(initial_progress)+Vector2(0,enemy.lane)
  enemy.push=Vector2.ZERO
  enemy.aim=0.0
@@ -440,6 +450,27 @@ func spawn_enemy(initial_progress: float = 0.0, forced_kind:String="") -> Dictio
  enemies.insert(index,enemy)
  next_id += 1
  return enemy
+
+func spawn_due_boss()->void:
+ if enemies.size()>=MAX_ENEMIES: return
+ # The final encounter is independent of old interval counters on migrated saves.
+ if elapsed+0.00001>=FINAL_BOSS_TIME and final_boss_id==0 and not legacy_completion:
+  var boss:=spawn_enemy(0.0,"boss",3,true)
+  if not boss.is_empty():
+   final_boss_id=int(boss.id)
+   if boss_intervals==2: boss_intervals=3
+   events.append({"type":"boss","pos":boss.pos,"text":"Final Warlord"})
+  return
+ var due:=int(floor((elapsed+0.00001)/BOSS_INTERVAL))
+ if due<=boss_intervals: return
+ var rank:=boss_intervals+1
+ if rank==3:
+  boss_intervals=3
+  return
+ var boss:=spawn_enemy(0.0,"boss",rank)
+ if not boss.is_empty():
+  boss_intervals=rank
+  events.append({"type":"boss","pos":boss.pos,"text":"Warlord %d"%rank})
 
 func lane_index(enemy:Dictionary)->int:
  return clampi(roundi((enemy.lane+104)/26),0,8)
@@ -465,25 +496,16 @@ func step(delta: float) -> void:
    remaining -= dt
   return
  elapsed += delta
- if elapsed >= VICTORY_TIME and not victory:
-  victory = true
-  events.append({"type":"victory","text":"The hearth endures"})
  var next_wave := int(elapsed/WAVE_SECONDS)+1
  if next_wave > wave:
   wave = next_wave
   begin_wave()
+ spawn_due_boss()
  spawn_clock -= delta
  if spawn_remaining > 0 and spawn_clock <= 0:
   spawn_enemy()
   spawn_remaining -= 1
   spawn_clock += maxf(0.065,21.0/float(wave_size(wave)))
- # A saved interval counter prevents repeated minibosses after save/reload.
- var due:=int(floor((elapsed+0.00001)/BOSS_INTERVAL))
- if due>boss_intervals and enemies.size()<MAX_ENEMIES:
-  var boss:=spawn_enemy(0.0,"boss")
-  if not boss.is_empty():
-   boss_intervals+=1
-   events.append({"type":"boss","pos":boss.pos,"text":"Miniboss · Warlord %d"%boss_intervals})
  var rates := income_rates()
  for key in RESOURCE_NAMES: resources[key] = minf(1.0e15,resources[key]+rates[key]*delta)
  for i in deposits.size(): deposits[i] = maxf(0,deposits[i]-delta)
@@ -537,6 +559,8 @@ func step(delta: float) -> void:
  for e in enemies:
   if e.hp<=0: continue
   e.cooldown-=delta
+  e.attack_left=maxf(0,float(e.get("attack_left",0.0))-delta)
+  e.attacking=false
   var pos:Vector2=e.pos
   if not navigation.passable(pos):
    pos=navigation.nearest_open(pos)
@@ -597,16 +621,22 @@ func step(delta: float) -> void:
   if blocker>=0:
    attack_building(e,blocker)
   elif walkable:
+   var horizontal:float=proposed.x-pos.x
+   if absf(horizontal)>0.1: e.facing_left=horizontal<0
    e.pos=proposed
    e.progress=minf(total_length,e.progress+pos.distance_to(proposed))
  for i in range(enemies.size()-1,-1,-1):
   var e: Dictionary = enemies[i]
   if e.hp <= 0:
+   if bool(e.get("mission_boss",false)) and int(e.id)==final_boss_id: final_boss_defeated=true
    kills += 1
    var reward:float=60.0 if e.kind=="boss" else (14.0 if e.kind=="siege" else (8.0 if e.kind=="elite" else (5.0 if e.kind=="brute" else 3.0)))
    resources.gold = minf(1.0e15,resources.gold+reward)
-   events.append({"type":"kill","gold":reward,"pos":enemy_position(e),"text":"","kind":e.kind,"phase":e.phase})
+   events.append({"type":"kill","gold":reward,"pos":enemy_position(e),"text":"","kind":e.kind,"phase":e.phase,"facing_left":bool(e.get("facing_left",false))})
    enemies.remove_at(i)
+ if final_boss_defeated and not defeated and not victory:
+  victory=true
+  events.append({"type":"victory","text":"Final Warlord defeated"})
  if foundations_dirty:
   rebuild_building_grid()
   foundations_dirty=false
@@ -648,10 +678,14 @@ func first_blocker(start:Vector2,end:Vector2,body:float)->int:
  return result
 
 func attack_building(enemy:Dictionary,index:int)->void:
- if enemy.cooldown>0: return
  var b:Dictionary=buildings[index]
+ enemy.attacking=true
+ var horizontal:float=b.pos.x-enemy.pos.x
+ if absf(horizontal)>1.0: enemy.facing_left=horizontal<0
+ if enemy.cooldown>0: return
  b.hp=maxf(0,b.hp-enemy.damage)
  enemy.cooldown=1.15
+ enemy.attack_left=ATTACK_ANIMATION_SECONDS
  events.append({"type":"hit","pos":b.pos,"text":""})
  if b.hp<=0:
   b.ruined_at=elapsed
@@ -771,11 +805,11 @@ func snapshot() -> Dictionary:
   var push:Vector2=e.get("push",Vector2.ZERO)
   copy.push=[push.x,push.y]
   saved_enemies.append(copy)
- return {"research_levels":research_levels.duplicate(),"regeneration_level":regeneration_level,"boss_intervals":boss_intervals,"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
+ return {"research_levels":research_levels.duplicate(),"regeneration_level":regeneration_level,"boss_intervals":boss_intervals,"final_boss_id":final_boss_id,"final_boss_defeated":final_boss_defeated,"legacy_completion":legacy_completion,"victory":victory,"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
 
 static func restore(data: Dictionary):
  if not _number(data.get("version"),2,SAVE_VERSION) or float(data.version)!=floorf(data.version): return null
- if int(data.version) not in [2,3,4,5,6,7,8,SAVE_VERSION]: return null
+ if int(data.version) not in [2,3,4,5,6,7,8,9,SAVE_VERSION]: return null
  if not data.get("buildings") is Array or data.buildings.is_empty() or data.buildings.size()>MAX_BUILDINGS: return null
  if not data.get("enemies") is Array or data.enemies.size()>MAX_ENEMIES: return null
  if not data.get("resources") is Dictionary: return null
@@ -901,13 +935,49 @@ static func restore(data: Dictionary):
   e.anger_step=1
   e.producer_scan=0.0
   e.anger_source="producer" if e.anger>=0 and e.anger<restored.size() and restored[e.anger]!=null and DEFINITIONS[restored[e.anger].kind].has("income") else "defense"
+  if data.version>=10:
+   if not e.get("facing_left") is bool or not e.get("attacking") is bool or not e.get("mission_boss") is bool:return null
+   if not _number(e.get("attack_left"),0,ATTACK_ANIMATION_SECONDS+0.00001):return null
+   if not _number(e.get("boss_rank"),0,maxi(1,int(floor((float(data.elapsed)+0.00001)/BOSS_INTERVAL)))) or float(e.boss_rank)!=floorf(e.boss_rank):return null
+   if e.kind!="boss" and (e.boss_rank!=0 or e.mission_boss):return null
+   if e.kind=="boss" and e.boss_rank<1:return null
+   e.boss_rank=int(e.boss_rank)
+  else:
+   e.facing_left=sim.navigation.direction(e.pos).x<0
+   if e.target>=0 and e.target<restored.size() and restored[e.target]!=null:e.facing_left=restored[e.target].pos.x<e.pos.x
+   e.attacking=false
+   e.attack_left=0.0
+   e.boss_rank=1 if e.kind=="boss" else 0
+   e.mission_boss=false
  sim.deposits=data.deposits.duplicate()
  sim.elapsed=float(data.elapsed)
  sim.wave=int(data.wave)
  sim.kills=int(data.kills)
  sim.defeated=sim.buildings[0].hp<=0
- sim.victory=sim.elapsed>=VICTORY_TIME
  sim.victory_seen=data.victory_seen
+ if data.version>=10:
+  for key in ["victory","final_boss_defeated","legacy_completion"]:
+   if not data.get(key) is bool:return null
+  if not _number(data.get("final_boss_id"),0,int(data.next_id)-1) or float(data.final_boss_id)!=floorf(data.final_boss_id):return null
+  sim.final_boss_id=int(data.final_boss_id)
+  sim.final_boss_defeated=data.final_boss_defeated
+  sim.legacy_completion=data.legacy_completion
+  sim.victory=data.victory
+  var alive_final:=0
+  for enemy in sim.enemies:
+   if enemy.mission_boss:
+    if enemy.id!=sim.final_boss_id or enemy.boss_rank!=3:return null
+    alive_final+=1
+  if sim.final_boss_id==0 and (alive_final>0 or sim.final_boss_defeated):return null
+  if sim.final_boss_id>0 and (alive_final!=(0 if sim.final_boss_defeated else 1)):return null
+  if sim.elapsed+0.00001<FINAL_BOSS_TIME and (sim.final_boss_id>0 or sim.victory or sim.legacy_completion):return null
+  if sim.victory and not (sim.final_boss_defeated or sim.legacy_completion):return null
+  if sim.victory_seen and not sim.victory:return null
+  if sim.legacy_completion and not sim.victory:return null
+ else:
+  sim.legacy_completion=sim.elapsed>=FINAL_BOSS_TIME and sim.victory_seen
+  sim.victory=sim.legacy_completion
+  sim.victory_seen=sim.legacy_completion
  sim.spawn_remaining=int(data.spawn_remaining)
  sim.spawn_clock=float(data.spawn_clock)
  sim.next_id=int(data.next_id)

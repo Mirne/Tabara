@@ -311,9 +311,22 @@ func run()->void:
  game.sim.spawn_remaining=0
  game.sim.victory=false
  game.sim.victory_seen=false
+ game.sim.boss_intervals=2
+ game.sim.final_boss_id=0
+ game.sim.final_boss_defeated=false
+ game.sim.legacy_completion=false
  game.accumulator=0.1
  await frame()
- check(game.screen=="victory","Fifteen-minute boundary opens victory")
+ check(game.screen=="mission" and not game.sim.victory,"Fifteen-minute boundary keeps the final boss fight running")
+ var final_enemy:Dictionary={}
+ for e in game.sim.enemies:
+  if e.get("mission_boss",false):final_enemy=e
+ check(not final_enemy.is_empty(),"The fifteen-minute final boss is present")
+ await capture("final-boss-pending")
+ final_enemy.hp=0
+ await create_timer(0.2).timeout
+ await frame()
+ check(game.screen=="victory" and game.sim.final_boss_defeated,"Final boss death opens victory")
  await action("endless")
  check(game.screen=="mission" and game.sim.victory_seen,"Endless play continues after victory")
  game.sim.buildings[0].hp=0

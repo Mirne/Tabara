@@ -37,4 +37,5 @@ run(["--headless", "--script", "res://tests/test_authored_walks.gd"], "AUTHORED 
 if args.ui:
     (ROOT / "test-results").mkdir(exist_ok=True)
     run(["--audio-driver", "Dummy", "--script", "res://tests/test_ui.gd"], "UI RESULT:")
+    run(["--audio-driver", "Dummy", "--script", "res://tests/test_combat_art.gd"], "COMBAT ART RESULT:")
 print("All requested checks passed.")

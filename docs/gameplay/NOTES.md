@@ -35,3 +35,24 @@ Marketplace clarification is now explicit: passive gold, upgraded income, no tra
 The remaining implementation assumption is to move non-defense upgrades to their individual building panels
 to honor the requested defense-only Workshop. This is an interpretation of the
 requested scope, not a separate owner-confirmed change. A later answer overrides it.
+
+## Requested after v0.10: attacks, facing, icon and boss victory
+
+- Combat units need real attack animations, synchronized with building strikes.
+- Mirror unit sprites horizontally when moving left; face their target while
+  attacking. Preserve foot positions and existing movement/attack cadence.
+- Replace the old vector launcher/startup icon with matching raster artwork.
+- The final boss arrives at 15:00; reaching that time does not win or pause.
+  Victory requires killing that specific boss while the Hall survives.
+- Minibosses arrive every five game minutes and grow stronger each interval.
+  The 15-minute boss is much stronger. Continue normal waves during the fight.
+- Implementation values: regular Warlord HP multiplier over its existing wave
+  baseline is 1 + 0.5*(interval-1); attack multiplier is 1 + 0.15*(interval-1).
+  Final Warlord uses 4x the old same-wave boss HP and 2x its attack, so it is
+  substantially stronger than the 10-minute miniboss. Speed, ordinary damage
+  rules and kill rewards are preserved. These values implement the qualitative
+  strength request; no unrelated enemy or economy values change.
+- Save final-boss identity and completion so reloads neither duplicate the boss
+  nor award victory merely because the clock passed 15:00. Existing completed
+  endless saves retain their earned victory. Unfinished late legacy saves receive
+  one final Warlord without replaying all past miniboss intervals.

@@ -660,7 +660,7 @@ func draw_hud()->void:
   label(pretty(sim.resources[Sim.RESOURCE_NAMES[i]]),Vector2(x+52,38),25,IVORY)
   label("+%.1f / sec"%rates[Sim.RESOURCE_NAMES[i]],Vector2(x+52,61),12,GREEN)
  Art.icon(self,5,Rect2(730,20,35,35))
- label(time_label(sim.elapsed)+( " +" if sim.victory else " / 15:00"),Vector2(776,39),22,IVORY)
+ label(time_label(sim.elapsed)+( " +" if sim.victory else (" · BOSS" if sim.elapsed>=Sim.FINAL_BOSS_TIME else " / 15:00")),Vector2(776,39),22,IVORY)
  label("WAVE %02d   ·   %d DEFEATED"%[sim.wave,sim.kills],Vector2(776,62),11,GOLD)
  button(Rect2(1066,15,69,55),"%d×"%speed,"speed",false,true,18)
  button(Rect2(1145,15,101,55),"Hall","hall",false,true,16)
@@ -829,7 +829,7 @@ func overlay(rect:Rect2,tag:String,title:String,description:String="")->void:
  if description!="": wrapped(description,rect.position+Vector2(38,137),rect.size.x-76,17,MUTED,28)
 
 func draw_briefing()->void:
- overlay(Rect2(355,105,730,600),"MISSION 01  /  THE HEARTHVALE BASIN","Carve a foothold in the valley.","The western road carries the first raiders. Keep your main hall standing for fifteen minutes, then continue the endless siege.")
+ overlay(Rect2(355,105,730,600),"MISSION 01  /  THE HEARTHVALE BASIN","Carve a foothold in the valley.","Defend the Main hall and defeat the final Warlord that arrives at 15:00. Victory unlocks endless survival.")
  var rows:=[["01","Secure limited supplies","Two timber sites and two quarries are inside the base. Two more of each lie outside. Green tiles mark valid sites when placing a producer."],["02","Build a defensive line","Drag joined walls and cover them with arrow towers and cannons. Great hordes bring stronger elite raiders. Enemies retaliate against firing defenses."],["03","Keep the settlement standing","Destroyed buildings disappear. Defenses and Regeneration upgrade at the Workshop. Other buildings upgrade individually."]]
  for i in 3:
   var y:float=343+i*88
@@ -845,8 +845,8 @@ func draw_end()->void:
  var description="Your settlement is saved. Resume when you are ready."
  if screen=="victory":
   title="The foothold is secured."
-  tag="MISSION COMPLETE  /  15 MINUTES HELD"
-  description="Pinewatch has endured the first assault. Continue into endless survival as the hordes grow, or return to camp."
+  tag="MISSION COMPLETE  /  FINAL WARLORD DEFEATED"
+  description=""
  elif screen=="defeat":
   title="The last hearth has fallen."
   tag="SETTLEMENT LOST"
@@ -874,7 +874,7 @@ func draw_settings()->void:
 
 func draw_guide()->void:
  overlay(Rect2(235,65,970,680),"FIELD MANUAL","Build a settlement worth defending.")
- var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a marked timber site or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","Upgrade walls, towers and Regeneration at the Workshop. Upgrade other buildings individually."],["Secure the foothold","Survive 15 in-game minutes to win, then continue endlessly. Minibosses enter every five minutes. App switching pauses and saves."]]
+ var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a marked timber site or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","Upgrade walls, towers and Regeneration at the Workshop. Upgrade other buildings individually."],["Secure the foothold","Defeat the final Warlord arriving at 15:00 to win, then continue endlessly. Stronger minibosses enter every five minutes."]]
  for i in entries.size():
   var p:=Vector2(274+(i%2)*462,245+(i/2)*141)
   label("0%d  %s"%[i+1,entries[i][0]],p,19,IVORY,true)

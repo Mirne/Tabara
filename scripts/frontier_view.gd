@@ -296,10 +296,12 @@ func draw_enemy(e:Dictionary,p:Vector2)->void:
  var row:int=UNIT_ROWS[e.kind]
  var frame:int=int(game.animation_clock*(10 if e.kind=="runner" else 6)+e.phase)%4
  if game.reduced_motion: frame=0
- Art.unit(self,row,frame,p)
+ var attack:int=Art.attack_frame(e,game.reduced_motion)
+ if attack>=0:frame=attack
+ Art.unit(self,row,frame,p,1.0,bool(e.get("facing_left",false)),Color.WHITE,attack>=0)
  if e.kind=="boss":
   var top:Vector2=p-Vector2(50,158)
-  draw_string(Body,top-Vector2(0,7),"WARLORD",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("e8c477"))
+  draw_string(Body,top-Vector2(0,7),"FINAL WARLORD" if bool(e.get("mission_boss",false)) else "WARLORD",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("e8c477"))
   draw_rect(Rect2(top,Vector2(100,7)),Color("2b2520"))
   draw_rect(Rect2(top,Vector2(100*e.hp/e.max_hp,7)),Color("c26c4e"))
  elif e.hp<e.max_hp*0.97:
@@ -453,7 +455,7 @@ func draw_effects()->void:
    var fall:float=clampf((elapsed-0.24)/0.56,0,1)
    if elapsed<0.8:
     draw_set_transform(e.pos+Vector2(fall*14,0),fall*1.25,Vector2.ONE)
-    Art.unit(self,UNIT_ROWS.get(e.get("kind","raider"),0),int(e.get("phase",0))%4,Vector2.ZERO,1,false,Color(0.92-fall*0.3,0.89-fall*0.3,0.8-fall*0.3,1-fall))
+    Art.unit(self,UNIT_ROWS.get(e.get("kind","raider"),0),int(e.get("phase",0))%4,Vector2.ZERO,1,bool(e.get("facing_left",false)),Color(0.92-fall*0.3,0.89-fall*0.3,0.8-fall*0.3,1-fall))
     draw_set_transform(Vector2.ZERO)
    if e.has("gold"):
     var at:Vector2=e.pos+Vector2(-23,-110-t*30)

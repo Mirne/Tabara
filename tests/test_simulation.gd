@@ -321,32 +321,162 @@ func run()->void:
  s.spawn_remaining=0
  s.step(0.2)
  check(elite.hp>0 and is_equal_approx(hp-elite.hp,s.stat(s.buildings[1],"damage")),"Cannon damage is unmodified and a fresh elite survives its first shell")
- # Minibosses enter at exactly 5-minute boundaries, including endless mode.
+ # Boss intervals escalate and only killing the unique final boss can win.
  var schedule=rich()
  schedule.elapsed=299.95
  schedule.wave=10
  schedule.step(0.05)
- var bosses:=0
+ var first_boss:Dictionary={}
  for e in schedule.enemies:
-  if e.kind=="boss":bosses+=1
- check(bosses==1 and schedule.boss_intervals==1,"First miniboss enters at five game minutes")
+  if e.kind=="boss":first_boss=e
+ check(not first_boss.is_empty() and first_boss.boss_rank==1 and schedule.boss_intervals==1,"First miniboss enters at five minutes")
  var resumed=roundtrip(schedule)
+ check(resumed!=null,"Miniboss state survives JSON restoration")
+ resumed.step(0.05)
+ var bosses:=0
+ for e in resumed.enemies:
+  if e.kind=="boss":bosses+=1
+ check(bosses==1,"Reloading a miniboss boundary never duplicates its spawn")
+ schedule=rich()
+ schedule.elapsed=599.95
+ schedule.wave=20
+ schedule.boss_intervals=1
+ schedule.step(0.05)
+ var second_boss:Dictionary={}
+ for e in schedule.enemies:
+  if e.kind=="boss":second_boss=e
+ check(second_boss.hp>first_boss.hp*2 and second_boss.damage>first_boss.damage*1.5,"Ten-minute miniboss has stronger health and attack")
+ schedule=rich()
+ schedule.elapsed=899.95
+ schedule.wave=30
+ schedule.boss_intervals=2
+ schedule.step(0.05)
+ var final_enemy:Dictionary={}
+ for e in schedule.enemies:
+  if e.get("mission_boss",false):final_enemy=e
+ check(not final_enemy.is_empty() and schedule.final_boss_id==final_enemy.id and schedule.boss_intervals==3,"Final Warlord enters at fifteen minutes with a unique saved identity")
+ check(final_enemy.hp>second_boss.hp*4 and final_enemy.damage>second_boss.damage*3,"Final Warlord is substantially stronger than the second miniboss")
+ check(not schedule.victory,"Reaching fifteen minutes never awards victory")
+ schedule.step(2)
+ check(schedule.elapsed>900 and not schedule.victory,"The battle continues beyond the final-boss arrival")
+ resumed=roundtrip(schedule)
+ check(resumed!=null and not resumed.victory and resumed.final_boss_id==schedule.final_boss_id,"Reloading after fifteen minutes preserves an unfinished boss fight")
  resumed.step(0.05)
  bosses=0
  for e in resumed.enemies:
-  if e.kind=="boss":bosses+=1
- check(bosses==1 and resumed.boss_intervals==1,"Reloading at a boundary never duplicates a miniboss")
- for interval in [2,3,4]:
+  if e.get("mission_boss",false):
+   bosses+=1
+   final_enemy=e
+ check(bosses==1,"Reloading the final encounter cannot spawn a second final boss")
+ var earlier:Dictionary=resumed.spawn_enemy(0.0,"boss",1)
+ earlier.hp=0
+ resumed.step(0.05)
+ check(not resumed.victory,"Killing an earlier miniboss cannot complete the mission")
+ resumed.build_at(Vector2(6100,2800),"arrow")
+ var finisher:Dictionary=resumed.buildings[-1]
+ finisher.age=10
+ finisher.cooldown=0
+ final_enemy.pos=Vector2(6300,2800)
+ final_enemy.hp=1
+ resumed.step(0.05)
+ check(resumed.victory and resumed.final_boss_defeated and resumed.buildings[0].hp>0,"Actual tower damage kills the final boss and awards victory with the Hall alive")
+ var completed=roundtrip(resumed)
+ check(completed!=null and completed.victory and completed.final_boss_defeated,"Boss-kill victory survives a disk-style round trip")
+ completed.victory_seen=true
+ completed.step(0.1)
+ check(completed.elapsed>900 and completed.victory,"Endless survival continues after the boss-kill victory")
+ schedule=rich()
+ schedule.elapsed=1199.95
+ schedule.wave=40
+ schedule.boss_intervals=3
+ schedule.legacy_completion=true
+ schedule.victory=true
+ schedule.victory_seen=true
+ schedule.step(0.05)
+ var endless_boss:Dictionary={}
+ for e in schedule.enemies:
+  if e.kind=="boss":endless_boss=e
+ check(endless_boss.boss_rank==4 and not endless_boss.mission_boss and endless_boss.hp>second_boss.hp,"Twenty-minute endless miniboss continues escalating")
+ # A full population cannot make the final encounter disappear or time-win.
+ schedule=rich()
+ schedule.elapsed=900
+ schedule.wave=31
+ schedule.boss_intervals=2
+ var crowd:Dictionary=schedule.spawn_enemy()
+ schedule.enemies.resize(Sim.MAX_ENEMIES)
+ schedule.enemies.fill(crowd)
+ schedule.spawn_due_boss()
+ check(schedule.final_boss_id==0 and not schedule.victory,"A full population queues the final boss without granting victory")
+ schedule.enemies.pop_back()
+ schedule.spawn_due_boss()
+ check(schedule.enemies[-1].mission_boss and schedule.final_boss_id>0,"The final boss takes the first available population slot")
+ # Simultaneous Hall loss takes priority over a final-boss death.
+ schedule=rich()
+ schedule.elapsed=899.95
+ schedule.wave=30
+ schedule.boss_intervals=2
+ schedule.step(0.05)
+ for e in schedule.enemies:
+  if e.mission_boss:e.hp=0
+ var killer:Dictionary=schedule.spawn_enemy()
+ killer.pos=schedule.buildings[0].pos+Vector2(150,0)
+ killer.cooldown=0
+ killer.damage=1e9
+ schedule.step(0.05)
+ check(schedule.defeated and schedule.final_boss_defeated and not schedule.victory,"Hall destruction and boss death in one step remain defeat")
+ var lost=roundtrip(schedule)
+ check(lost!=null and lost.defeated and not lost.victory,"Reload cannot turn a simultaneous defeat into victory")
+ # Old saves keep real prior completion; an unfinished late save gets one final boss.
+ schedule=rich()
+ var old_save:Dictionary=schedule.snapshot()
+ old_save.version=9
+ old_save.elapsed=920.0
+ old_save.wave=31
+ old_save.boss_intervals=3
+ old_save.victory_seen=false
+ var late=Sim.restore(old_save)
+ check(late!=null and not late.victory and not late.legacy_completion,"Old unfinished post-fifteen-minute save does not win from time")
+ late.step(0.05)
+ check(late.final_boss_id>0 and not late.victory,"An unfinished late legacy save receives a final encounter")
+ old_save.victory_seen=true
+ var old_endless=Sim.restore(old_save)
+ check(old_endless!=null and old_endless.victory and old_endless.legacy_completion,"Previously completed legacy endless saves keep their earned victory")
+ old_endless.step(0.05)
+ check(old_endless.final_boss_id==0,"Legacy completion never forces a new final encounter")
+ # Facing follows actual movement and attacks retain original damage cadence.
+ schedule=rich()
+ var walker:Dictionary=schedule.spawn_enemy()
+ walker.pos=Vector2(6200,2800)
+ var previous_x:float=walker.pos.x
+ schedule.step(0.05)
+ check(walker.pos.x<previous_x and walker.facing_left,"An enemy walking left actually mirrors left")
+ walker.pos=Vector2(1000,2700)
+ previous_x=walker.pos.x
+ schedule.step(0.05)
+ check(walker.pos.x>previous_x and not walker.facing_left,"An enemy walking right switches back")
+ walker.pos=Vector2(6200,2800)
+ schedule.step(0.05)
+ walker.hp=0
+ schedule.step(0.05)
+ var death_facing:=false
+ for event in schedule.events:
+  if event.type=="kill":death_facing=event.get("facing_left",false)
+ check(death_facing,"Death effects retain the last left-facing direction")
+ for kind in ["raider","runner","brute","siege","elite","boss"]:
   schedule=rich()
-  schedule.elapsed=interval*300-0.05
-  schedule.wave=int(schedule.elapsed/30)+1
-  schedule.boss_intervals=interval-1
-  schedule.step(0.05)
-  bosses=0
-  for e in schedule.enemies:
-   if e.kind=="boss":bosses+=1
-  check(bosses==1 and schedule.boss_intervals==interval,"Miniboss enters at minute "+str(interval*5))
- check(schedule.enemies[-1].hp>Sim.DEFINITIONS.cannon.damage*10,"Miniboss has enough ordinary health for many base cannon hits")
+  schedule.build_at(Vector2(6100,2800),"wall")
+  var actor:Dictionary=schedule.spawn_enemy(0.0,kind)
+  actor.pos=Vector2(6165,2800)
+  actor.cooldown=0
+  var initial_wall_hp:float=schedule.buildings[1].hp
+  schedule.attack_building(actor,1)
+  check(actor.attacking and actor.facing_left and is_equal_approx(actor.attack_left,0.66),kind+" starts an anchored, target-facing attack animation")
+  check(is_equal_approx(initial_wall_hp-schedule.buildings[1].hp,actor.damage) and is_equal_approx(actor.cooldown,1.15),kind+" keeps its original hit damage and cadence")
+  var after_hit:float=schedule.buildings[1].hp
+  schedule.attack_building(actor,1)
+  check(schedule.buildings[1].hp==after_hit,kind+" animation never applies an extra hit")
+  var posed=roundtrip(schedule)
+  check(posed!=null and posed.enemies[0].facing_left and posed.enemies[0].attacking and is_equal_approx(posed.enemies[0].attack_left,0.66),kind+" facing and attack pose survive save/load")
  # Save validation, actual legacy fixture, and exact fifteen-minute/endless rules.
  saved=roundtrip(s)
  check(saved!=null and saved.enemies[0].kind=="elite","Elite state survives a save round trip")
@@ -356,16 +486,26 @@ func run()->void:
  bad=s.snapshot()
  bad.regeneration_level=101
  check(Sim.restore(bad)==null,"Corrupt regeneration levels are rejected")
+ bad=s.snapshot()
+ bad.elapsed=920.0
+ bad.wave=31
+ bad.boss_intervals=3
+ bad.victory=true
+ check(Sim.restore(bad)==null,"A post-deadline victory without a final kill is rejected")
+ bad=completed.snapshot()
+ bad.final_boss_defeated=false
+ check(Sim.restore(bad)==null,"Missing living final boss cannot silently complete the mission")
+ bad=late.snapshot()
+ bad.enemies.append(bad.enemies[-1].duplicate(true))
+ check(Sim.restore(bad)==null,"Duplicate final-boss identities are rejected")
+ bad=s.snapshot()
+ bad.enemies[0].facing_left="left"
+ check(Sim.restore(bad)==null,"Malformed facing state is rejected")
+ bad=s.snapshot()
+ bad.enemies[0].attack_left=20.0
+ check(Sim.restore(bad)==null,"Malformed attack animation clocks are rejected")
  var old=Sim.restore(JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/frontier-preview.json")))
  check(old!=null and old.buildings[1].pos==Vector2(4544,3264),"Legacy free-position settlements retain their foundations")
  check(Sim.restore({"version":1})==null,"Malformed prototype saves do not corrupt the frontier")
- s=rich()
- s.elapsed=899.95
- s.wave=30
- s.step(0.05)
- check(s.victory and s.elapsed>=900,"Victory arrives after fifteen simulated minutes")
- s.victory_seen=true
- s.step(0.1)
- check(s.elapsed>900 and not s.defeated,"Play continues in endless mode after victory")
  print("RESULT: %d checks, %d failures"%[checks,failures])
  quit(1 if failures else 0)

@@ -7,6 +7,11 @@ const WORKSHOP=preload("res://assets/art/workshop.png")
 const BUILDINGS=preload("res://assets/art/buildings.png")
 const PROPS=preload("res://assets/frontier/props.png")
 const UNITS=preload("res://assets/frontier/units.png")
+const ATTACKS=preload("res://assets/frontier/attacks.png")
+const ATTACK_ROWS=[0,1,2,3,-1,4,5]
+# Padded attack cells retain the walking sprites' visible body height and feet.
+const ATTACK_SCALES=[1.13172,1.10649,1.20202,1.18453,1.0,1.08311,1.14917]
+const ATTACK_PIVOTS=[1.05421,1.02699,0.99209,0.96531,1.0,0.98133,0.95132]
 const ICONS=preload("res://assets/frontier/icons.png")
 const PANEL=preload("res://assets/frontier/panel.png")
 const BUILD_RECTS=[Rect2(8,40,385,465),Rect2(404,117,368,380),Rect2(784,119,373,381),Rect2(1230,42,260,463),Rect2(30,645,345,310),Rect2(416,566,303,391),Rect2(750,600,390,367)]
@@ -44,11 +49,22 @@ static func prop(canvas:CanvasItem,index:int,base:Vector2,scale_value:float=1.0,
  if flip: target.size.x=-target.size.x
  canvas.draw_texture_rect_region(PROPS,target,PROP_RECTS[index],tint)
 
-static func unit(canvas:CanvasItem,row:int,frame:int,base:Vector2,scale_value:float=1.0,flip:bool=false,tint:Color=Color.WHITE)->void:
- var size:Vector2=UNIT_SIZES[row]*scale_value
- var target:=Rect2(base-Vector2(size.x/2,size.y),size)
+static func attack_frame(enemy:Dictionary,reduced_motion:bool=false)->int:
+ if not bool(enemy.get("attacking",false)):return -1
+ if reduced_motion:return 1
+ var remaining:float=enemy.get("attack_left",0.0)
+ if remaining>0:return 1+clampi(int((1.0-remaining/0.66)*3),0,2)
+ return 0 if float(enemy.cooldown)<=0.25 else 3
+
+static func unit(canvas:CanvasItem,row:int,frame:int,base:Vector2,scale_value:float=1.0,flip:bool=false,tint:Color=Color.WHITE,attacking:bool=false)->void:
+ var attack:bool=attacking and ATTACK_ROWS[row]>=0
+ var size:Vector2=UNIT_SIZES[row]*scale_value*(ATTACK_SCALES[row] if attack else 1.0)
+ var target:=Rect2(base-Vector2(size.x/2,size.y*(ATTACK_PIVOTS[row] if attack else 1.0)),size)
  if flip: target.size.x=-target.size.x
- if row in [5,6]:
+ if attack:
+  var cell:=Vector2(ATTACKS.get_size())/Vector2(4,6)
+  canvas.draw_texture_rect_region(ATTACKS,target,Rect2(Vector2(frame,ATTACK_ROWS[row])*cell,cell),tint)
+ elif row in [5,6]:
   var texture:Texture2D=MINIBOSS if row==6 else ELITES
   var cell:=Vector2(texture.get_size())/Vector2(4,1)
   canvas.draw_texture_rect_region(texture,target,Rect2(Vector2(frame,0)*cell,cell),tint)
