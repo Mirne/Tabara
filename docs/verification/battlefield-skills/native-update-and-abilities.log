@@ -1,0 +1,47 @@
+Waiting for the disposable API24 emulator
+Emulator ready; installing v0.11 then testing v0.12 walls, miniboss skills and Rain
+PASS: Published v0.11 installs without clearing the settlement
+PASS: A compatible old settlement exists
+PASS: Android launcher opens the game
+PASS: Native menu renders the new illustrated landscape
+PASS: Actual v0.11 writes a format-ten save
+PASS: Signed v0.12 updates v0.11 with the same certificate
+PASS: Installing preserves the complete old save file
+PASS: Android launcher opens the game
+PASS: Native menu renders the new illustrated landscape
+PASS: New ability save format keeps the map
+PASS: Existing foundations and levels survive migration
+PASS: Existing 80-unit walls retain their physical footprints
+PASS: Global upgrades and Regeneration survive the update
+PASS: The original economy and mission progress are retained
+PASS: Old settlements start with Rain available and no phantom barrage
+PASS: Android launcher opens the game
+PASS: Native menu renders the new illustrated landscape
+PASS: A mobile confirmation adds one 40-unit wall against the old rampart
+PASS: New construction leaves all legacy wall foundations intact
+PASS: Android launcher opens the game
+PASS: Native menu renders the new illustrated landscape
+PASS: Five-minute miniboss enters once without completing the mission
+PASS: The arriving miniboss retains its real profile and has smash ready
+PASS: Android launcher opens the game
+PASS: Native menu renders the new illustrated landscape
+PASS: Native miniboss mirrors left and uses its three-second smash cycle
+PASS: A native smash damages multiple real wall buildings
+PASS: Android launcher opens the game
+PASS: Native menu renders the new illustrated landscape
+PASS: Reloaded miniboss switches to a right-facing hammer attack
+PASS: Android launcher opens the game
+PASS: Native menu renders the new illustrated landscape
+PASS: Fifteen-minute final Warlord still arrives without a timed victory
+PASS: Android launcher opens the game
+PASS: Native menu renders the new illustrated landscape
+PASS: Rain kill fixture holds the final boss alive outside Hall and tower range
+PASS: Selecting and targeting Rain does not spend a cast
+PASS: Actual native Rain kills the final Warlord and opens victory
+PASS: Rain victory requires the final boss dead and Hall alive
+PASS: Endless survival resumes after Rain wins the mission
+PASS: Android launcher opens the game
+PASS: Native menu renders the new illustrated landscape
+PASS: Rain recharge survives another cold restart without resetting
+PASS: Native diagnostics contain no script, shader or fatal error
+{"passed": true, "error": null, "checks": [{"label": "Published v0.11 installs without clearing the settlement", "passed": true}, {"label": "A compatible old settlement exists", "passed": true}, {"label": "Android launcher opens the game", "passed": true}, {"label": "Native menu renders the new illustrated landscape", "passed": true}, {"label": "Actual v0.11 writes a format-ten save", "passed": true}, {"label": "Signed v0.12 updates v0.11 with the same certificate", "passed": true}, {"label": "Installing preserves the complete old save file", "passed": true}, {"label": "Android launcher opens the game", "passed": true}, {"label": "Native menu renders the new illustrated landscape", "passed": true}, {"label": "New ability save format keeps the map", "passed": true}, {"label": "Existing foundations and levels survive migration", "passed": true}, {"label": "Existing 80-unit walls retain their physical footprints", "passed": true}, {"label": "Global upgrades and Regeneration survive the update", "passed": true}, {"label": "The original economy and mission progress are retained", "passed": true}, {"label": "Old settlements start with Rain available and no phantom barrage", "passed": true}, {"label": "Android launcher opens the game", "passed": true}, {"label": "Native menu renders the new illustrated landscape", "passed": true}, {"label": "A mobile confirmation adds one 40-unit wall against the old rampart", "passed": true}, {"label": "New construction leaves all legacy wall foundations intact", "passed": true}, {"label": "Android launcher opens the game", "passed": true}, {"label": "Native menu renders the new illustrated landscape", "passed": true}, {"label": "Five-minute miniboss enters once without completing the mission", "passed": true}, {"label": "The arriving miniboss retains its real profile and has smash ready", "passed": true}, {"label": "Android launcher opens the game", "passed": true}, {"label": "Native menu renders the new illustrated landscape", "passed": true}, {"label": "Native miniboss mirrors left and uses its three-second smash cycle", "passed": true}, {"label": "A native smash damages multiple real wall buildings", "passed": true}, {"label": "Android launcher opens the game", "passed": true}, {"label": "Native menu renders the new illustrated landscape", "passed": true}, {"label": "Reloaded miniboss switches to a right-facing hammer attack", "passed": true}, {"label": "Android launcher opens the game", "passed": true}, {"label": "Native menu renders the new illustrated landscape", "passed": true}, {"label": "Fifteen-minute final Warlord still arrives without a timed victory", "passed": true}, {"label": "Android launcher opens the game", "passed": true}, {"label": "Native menu renders the new illustrated landscape", "passed": true}, {"label": "Rain kill fixture holds the final boss alive outside Hall and tower range", "passed": true}, {"label": "Selecting and targeting Rain does not spend a cast", "passed": true}, {"label": "Actual native Rain kills the final Warlord and opens victory", "passed": true}, {"label": "Rain victory requires the final boss dead and Hall alive", "passed": true}, {"label": "Endless survival resumes after Rain wins the mission", "passed": true}, {"label": "Android launcher opens the game", "passed": true}, {"label": "Native menu renders the new illustrated landscape", "passed": true}, {"label": "Rain recharge survives another cold restart without resetting", "passed": true}, {"label": "Native diagnostics contain no script, shader or fatal error", "passed": true}], "actual_seconds": 1813.3781544649992, "apk_sha256": "82e1915bb3bcb6873a3fb2fc4e9bee04e4ddb523fcf0835ea7f015b1067ad39e", "previous_apk_sha256": "aebb450fdcdd2c94cde0d48eee8ba50cbab2eeebee2c427b4ef2775dc9bba650", "mode": "actual-v011-update-walls-miniboss-skills-and-rain", "fixtures": "Migration preserves the old economy and clears attackers. Later UI checks set a 1,000-resource budget, advance clocks to 299.95/899.95, reinforce walls, Workshop and quarry to level 100, disable Regeneration, and reposition enemies. The miniboss has 20,000 HP for repeatable skill captures. The final boss has one HP and is held at the quarry outside tower/Hall range for an actual Rain kill. These are controlled transition fixtures, not paid campaigns. The pre-fixture migrated settlement is restored."}

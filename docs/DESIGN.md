@@ -1,4 +1,4 @@
-# Hearthvale Basin: final Warlord
+# Hearthvale Basin: walls and battlefield abilities
 
 ## Direction and geography
 
@@ -8,8 +8,8 @@ game. Raster buildings, animated characters, connected woodland and limestone,
 and a textured command deck establish the visual style.
 
 The world is 8,192 × 5,120 units, with the hall at (4,800, 2,800). Two mountain
-spines leave a 480-unit pass at y=2,560–3,040. Six wall sections at x=4,160 can
-seal it. The continuous forest belts, low escarpments and eastern lake remain
+spines leave a 480-unit pass at y=2,560–3,040. Twelve single-cell wall sections
+at x=4,180 can seal it. Existing saved 80-unit wall lines keep their original span. The continuous forest belts, low escarpments and eastern lake remain
 from v0.7. Layout five has eight off-path resource sites, defined in
 `assets/world/open-approach.json`: two wood and two stone inside the base, with two
 of each exposed west of the pass. Legacy layouts 0–3 retain their 28 sites; layout four retains its original eight.
@@ -102,11 +102,19 @@ that specific boss while the Hall survives. Hall destruction takes precedence
 if both fall in one simulation tick. Further waves continue during the encounter;
 endless mode follows victory. Speed controls change game time.
 
-Walls use 80-unit sections, Manhattan drag strokes, and at most 64 sections per
-confirmation. Blocked terrain is skipped. The first complete green foundation establishes the stroke lattice, and neighboring walls align subsequent rows. Only eligible, non-overlapping foundations are charged; affordability and capacity are checked before construction. Live endpoints are
-reused without charging twice. Cardinal neighbors share textured stone faces,
-wooden walkways and continuous UVs. Internal faces and parapets are omitted. Dense blocks share one continuous deck and only exterior corners have capstones. Destruction opens a breach; a newly built section
-joins its neighbors and inherits global wall research.
+New walls use one 40×40 terrain cell, centered inside it. Manhattan strokes
+step by 40, skip blocked terrain and confirm at most 64 new sections. Only
+eligible, non-overlapping cells are charged. Existing endpoints are reused.
+Prices, HP and global wall levels remain unchanged. Cardinal neighbors share
+continuous textured stone faces and wooden decks. Only the outer boundary has
+vertical faces, parapets and corner caps; dense blocks have no interior rails.
+Dirt patches, picking bounds and health bars match the actual footprint.
+
+Old saved 80×80 walls keep their physical foundation, health and level. Each
+renders as four joined 40-unit tiles; new cells can join its perimeter. It remains
+one logical building, so migration does not change health, resources or the
+512-structure capacity. Destruction opens its original footprint. New walls
+store their 40-unit footprint explicitly.
 
 A Warlord enters every 300 game seconds at the western entrance. Boss baseline
 health is 26 times ordinary health, attack 4.5 times ordinary attack, and speed
@@ -124,6 +132,28 @@ prevent duplicate spawns after reload. At the population cap, the final boss has
 priority over ordinary reinforcements as soon as a slot opens. Missed regular
 intervals remain queued. The final boss follows normal navigation, blocking and
 retaliation rules and has a persistent health bar.
+
+Warlords have a **three-game-second smash cooldown**, starting when they wind
+up. A 0.6-second red warning circle precedes twice their existing melee damage
+to all building foundations within 160 units of the strike center. Movement
+stops during the wind-up, and killing the boss cancels the pending hit. Normal
+melee uses its existing cadence outside the special attack. The warning, hammer
+animation, impact dust and shockwave follow actual simulation state.
+
+War cry is a permanent, non-stacking aura. Non-boss enemies within 360 units move
+30% faster while retaining their stored base speed, attack and health. The bonus
+ends on leaving the aura or when its boss dies. A subtle ground aura and affected
+unit glow show the effect. All Warlords, including later endless bosses, use both
+abilities; spawn schedules and their existing strength curve are preserved.
+
+Rain of Arrows is available from the start, with a free cast every **60 game
+seconds**. A 220-unit circle receives six 50-damage pulses during a three-second
+barrage. Damage scales with the existing Arrow tower research multiplier
+`1.10^(level-1)` and is captured on casting. It damages enemies only and uses
+normal kill gold and final-boss victory rules. Select the ability, tap a circle,
+then confirm Release arrows. Cancelling or moving the camera spends nothing.
+The right panel shows current damage, radius, duration and recharge. No new
+building fee, research subject or tutorial popup is added.
 
 ## Rendering and mobile interaction
 
@@ -167,13 +197,17 @@ same logical canvas. No Guide or mobile zoom buttons are shown.
 
 ## Saves and reproducibility
 
-Format ten records per-building local levels and global defense levels, Regeneration, the miniboss interval
-counter, final-boss identity/defeat, earned victory, attack/facing state, terrain revision, structures, enemies, retaliation,
+Format eleven records per-building local levels and global defense levels, Regeneration, the miniboss interval
+counter, final-boss identity/defeat, earned victory, attack/facing state, smash warning/cooldown/center, Rain recharge and active
+barrage pulse state, per-wall footprint, terrain revision, structures, enemies, retaliation,
 economy, mission time, random state, camera and zoom. No trade cooldowns, active research or manual repair jobs are stored. Transient A* paths are rebuilt after load. JSON uses full
 precision, validates fields, and is atomically renamed over the prior file.
-Backgrounding pauses and saves; foregrounding requires resume.
+Backgrounding pauses and saves; foregrounding requires resume. Rain and smash
+clocks use game time and retain partial progress through reloads. Completed
+barrage timers clamp floating-point residue before saving, including the exact
+final-pulse frame; resuming never duplicates a damage pulse.
 
-Versions 2–9 preserve terrain, positions and sites (layouts 0–5).
+Versions 2–10 preserve terrain, positions and sites (layouts 0–5).
 Standing non-defense buildings retain their old purchased levels as individual
 levels; new replacements begin at one. Defenses keep shared type-wide levels. A paid
 version-seven research order completes once on migration without another charge,

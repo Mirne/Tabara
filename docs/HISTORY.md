@@ -7,6 +7,7 @@ previous releases and chat messages.
 
 | Release | Source | Verification |
 | --- | --- | --- |
+| 0.12 walls and battlefield abilities | [v0.12.0](https://github.com/Mirne/Tabara/tree/v0.12.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.12.0/docs/QA.md) |
 | 0.11 final Warlord | [v0.11.0](https://github.com/Mirne/Tabara/tree/v0.11.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.11.0/docs/QA.md) |
 | 0.10 building rules | [v0.10.0](https://github.com/Mirne/Tabara/tree/v0.10.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.10.0/docs/QA.md) |
 | 0.9 open approach | [v0.9.0](https://github.com/Mirne/Tabara/tree/v0.9.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.9.0/docs/QA.md) |

@@ -4,33 +4,38 @@ An offline Android settlement-defense game built in **Godot 4.6.3**. Build a
 settlement in a wooded valley, gather supplies, and defend the main hall. Defeat
 the **final Warlord arriving at 15:00** to unlock endless survival.
 
-![Settlement and Workshop](docs/screenshots/building-rules-workshop.png)
+![Warlord attacking the rampart on Android](docs/screenshots/android-battlefield-smash-left.png)
 
-## Version 0.11
+## Version 0.12
 
-All six attacking enemy types have painted wind-up, strike and recovery frames.
-Walking and attacking units mirror when they face left. Attack pacing and ordinary
-enemy damage are unchanged. The launcher and startup image use a new painted Hall
-icon. The decorative SINGLE PLAYER / OFFLINE menu footer is removed.
+New walls occupy **one 40×40 grid cell**. Adjacent sections share their textured
+stone faces, parapets and wooden deck, including corners and solid blocks.
+Blocked cells are skipped while dragging. Existing saved 80×80 wall foundations
+keep their size, health and levels, and visually join new cells along their edges.
+Wall prices and upgrades are unchanged.
 
-Warlords enter every five game minutes and grow stronger. The 10:00 miniboss is
-stronger than the 05:00 one; the 15:00 final Warlord has four times the old
-same-wave boss's health and twice its damage. Reaching 15:00 keeps the battle
-running. Victory requires killing that specific boss while the Hall survives;
-endless mode then continues with further five-minute bosses.
+Every Warlord now has a **3-second ground smash** with a visible warning and area
+damage. Its **permanent war cry** grants nearby ordinary enemies 30% more movement
+speed; auras do not stack. The five-, ten- and fifteen-minute boss profiles and
+final-boss victory objective are retained.
 
-Existing unfinished settlements adopt the final-boss objective. Completed old
-endless settlements retain their earned victory; start a new settlement to play
-the revised objective after an old win. Terrain, foundations, purchased upgrades,
-passive Marketplace income and all unspecified mechanics are retained.
+**Rain of Arrows** is a free defensive ability with a **60-game-second recharge**.
+Select it, tap a battlefield circle, then confirm Release arrows. A three-second
+barrage deals 300 total damage at Arrow tower research level one; damage scales
+with existing Arrow tower upgrades. Previewing, cancelling, panning and pinching
+spend nothing. Active barrages and recharge survive saves and pause correctly.
+
+The map, ordinary enemy base stats, resource sites, Marketplace, building prices
+and existing upgrade rules are retained. No new settlement is required. Old
+completed endless saves still retain their earned victory.
 
 The persistent [owner rules](docs/gameplay/NOTES.md) and [building/NPC specifications](docs/gameplay/INDEX.md)
 must be read before implementing further changes.
 
 ## Play on Android
 
-Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/main/builds/tabara-frontier-v0.11.apk)
-from GitHub. Open the link in Chrome, then open `tabara-frontier-v0.11.apk` from
+Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/main/builds/tabara-frontier-v0.12.apk)
+from GitHub. Open the link in Chrome, then open `tabara-frontier-v0.12.apk` from
 **Downloads** or Samsung **My Files → Downloads**. Install it over the previous
 version to retain the settlement. Existing saves retain their terrain, foundations and purchased levels.
 
@@ -45,7 +50,8 @@ advertising, analytics, or runtime network connection are required.
 3. Establish a wall line covered by arrow and cannon towers. Every fifth wave is
    a great horde. Attackers route around impassable terrain and destroy buildings
    blocking them. Red cells reject construction and block passage.
-4. Upgrade producers at their own panels. Build a Marketplace for passive gold.
+4. Use Rain of Arrows against clustered enemies; preview and confirm its circle.
+   Upgrade producers at their own panels. Build a Marketplace for passive gold.
    The Workshop upgrades defenses and Regeneration.
 5. Defeat the final Warlord arriving at 15:00, then continue until the hall falls.
 
@@ -55,7 +61,7 @@ advertising, analytics, or runtime network connection are required.
 | Woodcutter | Timber income, one per timber site |
 | Stonemason | Stone income, one per quarry |
 | Arrow tower | Rapid single-target damage |
-| Wall | Joined, draggable fortification sections |
+| Wall | Single-cell, joined draggable fortifications |
 | Cannon tower | Slower area damage |
 | Marketplace | Passive gold production and income upgrades; one per settlement |
 | Workshop | Global defense upgrades and Regeneration; one per settlement |
@@ -67,8 +73,8 @@ construction, **U** opens the Workshop, **R** opens Regeneration, **F** finds th
 **Space** pauses, and **Esc** goes back.
 
 The game saves every ten real seconds, on pause, when backgrounded, and when
-returning to the menu. Foregrounding requires explicit resume. Save format ten
-loads frontier versions 2–9 and preserves their geography, foundations and levels. An
+returning to the menu. Foregrounding requires explicit resume. Save format eleven
+loads frontier versions 2–10 and preserves their geography, foundations and levels. An
 already-paid v0.8 research order completes once on migration; any remaining paid
 local repair finishes once before its manual job is removed. Previously purchased Regeneration levels are retained; it stays locked when
 not previously purchased. Old save times do not trigger a backlog of minibosses.
@@ -90,8 +96,8 @@ SDK and Java paths in Godot's Editor Settings.
 ```sh
 godot --headless --editor --single-threaded-scene --path . --import --quit
 mkdir -p builds
-godot --headless --path . --export-debug Android builds/tabara-frontier-v0.11-unpacked.apk
-python3 tools/package_android.py builds/tabara-frontier-v0.11-unpacked.apk builds/tabara-frontier-v0.11.apk --sdk "$ANDROID_HOME"
+godot --headless --path . --export-debug Android builds/tabara-frontier-v0.12-unpacked.apk
+python3 tools/package_android.py builds/tabara-frontier-v0.12-unpacked.apk builds/tabara-frontier-v0.12.apk --sdk "$ANDROID_HOME"
 ```
 
 The packaging tool losslessly ZIP-compresses texture containers, verifies every
@@ -118,12 +124,13 @@ Back, saves, restart, panning and app switching. Configure `ANDROID_ADB`,
 `ANDROID_SERIAL`, `ANDROID_ADB_PORT`, `ANDROID_APK`, `ANDROID_REPORT_NAME` and
 `ANDROID_COMMAND_TIMEOUT` and `ANDROID_TAP_DELAY` as needed. Slower software
 emulators can use an eight-second tap delay. It clears only this game's data on that
-emulator. `tests/android_upgrade.py` installs the published v0.10 APK, migrates its save to
-v0.11, and checks native left/right attacks, the 15:00 arrival, final-boss victory
-and endless mode. Set `ANDROID_PREVIOUS_APK` to the old download. Encounter fixtures
-advance the clock, reposition enemies, reinforce walls and lower final-boss HP
-for a tower kill. They do not represent a normal campaign. The original migrated
-settlement is restored afterward.
+emulator. `tests/android_upgrade.py` installs published v0.11 and checks migration, a new
+single-cell wall beside a legacy rampart, miniboss smashes in both directions,
+a native Rain kill of the final boss, and recharge persistence. Set
+`ANDROID_PREVIOUS_APK` to the old download. Its controlled UI/encounter fixtures
+set a 1,000-resource budget, reinforce structures, reposition enemies, advance
+the clock and lower final-boss HP. They are not paid-order campaign evidence;
+the pre-fixture migrated settlement is restored afterward.
 
 The manually triggered Android GitHub workflow uses an accelerated API 35 emulator.
 See [verification evidence and limits](docs/QA.md), [rules and architecture](docs/DESIGN.md),

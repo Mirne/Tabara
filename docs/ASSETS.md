@@ -147,3 +147,12 @@ is its imagegen-edited padded variant for Android masks and the boot splash. Bot
 use the existing original Main hall painting as reference, with cream limestone,
 red roofs, amber windows and a dark green setting. They replace the old vector
 launcher artwork. No reference-game artwork or logo is included.
+
+## Battlefield abilities and single-cell walls (v0.12)
+
+This revision reuses the existing generated stone, timber, dirt, unit attack
+atlases and command-deck artwork. Wall joins use full 40-unit textured geometry;
+legacy foundations render as joined tiles. Rain arrows, impact dust, warning
+circles and war-cry glows use engine projectile/particle geometry and existing
+textures. No new source paintings or vector interface icons were added. The
+new screenshots are actual game-engine and Android captures, not generated art.

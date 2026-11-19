@@ -1,104 +1,107 @@
-# Final Warlord v0.11 verification
+# Walls and battlefield abilities v0.12 verification
 
 ## Build identity
 
-Runtime source: `b489e8dae95acd317c1604bddcbf04866ca6a336`.
-Godot 4.6.3, app 0.11.0/code 11, save format 10, terrain revision 5.
-APK: `tabara-frontier-v0.11.apk`, **104,023,841 bytes** (99.2 MiB).
-SHA-256: `aebb450fdcdd2c94cde0d48eee8ba50cbab2eeebee2c427b4ef2775dc9bba650`.
+Runtime source: `e82801fbea5a361054d73bd51a96a86a371f68f8`.
+Godot 4.6.3, app 0.12.0/code 12, save format 11, terrain revision 5.
+APK: `tabara-frontier-v0.12.apk`, **104,036,306 bytes** (99.2 MiB).
+SHA-256: `82e1915bb3bcb6873a3fb2fc4e9bee04e4ddb523fcf0835ea7f015b1067ad39e`.
 Certificate SHA-256: `dbd0f5f2a2a56082d36b733d6467f28dc7dc166e82ffe41d0dc2c2fe42cd6ebb`.
 Packaging preserves every uncompressed export payload and uses the published
-v0.10 signing key. See [packaging record](verification/final-warlord/packaging.log).
-The [v0.10 evidence](https://github.com/Mirne/Tabara/blob/v0.10.0/docs/QA.md)
+v0.11 signing key. See [packaging record](verification/battlefield-skills/packaging.log).
+The [v0.11 evidence](https://github.com/Mirne/Tabara/blob/v0.11.0/docs/QA.md)
 remains available through its release tag.
 
 ## Source, gameplay and rendering
 
-**1,877 model checks**, **81 terrain/navigation checks**, **46 movement traces /
-12,620 sampled positions**, **166 rendered interface checks**, and **85 combat-art
-checks** passed with zero failures. [Independent source CI](https://github.com/Mirne/Tabara/actions/runs/44503676499)
-passed the frozen runtime. See [checks](verification/final-warlord/checks.log),
-[movement](verification/final-warlord/movement.json), and
-[CI identity](verification/final-warlord/source-ci.json).
+**1,877 existing model checks**, **61 battlefield-mechanic checks**, **81 terrain /
+navigation checks**, **46 movement traces / 12,620 sampled positions**, **166
+interface checks**, **85 combat-art checks**, and **24 battlefield-interface checks**
+passed with zero failures. [Independent source CI](https://github.com/Mirne/Tabara/actions/runs/44530000990)
+passed the frozen runtime. See [checks](verification/battlefield-skills/checks.log),
+[movement](verification/battlefield-skills/movement.json), and
+[CI identity](verification/battlefield-skills/source-ci.json).
 
-Boss checks cover increasing five-minute tiers, the stronger 15:00 profile,
-continued combat at the deadline, the specific final boss's death, surviving Hall,
-wrong-boss kills, same-tick Hall loss, population-cap priority, reload without
-duplicates, unfinished late legacy saves and already-earned old endless victories.
-Corrupt encounter/facing fields are rejected. Ordinary enemy attack cadence and
-damage, map layouts 0–5, economy, local/global upgrades and passive Marketplace
-behavior retain their existing regression checks.
+Wall tests count the actual occupied terrain cells, test flush cardinal neighbors,
+3×3 masses without interior rails, red-cell filtering, payment, destruction,
+and serialization. A format-ten wall without new metadata retains its 80-unit
+collision, level, HP and resources. A new 40-unit neighbor joins that old foundation;
+destroying either opens only its own occupied cells.
 
-Rendered tests compare actual left/right walking and attack sprites for all six
-combat types, pose changes, foot anchors, source-cell boundaries, reduced motion,
-and enemy strikes against walls. The attack showcase uses six level-100 walls
-and granted supplies to isolate animation; it is not campaign evidence.
-The [direction sheet](screenshots/final-warlord-directions.png) and
-[wall strikes](screenshots/final-warlord-attacks.png) are actual engine captures.
-The launcher resources were extracted from the built APK and visually checked.
-The menu no longer shows the SINGLE PLAYER / OFFLINE footer.
+Smash tests cover the warning before damage, neighboring structures inside the
+circle, untouched structures outside, repeated three-second casts, no extra melee
+hit during wind-up, reload during a warning, and cancellation on boss death.
+War cry tests measure actual 30% faster movement, unchanged base stats, no stacking,
+range limits and immediate removal when its bosses die.
+
+Rain tests cover target rejection, no resource fee, recharge, first-hit delay,
+circle damage, six captured-damage pulses, Arrow tower scaling, reload without
+repeated pulses, ordinary kill gold and final-boss victory. A dedicated regression
+saves exactly on the barrage-end frame. It caught a floating-point residue issue;
+the final runtime clears that residue before serialization. A preparatory native
+run was stopped so its APK could be rebuilt with that fix.
+
+Rendered touch checks verify preview-before-cast, explicit confirmation, Back
+cancellation, panning and pinch zoom without spending a cast, leaving wall mode,
+paused-input isolation, real damage and falling arrows. Actual engine captures:
+[wall mass](screenshots/battlefield-walls.png),
+[filtered wall preview](screenshots/battlefield-wall-preview.png),
+[war cry](screenshots/battlefield-war-cry.png),
+[smash warning](screenshots/battlefield-smash-warning.png),
+[impact](screenshots/battlefield-smash-impact.png),
+[Rain preview](screenshots/battlefield-rain-preview.png), and
+[falling arrows](screenshots/battlefield-rain-falling.png).
+These fixtures grant supplies or use high-health enemies to isolate visuals;
+they are not normal-cost campaign evidence.
+
+## Signed Android update
+
+The exact downloadable APK passed **44 native Android API 24 checks** in
+**1,813.38 seconds**. Published v0.11 was installed first, wrote a format-ten
+settlement, then received the signed v0.12 update without clearing data. The
+complete old save survived installation; map, foundations, individual levels,
+global upgrades, Regeneration, resources and mission progress survived loading.
+See [native report](verification/battlefield-skills/native-update-and-abilities.json)
+and [log](verification/battlefield-skills/native-update-and-abilities.log).
+
+Actual touch confirmation placed a single-cell wall against the legacy rampart.
+Five-minute arrival, left/right hammer animation, repeated three-second smashes,
+damage to multiple walls, fifteen-minute arrival without timed victory, Rain
+target preview, final-boss death, endless continuation and recharge after another
+cold restart all passed. Native diagnostics contained no script, shader or fatal
+error. Captures: [mixed walls](screenshots/android-battlefield-mixed-walls.png),
+[left smash](screenshots/android-battlefield-smash-left.png),
+[right smash](screenshots/android-battlefield-smash-right.png),
+[Rain targeting](screenshots/android-battlefield-rain-preview.png), and
+[Rain victory](screenshots/android-battlefield-rain-victory.png).
+
+After the original economy migration checks, controlled encounter fixtures set
+a 1,000-resource budget, advance clocks to 299.95/899.95, reinforce walls,
+Workshop and quarry to level 100, and disable Regeneration. The posed miniboss
+has 20,000 HP for repeated captures. The final boss has one HP and attacks the
+quarry outside Hall/tower range, isolating Rain as its killing source. These are
+transition tests, not paid campaigns. The pre-fixture migrated settlement was
+restored afterward.
 
 ## Paid campaigns and limits
 
-Three seeded campaigns using the unchanged normal-cost defender bot reached
-15:00 but **none killed the final boss**. The Hall fell at **970.60, 982.20 and
-984.35 game seconds**, all in wave 33. No supplies were granted. This demonstrates
-that the old strategy no longer earns a timed win; it does not establish a winning
-strategy or guarantee balance for human players. See [campaign record](verification/final-warlord/balance.json).
-No new long-duration rendered soak or extreme-load performance claim is made
-for this release.
-
-## Native Android
-
-The **exact signed download APK** passed **34 checks** on Android 7/API 24
-in **1,200.31 real seconds**. It installs over published v0.10 without clearing
-data, preserves the complete old file during installation, and migrates terrain,
-foundations, local/global levels, Regeneration, economy, kills and mission time.
-The native final encounter stays active past 15:00 with exactly one stronger
-Warlord. Both target-facing attack directions accompany real wall damage, survive
-restart without duplicating the final boss, and switch back correctly. A tower
-kill opens victory only with the Hall alive; endless survival then advances.
-Diagnostics contain no script, shader or fatal error. The pre-fixture migrated
-settlement is restored afterward. See [native update report](verification/final-warlord/native-update-and-boss.json).
-
-The attack fixture reinforces existing walls to level 100, disables Regeneration,
-and repositions the final boss. The victory fixture lowers its HP to one for an
-actual tower kill. No supplies are granted. These isolate animation and transitions;
-they are not normal-cost campaign evidence. Two preparatory runs were stopped
-for menu changes; one also encountered an Android system dialog. The final run
-completed after those interruptions were resolved.
-
-Native captures: [arrival](screenshots/android-final-warlord-arrival.png),
-[left attack](screenshots/android-final-warlord-attack-left.png),
-[right attack](screenshots/android-final-warlord-attack-right.png), and
-[victory](screenshots/android-final-warlord-victory.png).
-
-Independent [Android 15/API 35 CI](https://github.com/Mirne/Tabara/actions/runs/44503676937)
-passed **63 checks** in **553.47 real seconds**. It exercises a fresh mission,
-paid producers/towers/walls and upgrades, Regeneration, pause, Back, restart,
-app switching, the five-minute miniboss, final-boss arrival without a timed win,
-an actual tower kill and continued endless survival. This CI APK is separately
-signed; its SHA-256 is `a3a2267a0b4a6e840ade9a1a5fcaba02ed84a1ed78b346b4ba275cc8c5ca055a`.
-See [API 35 report](verification/final-warlord/android-api35.json) and
-[CI identity](verification/final-warlord/android-ci.json).
-
-The fresh mission uses paid orders. Encounter fixtures advance saved clocks to
-299.95 and 899.95 seconds; the victory fixture repositions the final boss and
-lowers its HP to one for a real tower kill. These fixtures test transitions rather
-than normal campaign difficulty. The pre-fixture settlement is restored afterward.
-
-The [native menu capture](screenshots/final-warlord-menu.png) shows the removed
-SINGLE PLAYER / OFFLINE footer and the corrected final-boss objective.
+Three seeded paid-order defender campaigns reached 15:00 but **none killed the
+final Warlord**. The Hall fell at **1,002.60, 979.25 and 993.00 game seconds**,
+in waves 34, 33 and 34. No supplies were granted. The bot adapts its wall line to
+twelve single cells and uses its previous upgrade priorities; it does not cast
+Rain. This is a baseline strategy, not a winning-strategy or balance guarantee.
+See [campaign record](verification/battlefield-skills/balance.json).
+No new long-duration soak or extreme-load performance claim is made.
 
 ## Save compatibility
 
-Existing map layouts, foundations, purchased levels, Regeneration and economy
-survive migration. Unfinished settlements use the new final-boss objective.
-**Previously completed old endless saves retain their earned victory**; start a
-new settlement to experience the revised objective after an old win. Living old
-minibosses keep their existing stats and do not become the final boss.
+Existing map layouts 0–5, foundations, purchased levels, Regeneration and economy
+are preserved. Old walls retain their 80-unit foundations; new construction uses
+single 40-unit cells. New spells initialize ready, without a phantom active barrage.
+Previously earned legacy endless victories remain earned; unfinished missions
+still require the final Warlord's death while the Hall survives.
 
-Native verification uses emulators; no physical handset was available. This is
-an offline development-signed sideload APK for ARM64/x86-64 and API 24+.
-Persistent owner rules and individual behavior specifications are in
-[gameplay notes](gameplay/NOTES.md) and [the index](gameplay/INDEX.md).
+Native checks use emulators; no physical handset was available. The offline
+sideload build supports ARM64/x86-64 and Android API 24+. Persistent owner rules
+and individual specifications are in [gameplay notes](gameplay/NOTES.md) and
+[the index](gameplay/INDEX.md).
