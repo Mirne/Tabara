@@ -24,6 +24,9 @@ var selected:=-1
 var research_kind:="arrow"
 var workshop_tab:="research"
 var build_kind:=""
+var ability_mode:=false
+var ability_placed:=false
+var ability_target:=Vector2.ZERO
 var placement_ready:=false
 var wall_points:Array=[]
 var wall_anchor:=Vector2.ZERO
@@ -145,7 +148,7 @@ func _process(delta:float)->void:
  if sim!=null: animation_clock=sim.elapsed
  var effect_delta:float=delta if screen in ["mission","victory","defeat"] else 0.0
  for i in range(fx.size()-1,-1,-1):
-  fx[i].time-=effect_delta
+  fx[i].time-=effect_delta*(speed if fx[i].type=="smash" and screen=="mission" else 1)
   if fx[i].time<=0: fx.remove_at(i)
  mouse_default_cursor_shape=Control.CURSOR_ARROW
  for b in buttons:
@@ -189,6 +192,8 @@ func _input(event:InputEvent)->void:
    zoom_at(mouse,zoom*(1.13 if event.button_index==MOUSE_BUTTON_WHEEL_UP else 1/1.13))
   if event.pressed and event.button_index==MOUSE_BUTTON_RIGHT:
    build_kind=""
+   ability_mode=false
+   ability_placed=false
   if event.button_index==MOUSE_BUTTON_LEFT:
    if event.pressed:
     if click_ui(mouse): return
@@ -293,6 +298,10 @@ func click_ui(point:Vector2)->bool:
 func click_world(point:Vector2)->void:
  if screen!="mission" or sim==null: return
  var at:=screen_to_world(point)
+ if ability_mode:
+  ability_target=at
+  ability_placed=true
+  return
  if build_kind!="":
   if build_kind=="wall":
    wall_points=sim.wall_line(at,at)
@@ -307,6 +316,9 @@ func click_world(point:Vector2)->void:
   var size:Vector2=Art.BUILD_SIZES[Sim.DEFINITIONS[b.kind].art]
   if b.hp<=0: size=Vector2(140,100)
   var rect:Rect2=Art.building_rect(Sim.DEFINITIONS[b.kind].art,b.pos).grow(8)
+  if b.kind=="wall":
+   var foundation:Rect2=sim.building_foundation(b)
+   rect=foundation.merge(Rect2(foundation.position-Vector2(10,78),foundation.size)).grow(3)
   if b.hp<=0: rect=Rect2(b.pos-Vector2(size.x/2,size.y),size+Vector2(0,20))
   if rect.has_point(at): candidates.append(i)
  if not candidates.is_empty():
@@ -358,6 +370,8 @@ func act(action:String)->void:
   if screen!="mission" or sim==null: return
   var kind:String=action.trim_prefix("build:")
   if kind not in ORDER: return
+  ability_mode=false
+  ability_placed=false
   build_kind="" if build_kind==kind else kind
   placement_ready=false
   wall_points.clear()
@@ -365,6 +379,29 @@ func act(action:String)->void:
   ghost=sim.snap_position(camera_center,kind)
   return
  match action:
+  "rain":
+   if screen!="mission":return
+   ability_mode=not ability_mode
+   ability_placed=false
+   build_kind=""
+   placement_ready=false
+   wall_drawing=false
+   wall_points.clear()
+   selected=-1
+  "cancel_rain":
+   ability_mode=false
+   ability_placed=false
+  "confirm_rain":
+   if screen!="mission" or not ability_mode or not ability_placed:return
+   if not VIEW.has_point(world_to_screen(ability_target)):
+    notify("Bring the target circle into view.")
+    return
+   var error:String=sim.cast_rain(ability_target)
+   if error!="":notify(error)
+   else:
+    ability_mode=false
+    ability_placed=false
+    save_game()
   "confirm_build": confirm_placement()
   "new": screen="confirm" if save_available else "briefing"
   "confirm_new": screen="briefing"
@@ -381,6 +418,8 @@ func act(action:String)->void:
   "menu":
    save_game()
    build_kind=""
+   ability_mode=false
+   ability_placed=false
    screen="menu"
   "menu_back": screen="menu"
   "settings","guide","credits":
@@ -388,6 +427,8 @@ func act(action:String)->void:
    screen=action
   "back": screen=return_screen
   "construction":
+   ability_mode=false
+   ability_placed=false
    selected=-1
    build_kind=""
    placement_ready=false
@@ -473,7 +514,10 @@ func go_back()->void:
    save_game()
    get_tree().quit()
   "mission":
-   if build_kind!="": build_kind=""
+   if ability_mode:
+    ability_mode=false
+    ability_placed=false
+   elif build_kind!="": build_kind=""
    else: act("pause")
   "pause": act("resume")
   "settings","guide","credits": act("back")
@@ -488,6 +532,8 @@ func start_mission()->void:
  selected=-1
  speed=1
  build_kind=""
+ ability_mode=false
+ ability_placed=false
  camera_center=Map.HALL+Vector2(40,0)
  zoom=0.72
  apply_camera()
@@ -499,8 +545,8 @@ func start_mission()->void:
 
 func consume_events()->void:
  for e in sim.events:
-  if e.type in ["shot","hit","kill","build","gather","ruin"]:
-   e.time=0.35 if e.type=="shot" else 1.2
+  if e.type in ["shot","hit","kill","build","gather","ruin","smash"]:
+   e.time=0.35 if e.type=="shot" else (0.75 if e.type=="smash" else 1.2)
    e.duration=e.time
    if fx.size()<180: fx.append(e)
   if e.type=="boss":
@@ -508,6 +554,9 @@ func consume_events()->void:
    play_sound("cannon")
   if e.type=="ruin":
    play_sound("cannon")
+  if e.type=="smash" and clock-float(get_meta("last_boom",-10.0))>0.35:
+   play_sound("cannon")
+   set_meta("last_boom",clock)
   if e.type=="shot" and e.cannon and clock-float(get_meta("last_boom",-10.0))>0.35:
    play_sound("cannon")
    set_meta("last_boom",clock)
@@ -665,10 +714,27 @@ func draw_hud()->void:
  button(Rect2(1145,15,101,55),"Hall","hall",false,true,16)
  button(Rect2(1257,15,162,55),"Ⅱ  Pause","pause",false,true,18)
  Art.skin(self,Rect2(1102,82,342,732),Color(0.83,0.89,0.82),14)
- if build_kind!="" or (selected>=0 and selected<sim.buildings.size() and sim.buildings[selected]!=null): draw_inspector()
+ if ability_mode:draw_rain_panel()
+ elif build_kind!="" or (selected>=0 and selected<sim.buildings.size() and sim.buildings[selected]!=null): draw_inspector()
  else: draw_construction()
  draw_minimap()
+ var rain_caption:="Rain of Arrows" if sim.rain_cooldown<=0 else "Rain of Arrows · %ds"%ceili(sim.rain_cooldown)
+ button(Rect2(268,724,246,64),rain_caption,"rain",ability_mode,true,16)
  if screen!="mission": buttons.clear()
+
+func draw_rain_panel()->void:
+ label("RAIN OF ARROWS",Vector2(1121,124),21,GOLD,true)
+ var stats:=[["Total damage",pretty(sim.rain_damage())],["Radius","%d"%Sim.Abilities.RAIN_RADIUS],["Barrage","%.0f s"%Sim.Abilities.RAIN_DURATION],["Recharge","%d s"%maxf(0,Sim.Abilities.rain_recharge_seconds)]]
+ for i in stats.size():
+  var y:float=211+i*60
+  label(stats[i][0],Vector2(1124,y),17,MUTED)
+  label(stats[i][1],Vector2(1320,y),21,IVORY)
+ var error:String=sim.rain_target_error(ability_target) if ability_placed else ""
+ if sim.rain_cooldown>0:error="Recharging · %d s"%ceili(sim.rain_cooldown)
+ if ability_placed and not VIEW.has_point(world_to_screen(ability_target)):error="Bring the target circle into view."
+ if error!="":wrapped(error,Vector2(1124,495),285,17,RED,24)
+ button(Rect2(1120,654,306,64),"Release arrows","confirm_rain",true,ability_placed and error=="" and sim.rain_ready(),20)
+ button(Rect2(1120,736,306,54),"Cancel","cancel_rain",false,true,18)
 
 func draw_construction()->void:
  label("BUILD STRUCTURES",Vector2(1121,124),21,GOLD,true)

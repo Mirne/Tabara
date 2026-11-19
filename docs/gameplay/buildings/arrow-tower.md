@@ -9,3 +9,7 @@ construction tool staying selected. Do not add enemy-specific damage bonuses.
 
 Level-one upgrade price: 110 wood / 70 stone / 40 gold. Later upgrade
 prices scale by 1.15^(current level - 1), rounded up per resource.
+
+The new Rain of Arrows ability shares the existing Arrow tower damage research
+multiplier. This does not change tower attacks, costs or the Workshop upgrade.
+See [battlefield abilities](../abilities.md) for its proposed implementation.

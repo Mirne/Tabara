@@ -17,8 +17,8 @@ static func _static_init()->void:
  walk_surface.texture_repeat=CanvasItem.TEXTURE_REPEAT_ENABLED
 
 const HEIGHT:=56.0
-const HALF:=40.0
-const DIRECTIONS=[Vector2i(0,-2),Vector2i(2,0),Vector2i(0,2),Vector2i(-2,0)]
+const HALF:=20.0
+const DIRECTIONS=[Vector2i(0,-1),Vector2i(1,0),Vector2i(0,1),Vector2i(-1,0)]
 
 static func shade(tint:Color,factor:float)->Color:
  return Color(tint.r*factor,tint.g*factor,tint.b*factor,tint.a)
@@ -30,7 +30,7 @@ static func exposed_sides(neighbors:Dictionary)->PackedInt32Array:
  return out
 
 static func footprint(_neighbors:Dictionary)->PackedVector2Array:
- return PackedVector2Array([Vector2(-40,-40),Vector2(40,-40),Vector2(40,40),Vector2(-40,40)])
+ return PackedVector2Array([Vector2(-20,-20),Vector2(20,-20),Vector2(20,20),Vector2(-20,20)])
 
 static func face(canvas:CanvasItem,a:Vector2,b:Vector2,lift:Vector2,tint:Color,origin:Vector2)->void:
  var delta:=b-a
@@ -70,28 +70,28 @@ static func piece(canvas:CanvasItem,position:Vector2,neighbors:Dictionary,tint:C
  for side in [0,3,1,2]:
   if not exposed.has(side): continue
   var horizontal:bool=side in [0,2]
-  var edge:float=-40.0 if side in [0,3] else 32.0
-  var rect:=Rect2(Vector2(-40,edge),Vector2(80,8)) if horizontal else Rect2(Vector2(edge,-40),Vector2(8,80))
+  var edge:float=-20.0 if side in [0,3] else 15.0
+  var rect:=Rect2(Vector2(-20,edge),Vector2(40,5)) if horizontal else Rect2(Vector2(edge,-20),Vector2(5,40))
   small_prism(canvas,Rect2(rect.position+lift,rect.size),9,tint,position)
-  for step in [-26.0,14.0]:
-   var block:=Rect2(Vector2(step,edge-2),Vector2(18,12)) if horizontal else Rect2(Vector2(edge-2,step),Vector2(12,18))
+  for step in [-13.0,7.0]:
+   var block:=Rect2(Vector2(step,edge-1),Vector2(9,7)) if horizontal else Rect2(Vector2(edge-1,step),Vector2(7,9))
    small_prism(canvas,Rect2(block.position+lift,block.size),19,shade(tint,0.98),position)
  # Four outside corners for a 3x3 block, no towers at interior T/cross junctions.
  for corner in 4:
   var previous:int=(corner+3)%4
   if exposed.has(previous) and exposed.has(corner):
-   var at:Vector2=outline[corner]+Vector2(0 if corner in [0,3] else -16,0 if corner in [0,1] else -16)
-   small_prism(canvas,Rect2(at+lift,Vector2(16,16)),22,tint,position)
+   var at:Vector2=outline[corner]+Vector2(0 if corner in [0,3] else -10,0 if corner in [0,1] else -10)
+   small_prism(canvas,Rect2(at+lift,Vector2(10,10)),22,tint,position)
  canvas.draw_set_transform(Vector2.ZERO)
 
 static func preview(canvas:CanvasItem,sim,points:Array,tint:Color)->void:
  var nodes:Dictionary={}
- for p in points: nodes[Vector2i((p/40.0).round())]=true
+ for p in points: nodes[Vector2i((p/40.0).floor())]=true
  for p in points:
   var neighbors:Dictionary={}
-  var cell:=Vector2i((p/40.0).round())
+  var cell:=Vector2i((p/40.0).floor())
   for direction in DIRECTIONS:
-   var other:Vector2=Vector2(cell+direction)*40.0
+   var other:Vector2=(Vector2(cell+direction)+Vector2.ONE*0.5)*40.0
    var existing:int=sim.wall_at(other)
    if nodes.has(cell+direction) or (existing>=0 and sim.buildings[existing].hp>0): neighbors[direction]=true
   piece(canvas,p,neighbors,tint)

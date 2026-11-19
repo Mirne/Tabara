@@ -6,11 +6,12 @@ extends RefCounted
 const FINAL_BOSS_TIME := 900.0
 const MAX_LEVEL := 100
 const WAVE_SECONDS := 30.0
-const SAVE_VERSION := 10
+const SAVE_VERSION := 11
 const LOCAL_UPGRADES := ["hall","wood","stone","market","workshop"]
 const GLOBAL_UPGRADES := ["arrow","wall","cannon"]
 const BOSS_INTERVAL := 300.0
 const ATTACK_ANIMATION_SECONDS := 0.66
+const Abilities=preload("res://scripts/battlefield_abilities.gd")
 const PRODUCER_AGGRO_RANGE := 1600.0
 const Navigator=preload("res://scripts/assault_navigation.gd")
 static var shared_navigation:Dictionary={}
@@ -22,6 +23,8 @@ var boss_intervals:=0
 var final_boss_id:=0
 var final_boss_defeated:=false
 var legacy_completion:=false
+var rain_cooldown:=0.0
+var arrow_rains:Array=[]
 var foundations_dirty:=false
 var mountains_enabled:=true
 var terrain_revision:=World.AUTHORED_REVISION
@@ -42,8 +45,9 @@ const MAX_BUILDINGS := 512
 const MAX_ENEMIES := 2400
 const BUILD_TIME := 2.5
 const GRID_SIZE := 40.0
-const FOUNDATION_WIDTHS := {"hall":240.0,"wood":160.0,"stone":160.0,"arrow":80.0,"wall":80.0,"cannon":160.0,"market":160.0,"workshop":200.0}
-const FOOTPRINTS := {"hall":100.0,"wood":65.0,"stone":68.0,"arrow":45.0,"wall":34.0,"cannon":52.0,"market":76.0,"workshop":84.0}
+const FOUNDATION_WIDTHS := {"hall":240.0,"wood":160.0,"stone":160.0,"arrow":80.0,"wall":40.0,"cannon":160.0,"market":160.0,"workshop":200.0}
+const FOOTPRINTS := {"hall":100.0,"wood":65.0,"stone":68.0,"arrow":45.0,"wall":16.0,"cannon":52.0,"market":76.0,"workshop":84.0}
+const WALL_DIRECTIONS := [Vector2i(0,-1),Vector2i(1,0),Vector2i(0,1),Vector2i(-1,0)]
 const BODY_GAPS := {"raider":30.0,"runner":28.0,"brute":43.0,"siege":60.0,"elite":43.0,"boss":62.0}
 const DEFINITIONS := {
  "hall": {"name":"Main hall", "tag":"THE HEART OF TABARA", "desc":"Your last line of defense. Fires arrows and provides a small steady income.", "cost":[0,0,0], "upgrade":[65,45,25], "hp":4200.0, "damage":42.0, "range":500.0, "period":1.1, "art":0},
@@ -126,6 +130,7 @@ func grid_blocked(cell:Vector2i)->bool:
 
 func make_building(kind: String, position: Vector2 = Vector2.ZERO) -> Dictionary:
  var b:Dictionary={"kind":kind,"pos":position,"level":1 if kind in LOCAL_UPGRADES else int(research_levels.get(kind,1)),"hp":0.0,"cooldown":0.15,"age":0.0,"ruined_at":-1.0}
+ if kind=="wall": b.wall_size=GRID_SIZE
  b.hp=stat(b,"hp")
  return b
 
@@ -133,14 +138,18 @@ func footprint(kind: String) -> float:
  return FOOTPRINTS.get(kind,65.0)
 
 func snap_position(position: Vector2, kind: String = "") -> Vector2:
+ if kind=="wall": return (position/GRID_SIZE).floor()*GRID_SIZE+Vector2.ONE*GRID_SIZE*0.5
  if kind in ["wood","stone"]:
   var node:=deposit_near(position,kind)
   if node>=0: return resource_nodes[node].pos.snapped(Vector2.ONE*GRID_SIZE)
  return position.snapped(Vector2.ONE*GRID_SIZE)
 
-func foundation_rect(position: Vector2, kind: String) -> Rect2:
- var width:float=FOUNDATION_WIDTHS.get(kind,160.0)
+func foundation_rect(position: Vector2, kind: String, width_override:float=0.0) -> Rect2:
+ var width:float=width_override if width_override>0 else FOUNDATION_WIDTHS.get(kind,160.0)
  return Rect2(position-Vector2.ONE*width/2,Vector2.ONE*width)
+
+func building_foundation(building:Dictionary)->Rect2:
+ return foundation_rect(building.pos,building.kind,float(building.get("wall_size",GRID_SIZE)) if building.kind=="wall" else 0.0)
 
 func deposit_near(position: Vector2, kind: String, distance_limit: float = 200.0) -> int:
  var nearest:=-1
@@ -181,7 +190,7 @@ func placement_error(position: Vector2, kind: String) -> String:
  for i in nearby_buildings(position,radius+180):
   var b=buildings[i]
   if b==null: continue
-  if foundation.intersects(foundation_rect(b.pos,b.kind)):
+  if foundation.intersects(building_foundation(b)):
    return "These grid cells are occupied."
  if active_building_count()>=MAX_BUILDINGS: return "The frontier supports up to 512 structures."
  return ""
@@ -204,7 +213,7 @@ func rebuild_building_grid() -> void:
  hit_seen.fill(0)
  for i in buildings.size():
   if buildings[i]==null: continue
-  var rect:=foundation_rect(buildings[i].pos,buildings[i].kind)
+  var rect:=building_foundation(buildings[i])
   if DEFINITIONS[buildings[i].kind].has("income"):
    producer_indices.append(i)
    var approaches:Array[Vector2]=[]
@@ -219,12 +228,12 @@ func rebuild_building_grid() -> void:
   for fy in range(floori(rect.position.y/GRID_SIZE),ceili(rect.end.y/GRID_SIZE)):
    for fx in range(floori(rect.position.x/GRID_SIZE),ceili(rect.end.x/GRID_SIZE)):
     foundation_cells[Vector2i(fx,fy)]=i
+    if buildings[i].kind=="wall":wall_cells[Vector2i(fx,fy)]=i
   for hy in range(floori(rect.position.y/80),floori(rect.end.y/80)+1):
    for hx in range(floori(rect.position.x/80),floori(rect.end.x/80)+1):
     var key:=Vector2i(hx,hy)
     if not hit_cells.has(key): hit_cells[key]=[]
     hit_cells[key].append(i)
-  if buildings[i].kind=="wall": wall_cells[Vector2i((buildings[i].pos/GRID_SIZE).round())]=i
   var cell:=Vector2i(floori(buildings[i].pos.x/256),floori(buildings[i].pos.y/256))
   if not building_cells.has(cell): building_cells[cell]=[]
   building_cells[cell].append(i)
@@ -356,6 +365,25 @@ func can_afford(cost: Array) -> bool:
   if resources[RESOURCE_NAMES[i]]+0.001 < cost[i]: return false
  return true
 
+func rain_damage()->float:
+ return Abilities.RAIN_PULSE_DAMAGE*Abilities.RAIN_PULSES*pow(1.1,int(research_levels.arrow)-1)
+
+func rain_ready()->bool:
+ return not defeated and Abilities.rain_recharge_seconds>=0 and rain_cooldown<=0 and arrow_rains.is_empty()
+
+func rain_target_error(position:Vector2)->String:
+ if defeated:return "The main hall has fallen."
+ if not is_finite(position.x) or not is_finite(position.y) or not Rect2(Vector2.ZERO,World.SIZE).has_point(position):return "Choose a target inside the battlefield."
+ if not rain_ready():return "Rain of Arrows is recharging."
+ return ""
+
+func cast_rain(position:Vector2)->String:
+ var error:=rain_target_error(position)
+ if error!="":return error
+ rain_cooldown=Abilities.rain_recharge_seconds
+ arrow_rains.append({"pos":position,"left":Abilities.RAIN_DURATION,"pulses":0,"damage":rain_damage()/Abilities.RAIN_PULSES})
+ return ""
+
 func spend(cost: Array) -> bool:
  if not can_afford(cost): return false
  for i in 3: resources[RESOURCE_NAMES[i]] = maxf(0.0,resources[RESOURCE_NAMES[i]]-cost[i])
@@ -441,6 +469,10 @@ func spawn_enemy(initial_progress: float = 0.0, forced_kind:String="",boss_stage
  enemy.pos=path_point(initial_progress)+Vector2(0,enemy.lane)
  enemy.push=Vector2.ZERO
  enemy.aim=0.0
+ enemy.smash_clock=0.0
+ enemy.smash_left=0.0
+ enemy.smash_center=Vector2.ZERO
+ enemy.rallied=false
  var index:=enemies.size()
  if initial_progress>0:
   for i in enemies.size():
@@ -556,19 +588,23 @@ func step(delta: float) -> void:
     if witness.hp>0 and witness.pos.distance_to(impact)<90: provoke(witness,i)
   b.cooldown = stat(b,"period")
   events.append({"type":"shot","from":b.pos-Vector2(0,100),"pos":impact,"cannon":b.kind=="cannon"})
+ Abilities.step_rain(self,delta)
+ Abilities.apply_warcry(self)
  for e in enemies:
   if e.hp<=0: continue
   e.cooldown-=delta
   e.attack_left=maxf(0,float(e.get("attack_left",0.0))-delta)
   e.attacking=false
+  if e.kind=="boss" and Abilities.step_smash(self,e,delta):continue
   var pos:Vector2=e.pos
   if not navigation.passable(pos):
    pos=navigation.nearest_open(pos)
    e.pos=pos
   var body:float=BODY_GAPS[e.kind]*0.5
+  var walk_speed:float=e.speed*(Abilities.WARCRY_SPEED if e.rallied else 1.0)
   e.aim=float(e.get("aim",0.0))-delta
   var held:int=e.target
-  var reach:float=220.0 if e.kind=="siege" else e.speed*delta+10.0
+  var reach:float=220.0 if e.kind=="siege" else walk_speed*delta+10.0
   if e.aim>0 and held>=0 and held<buildings.size() and buildings[held]!=null and buildings[held].hp>0 and hit_rects[held].grow(body+reach).has_point(pos):
    attack_building(e,held)
    continue
@@ -603,17 +639,17 @@ func step(delta: float) -> void:
    e.push=separation
   var velocity:Vector2=heading+separation*1.35
   if velocity.length()>1: velocity=velocity.normalized()
-  var proposed:Vector2=pos+velocity*e.speed*delta
+  var proposed:Vector2=pos+velocity*walk_speed*delta
   var walkable:bool=navigation.can_step(pos,proposed)
   if not walkable:
-   proposed=pos+heading*e.speed*delta
+   proposed=pos+heading*walk_speed*delta
    walkable=navigation.can_step(pos,proposed)
    if not walkable:
     # Recenter inside the current open cell before taking a tight terrain turn.
     var recovery:Vector2=pos.direction_to(navigation.center(navigation.cell_of(pos)))
-    proposed=pos+recovery*minf(e.speed*delta,pos.distance_to(navigation.center(navigation.cell_of(pos))))
+    proposed=pos+recovery*minf(walk_speed*delta,pos.distance_to(navigation.center(navigation.cell_of(pos))))
     walkable=navigation.can_step(pos,proposed)
-  var lookahead:float=220.0 if e.kind=="siege" else e.speed*delta+10.0
+  var lookahead:float=220.0 if e.kind=="siege" else walk_speed*delta+10.0
   var blocker:=first_blocker(pos,pos+heading*lookahead,body)
   if blocker<0: blocker=first_blocker(pos,proposed,body)
   e.target=blocker
@@ -682,10 +718,19 @@ func attack_building(enemy:Dictionary,index:int)->void:
  enemy.attacking=true
  var horizontal:float=b.pos.x-enemy.pos.x
  if absf(horizontal)>1.0: enemy.facing_left=horizontal<0
+ if enemy.kind=="boss" and float(enemy.smash_left)>0:return
+ if enemy.kind=="boss" and float(enemy.smash_clock)<=0:
+  Abilities.begin_smash(enemy,b.pos)
+  return
  if enemy.cooldown>0: return
- b.hp=maxf(0,b.hp-enemy.damage)
  enemy.cooldown=1.15
  enemy.attack_left=ATTACK_ANIMATION_SECONDS
+ damage_building(index,float(enemy.damage))
+
+func damage_building(index:int,amount:float)->void:
+ if index<0 or index>=buildings.size() or buildings[index]==null:return
+ var b:Dictionary=buildings[index]
+ b.hp=maxf(0,b.hp-amount)
  events.append({"type":"hit","pos":b.pos,"text":""})
  if b.hp<=0:
   b.ruined_at=elapsed
@@ -696,53 +741,44 @@ func attack_building(enemy:Dictionary,index:int)->void:
    foundations_dirty=true
 
 func wall_neighbors(index:int)->Dictionary:
+ if index<0 or index>=buildings.size() or buildings[index]==null:return {}
+ return wall_tile_neighbors(wall_tiles(buildings[index])[0]) if buildings[index].kind=="wall" else {}
+
+func wall_tiles(building:Dictionary)->Array[Vector2]:
+ var result:Array[Vector2]=[]
+ var rect:=building_foundation(building)
+ for y in int(rect.size.y/GRID_SIZE):
+  for x in int(rect.size.x/GRID_SIZE):
+   result.append(rect.position+(Vector2(x,y)+Vector2.ONE*0.5)*GRID_SIZE)
+ return result
+
+func wall_tile_neighbors(position:Vector2)->Dictionary:
  var result:Dictionary={}
- var b=buildings[index]
- if b==null or b.kind!="wall" or b.hp<=0: return result
- for offset in [Vector2i(2,0),Vector2i(-2,0),Vector2i(0,2),Vector2i(0,-2)]:
-  var i:int=wall_cells.get(Vector2i((b.pos/GRID_SIZE).round())+offset,-1)
+ for offset in WALL_DIRECTIONS:
+  var i:int=wall_at(position+Vector2(offset)*GRID_SIZE)
   if i>=0 and buildings[i]!=null and buildings[i].hp>0: result[offset]=i
  return result
 
 func wall_line(start:Vector2,end:Vector2)->Array:
- var origin:=snap_position(start)
- var lattice:=origin
- var nearest:=161.0
- var aligned:=false
- for i in nearby_buildings(origin,240):
-  var b=buildings[i]
-  if b!=null and b.kind=="wall" and b.pos.distance_to(start)<nearest:
-   nearest=b.pos.distance_to(start)
-   lattice=b.pos
-   aligned=true
- if aligned: origin=lattice+(start-lattice).snapped(Vector2(80,80))
- var raw_end:=end.snapped(Vector2.ONE*40)
- var cursor:=origin
- var anchor:=origin
- # Sample at terrain-cell resolution, so starting in a mountain still finds the
- # first complete green foundation and the correct lattice across a narrow pass.
- for i in 257:
-  var phase_ok:bool=not aligned or cursor==lattice+(cursor-lattice).snapped(Vector2(80,80))
-  if phase_ok and (wall_at(cursor)>=0 or placement_error(cursor,"wall")==""):
-   anchor=cursor
-   break
-  if cursor==raw_end: break
-  var diff:Vector2=raw_end-cursor
-  if absf(diff.x)>=absf(diff.y): cursor.x+=signf(diff.x)*40
-  else: cursor.y+=signf(diff.y)*40
- var destination:=anchor+(end-anchor).snapped(Vector2(80,80))
- cursor=anchor
+ var cursor:=snap_position(start,"wall")
+ var destination:=snap_position(end,"wall")
  var result:Array=[cursor]
- while cursor!=destination and result.size()<129:
+ # A whole-map stroke is still previewed so red cells can be skipped. The
+ # transaction separately limits the number of new, green cells to 64.
+ while cursor!=destination and result.size()<512:
   var diff:Vector2=destination-cursor
-  if absf(diff.x)>=absf(diff.y): cursor.x+=signf(diff.x)*80
-  else: cursor.y+=signf(diff.y)*80
+  if absf(diff.x)>=absf(diff.y): cursor.x+=signf(diff.x)*GRID_SIZE
+  else: cursor.y+=signf(diff.y)*GRID_SIZE
   result.append(cursor)
  return result
 
 func wall_at(position:Vector2)->int:
- for i in nearby_buildings(position,80):
-  if buildings[i]!=null and buildings[i].kind=="wall" and buildings[i].pos.distance_to(position)<1: return i
+ var index:int=wall_cells.get(Vector2i((position/GRID_SIZE).floor()),-1)
+ if index<0:return -1
+ if buildings[index]!=null and buildings[index].hp>0 and building_foundation(buildings[index]).has_point(position):return index
+ for other in nearby_buildings(position,80):
+  var building=buildings[other]
+  if building!=null and building.kind=="wall" and building.hp>0 and building_foundation(building).has_point(position):return other
  return -1
 
 func wall_preview(points:Array)->Dictionary:
@@ -751,7 +787,7 @@ func wall_preview(points:Array)->Dictionary:
  var seen:Dictionary={}
  var occupied:Dictionary={}
  for raw_point in points:
-  var point:Vector2=snap_position(raw_point)
+  var point:Vector2=snap_position(raw_point,"wall")
   if seen.has(point): continue
   seen[point]=true
   if wall_at(point)>=0: continue
@@ -789,6 +825,11 @@ func build_wall(points:Array)->String:
  return ""
 
 func snapshot() -> Dictionary:
+ var saved_rains:Array=[]
+ for rain in arrow_rains:
+  var copy:Dictionary=rain.duplicate(true)
+  copy.pos=[rain.pos.x,rain.pos.y]
+  saved_rains.append(copy)
  var saved_buildings:Array=[]
  for b in buildings:
   if b==null: saved_buildings.append(null)
@@ -800,16 +841,18 @@ func snapshot() -> Dictionary:
  for e in enemies:
   var copy:Dictionary=e.duplicate(true)
   copy.pos=[e.pos.x,e.pos.y]
+  copy.smash_center=[e.smash_center.x,e.smash_center.y]
+  copy.erase("rallied")
   copy.erase("anger_path")
   copy.erase("anger_step")
   var push:Vector2=e.get("push",Vector2.ZERO)
   copy.push=[push.x,push.y]
   saved_enemies.append(copy)
- return {"research_levels":research_levels.duplicate(),"regeneration_level":regeneration_level,"boss_intervals":boss_intervals,"final_boss_id":final_boss_id,"final_boss_defeated":final_boss_defeated,"legacy_completion":legacy_completion,"victory":victory,"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
+ return {"rain_cooldown":rain_cooldown,"arrow_rains":saved_rains,"research_levels":research_levels.duplicate(),"regeneration_level":regeneration_level,"boss_intervals":boss_intervals,"final_boss_id":final_boss_id,"final_boss_defeated":final_boss_defeated,"legacy_completion":legacy_completion,"victory":victory,"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
 
 static func restore(data: Dictionary):
  if not _number(data.get("version"),2,SAVE_VERSION) or float(data.version)!=floorf(data.version): return null
- if int(data.version) not in [2,3,4,5,6,7,8,9,SAVE_VERSION]: return null
+ if int(data.version) not in [2,3,4,5,6,7,8,9,10,SAVE_VERSION]: return null
  if not data.get("buildings") is Array or data.buildings.is_empty() or data.buildings.size()>MAX_BUILDINGS: return null
  if not data.get("enemies") is Array or data.enemies.size()>MAX_ENEMIES: return null
  if not data.get("resources") is Dictionary: return null
@@ -831,6 +874,22 @@ static func restore(data: Dictionary):
   if not data.get("mountains_enabled") is bool: return null
   layout=1 if data.mountains_enabled else 0
  var sim=load("res://scripts/simulation.gd").new(int(data.seed),layout)
+ if data.version>=11:
+  if not _number(data.get("rain_cooldown"),0,maxf(0,Abilities.rain_recharge_seconds)+0.00001):return null
+  if not data.get("arrow_rains") is Array or data.arrow_rains.size()>1:return null
+  sim.rain_cooldown=float(data.rain_cooldown)
+  for rain in data.arrow_rains:
+   if not rain is Dictionary or not _number(rain.get("left"),0.000001,Abilities.RAIN_DURATION):return null
+   if not _number(rain.get("pulses"),0,Abilities.RAIN_PULSES) or float(rain.pulses)!=floorf(rain.pulses):return null
+   var expected:=mini(Abilities.RAIN_PULSES,int(floor((Abilities.RAIN_DURATION-float(rain.left)+0.00001)/Abilities.RAIN_PULSE_INTERVAL)))
+   if int(rain.pulses)!=expected:return null
+   if not _number(rain.get("damage"),0.001,Abilities.RAIN_PULSE_DAMAGE*pow(1.1,MAX_LEVEL-1)+0.01):return null
+   var point=rain.get("pos")
+   if not point is Array or point.size()!=2 or not _number(point[0],0,World.SIZE.x-0.00001) or not _number(point[1],0,World.SIZE.y-0.00001):return null
+   var copy:Dictionary=rain.duplicate(true)
+   copy.pos=Vector2(point[0],point[1])
+   copy.pulses=int(rain.pulses)
+   sim.arrow_rains.append(copy)
  if not data.get("deposits") is Array or data.deposits.size()!=sim.resource_nodes.size(): return null
  for timer in data.deposits:
   if not _number(timer,0,12.01): return null
@@ -857,6 +916,10 @@ static func restore(data: Dictionary):
   var copy:Dictionary=b.duplicate(true)
   copy.pos=Vector2(b.pos[0],b.pos[1])
   copy.level=int(copy.level)
+  if b.kind=="wall":
+   var width=b.get("wall_size",80.0 if data.version<11 else null)
+   if not _number(width,GRID_SIZE,80) or float(width) not in [GRID_SIZE,80.0]:return null
+   copy.wall_size=float(width)
   if data.version<7:
    copy.hp=float(b.hp)/max_health
   if not _number(copy.get("repair_left",0.0),0,8.01) or not _number(copy.get("repair_rate",0.0),0,1e30): return null
@@ -913,7 +976,7 @@ static func restore(data: Dictionary):
  if data.version<4:
   # Older settlements keep the terrain on which their foundations were built.
   for b in sim.buildings:
-   if b!=null and World.mountain_conflict(sim.foundation_rect(b.pos,b.kind),1): sim.terrain_revision=0
+   if b!=null and World.mountain_conflict(sim.building_foundation(b),1): sim.terrain_revision=0
  sim.mountains_enabled=sim.terrain_revision!=0
  sim.reset_navigation()
  if sim.buildings[0].pos!=World.HALL: sim.navigation=Navigator.new(sim.buildings[0].pos,sim.terrain_revision)
@@ -949,6 +1012,18 @@ static func restore(data: Dictionary):
    e.attack_left=0.0
    e.boss_rank=1 if e.kind=="boss" else 0
    e.mission_boss=false
+  if data.version>=11:
+   if not _number(e.get("smash_clock"),0,Abilities.SMASH_PERIOD+0.00001) or not _number(e.get("smash_left"),0,Abilities.SMASH_WINDUP+0.00001):return null
+   var center=e.get("smash_center")
+   if not center is Array or center.size()!=2 or not _number(center[0],0,World.SIZE.x) or not _number(center[1],0,World.SIZE.y):return null
+   if e.kind!="boss" and (e.smash_clock>0 or e.smash_left>0):return null
+   if e.smash_left>0 and (e.smash_clock<e.smash_left or not e.attacking):return null
+   e.smash_center=Vector2(center[0],center[1])
+  else:
+   e.smash_clock=0.0
+   e.smash_left=0.0
+   e.smash_center=Vector2.ZERO
+  e.rallied=false
  sim.deposits=data.deposits.duplicate()
  sim.elapsed=float(data.elapsed)
  sim.wave=int(data.wave)
@@ -1075,7 +1150,7 @@ func adjacent_target(pos:Vector2,reach:float)->int:
  for index in nearby_buildings(pos,200):
   var b=buildings[index]
   if b==null or b.hp<=0: continue
-  var rect:=foundation_rect(b.pos,b.kind)
+  var rect:=building_foundation(b)
   var point:=pos.clamp(rect.position,rect.end)
   var distance:=pos.distance_to(point)
   if distance>=nearest: continue

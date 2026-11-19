@@ -79,15 +79,15 @@ func run()->void:
  s=rich()
  var crossing:Array=s.wall_line(Vector2(4160,2400),Vector2(4160,3200))
  var preview:Dictionary=s.wall_preview(crossing)
- check(preview.error=="" and preview.count==6 and preview.skipped.size()>0,"Wall drag ignores red mountain cells and fits six sections across the pass")
+ check(preview.error=="" and preview.count==12 and preview.skipped.size()>0,"Wall drag ignores red mountain cells and fits twelve single-cell sections across the pass")
  var charged:Dictionary=s.resources.duplicate()
- check(s.build_wall(crossing)=="" and s.active_building_count()==7,"Valid wall sections build despite skipped red endpoints")
+ check(s.build_wall(crossing)=="" and s.active_building_count()==13,"Valid wall sections build despite skipped red endpoints")
  for i in 3:check(s.resources[Sim.RESOURCE_NAMES[i]]==charged[Sim.RESOURCE_NAMES[i]]-preview.cost[i],"Only eligible wall sections are charged")
  var edges:=0
  var Wall=load("res://scripts/wall_art.gd")
  s=rich()
- for y in range(2800,2961,80):
-  for x in range(6000,6161,80):s.build_at(Vector2(x,y),"wall")
+ for y in range(2800,2881,40):
+  for x in range(6000,6081,40):s.build_at(Vector2(x,y),"wall")
  for i in range(1,10):edges+=Wall.exposed_sides(s.wall_neighbors(i)).size()
  check(edges==12 and Wall.exposed_sides(s.wall_neighbors(5)).is_empty(),"A 3x3 wall mass has only twelve perimeter rails and no internal parapets")
  # Instant global upgrades spend once, preserve damage and affect future builds.
@@ -468,6 +468,7 @@ func run()->void:
   var actor:Dictionary=schedule.spawn_enemy(0.0,kind)
   actor.pos=Vector2(6165,2800)
   actor.cooldown=0
+  if kind=="boss":actor.smash_clock=3.0 # Inspect ordinary melee between special attacks.
   var initial_wall_hp:float=schedule.buildings[1].hp
   schedule.attack_building(actor,1)
   check(actor.attacking and actor.facing_left and is_equal_approx(actor.attack_left,0.66),kind+" starts an anchored, target-facing attack animation")

@@ -52,6 +52,7 @@ static func prop(canvas:CanvasItem,index:int,base:Vector2,scale_value:float=1.0,
 static func attack_frame(enemy:Dictionary,reduced_motion:bool=false)->int:
  if not bool(enemy.get("attacking",false)):return -1
  if reduced_motion:return 1
+ if float(enemy.get("smash_left",0.0))>0:return 0
  var remaining:float=enemy.get("attack_left",0.0)
  if remaining>0:return 1+clampi(int((1.0-remaining/0.66)*3),0,2)
  return 0 if float(enemy.cooldown)<=0.25 else 3

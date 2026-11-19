@@ -58,3 +58,20 @@ requested scope, not a separate owner-confirmed change. A later answer overrides
   one final Warlord without replaying all past miniboss intervals.
 
 - Owner follow-up: remove the menu footer text “SINGLE PLAYER / OFFLINE”.
+
+## Requested after v0.11: single-cell walls and battlefield abilities
+
+- Walls become 1x1 construction-grid cells and merge visually with cardinal
+  neighbors, including corners and dense blocks. Retain drag confirmation, red
+  terrain filtering, destruction, prices and global Workshop wall upgrades.
+- Compatibility implementation: existing saved wall foundations remain intact.
+  Old 80-unit walls are rendered from joined 40-unit tiles; new walls occupy one
+  40-unit cell. Store each wall's footprint so future saves keep that distinction.
+- Give the middle minibosses abilities so their encounters have more impact.
+  Owner clarified: smash every 3 game seconds; war cry is passive and continuous.
+  Apply both to Warlords; do not change unrelated
+  ordinary enemy stats, resources, map geography or building upgrades.
+- Add Rain of Arrows: arrows fall from the sky into a targeted battlefield circle.
+  Mobile targeting uses a preview and explicit confirmation. Owner confirmed
+  a free cast with **60 game seconds recharge**. Do not add tutorial/filler
+  tooltips or cooldowns to existing buildings.

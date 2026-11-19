@@ -11,3 +11,7 @@ pathfinder and attack walls that block the chosen route. Do not grant knowledge
 of distant producers behind the base, or ignore collision to reach a deposit.
 Ordinary damage applies to every enemy type. Keep existing speeds, health, damage,
 spawning, kill rewards and wave progression outside these targeting changes.
+
+The Warlord's new continuous war-cry aura increases nearby non-boss movement
+speed by 30% within 360 units. It does not stack or change stored base stats.
+All usual targeting, terrain collision and attack cadence still apply.

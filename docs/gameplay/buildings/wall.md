@@ -9,3 +9,14 @@ Panel shows health and the actual HP change/price; purchase caption is Upgrade.
 
 Level-one upgrade price: 40 wood / 110 stone / 20 gold. Later upgrade
 prices scale by 1.15^(current level - 1), rounded up per resource.
+
+New walls occupy exactly one 40x40 terrain-grid cell, centered in that cell.
+Cardinal neighbors merge into a continuous textured deck with only outer faces,
+parapets and corner caps. Three-by-three masses have no interior rails or towers.
+Drag strokes step by 40 and retain confirmation, blocked-cell skipping and the
+64-new-section limit. Each new cell keeps the existing price, HP and upgrades.
+
+Preserve old saved foundations: legacy 80x80 walls keep their collision, levels
+and HP, and render as four joined 40x40 tiles. New single-cell walls join their
+outer edges correctly. Save the footprint; do not split old logical buildings or
+spend resources during migration. Destruction opens the actual occupied cells.

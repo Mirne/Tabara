@@ -20,7 +20,7 @@ from PIL import Image, ImageChops, ImageStat
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "com.tabara.lasthearth"
-APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.11.apk"))
+APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.12.apk"))
 OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android-frontier")).name
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
@@ -241,12 +241,12 @@ def native_checks(back_only=False):
                 tap(1338, 43)
                 before_wall = save()
                 check(len(before_wall["buildings"]) == 5, "Native placement constructs two producers and two towers without reopening the tower catalogue")
-                before_wall = wait_supplies(before_wall, {"wood": 150, "stone": 330, "gold": 60})
+                before_wall = wait_supplies(before_wall, {"wood": 300, "stone": 660, "gold": 120})
                 adb("shell", "input", "keyevent", "4")
                 time.sleep(4)
                 tap(1352, 376)
-                start = world_point(4160, 2400)
-                finish = world_point(4160, 3200)
+                start = world_point(4180, 2400)
+                finish = world_point(4180, 3200)
                 adb("shell", "input", "swipe", *physical(*start), *physical(*finish), "700")
                 time.sleep(4)
                 screen("03b-wall-preview")
@@ -261,16 +261,18 @@ def native_checks(back_only=False):
                 screen("03c-wall-built")
             tap(1338, 43)  # Explicit known pause.
             screen("04-built-and-paused")
-            data = wait_saved_structure(10, "wall")
-            check(data["version"] == 10 and data["terrain_revision"] == 5, "Native app writes global research and the new eight-site terrain format")
+            data = wait_saved_structure(16, "wall")
+            check(data["version"] == 11 and data["terrain_revision"] == 5, "Native app writes ability state and retains the eight-site terrain format")
             for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow"), (4, "arrow")]:
                 check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
                 check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")
             expected = [(4760,2440),(5480,3240),(4480,2760),(4640,2760)]
             for index, position in enumerate(expected, 1):
                 check(tuple(data["buildings"][index]["pos"]) == position, "Native confirmed building follows the grid at " + str(position))
-            for index, position in [(5,(4160,2600)),(6,(4160,2680)),(7,(4160,2760)),(8,(4160,2840)),(9,(4160,2920)),(10,(4160,3000))]:
-                check(data["buildings"][index]["kind"] == "wall" and tuple(data["buildings"][index]["pos"]) == position, "Native wall stroke creates joined piece at " + str(position))
+            for index, y in enumerate(range(2580,3021,40),5):
+                building=data["buildings"][index]
+                check(building["kind"] == "wall" and tuple(building["pos"]) == (4180,y) and building["wall_size"]==40,
+                      "Native wall stroke creates a single-cell joined piece at " + str((4180,y)))
             check(len(data["deposits"]) == 8, "Native mission contains only eight producer sites")
             check(data["elapsed"] > 0 and data["wave"] >= 1, "Native mission advances")
             before = data["elapsed"]
@@ -296,7 +298,7 @@ def native_checks(back_only=False):
             tap(*world_point(5200, 2800))
             tap(1338, 43)
             checkpoint = save()
-            check(checkpoint["version"] == 10 and checkpoint["terrain_revision"] == 5,
+            check(checkpoint["version"] == 11 and checkpoint["terrain_revision"] == 5,
                   "Resumed checkpoint retains the current save format and map")
             check(checkpoint["research_levels"]["arrow"] == 1 and checkpoint["regeneration_level"] == 0,
                   "Resumed checkpoint starts before the remaining paid upgrade tests")
@@ -466,6 +468,45 @@ def native_checks(back_only=False):
                 check(save()["elapsed"] > won["elapsed"] and save()["victory"],
                       "Native endless survival continues after final-boss victory")
 
+                # Isolated native ability target: high HP and low attack keep the
+                # real settlement safe while checking input, damage and recharge.
+                rain_fixture=copy.deepcopy(normal)
+                rain_fixture.update(enemies=[],spawn_remaining=0,spawn_clock=30.0,rain_cooldown=0.0,arrow_rains=[])
+                rain_fixture["camera"]=[4840.0,2800.0,.72]
+                victim=copy.deepcopy(final_bosses[0])
+                victim.update(id=rain_fixture["next_id"],kind="elite",mission_boss=False,boss_rank=0,
+                              hp=5000.0,max_hp=5000.0,damage=1.0,speed=86.0,pos=[5480.0,2800.0],
+                              target=-1,aim=0.0,anger=-1,anger_left=0.0,attacking=False,attack_left=0.0,
+                              smash_clock=0.0,smash_left=0.0,smash_center=[0.0,0.0])
+                rain_fixture["next_id"]+=1
+                rain_fixture["enemies"]=[victim]
+                adb("shell","am","force-stop",PACKAGE)
+                write_save(rain_fixture)
+                launch()
+                wait_menu()
+                tap(260,462)
+                time.sleep(6)
+                tap(391,756)
+                tap(*world_point(5360,2800))
+                screen("12-rain-preview")
+                check(save()["rain_cooldown"]==0 and not save()["arrow_rains"],
+                      "Native Rain selection and target tap only preview without casting")
+                tap(1273,685)
+                tap(1338,43)
+                cast=save()
+                check(cast["rain_cooldown"]>0 and cast["enemies"][0]["hp"]<5000,
+                      "Native Rain confirmation starts recharge and damages the real target")
+                screen("13-rain-cast")
+                adb("shell","am","force-stop",PACKAGE)
+                launch()
+                wait_menu()
+                tap(260,462)
+                time.sleep(6)
+                tap(1338,43)
+                restored_rain=save()
+                check(0<restored_rain["rain_cooldown"]<cast["rain_cooldown"],
+                      "Native Rain recharge survives a cold restart without resetting")
+
             finally:
                 adb("shell", "am", "force-stop", PACKAGE)
                 write_save(normal)
@@ -493,7 +534,7 @@ def native_checks(back_only=False):
                   "error": error, "checks": checks, "actual_seconds": time.monotonic() - started,
                   "apk_sha256": APK_SHA256, "mode": "foreground-back" if back_only else ("resumed-native" if resume_log else "full-native"),
                   "prior_segment": prior_segment,
-                  "fixtures": "Restore/lifecycle checks clear incoming attackers after paid construction. Boss checks advance saved clocks to 299.95 and 899.95 seconds. The first damages the Hall; the final kill fixture lowers final-boss HP to 1 for actual tower damage. No resources are granted. The original native settlement is restored" if not back_only else "existing settlement"}
+                  "fixtures": "Restore/lifecycle checks clear incoming attackers after paid construction. Boss checks advance saved clocks to 299.95 and 899.95 seconds. The first damages the Hall; the final kill fixture lowers final-boss HP to 1 for actual tower damage. Rain uses a repositioned 5,000-HP elite with one attack damage to isolate targeting, real damage and recharge persistence. No resources are granted. These are transition fixtures, not paid-campaign evidence. The original native settlement is restored" if not back_only else "existing settlement"}
         (OUT / "report.json").write_text(json.dumps(report, indent=2))
         print(json.dumps(report), flush=True)
     return 0 if report["passed"] else 1

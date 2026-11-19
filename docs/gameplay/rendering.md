@@ -17,3 +17,18 @@ warm windows, dark woodland palette and existing building artwork. Keep importan
 features within Android adaptive-icon safe bounds. Do not introduce new UI tips.
 
 Remove the decorative “SINGLE PLAYER / OFFLINE” menu footer, as requested.
+
+Warlord smash has a visible ground-circle wind-up and hammer strike, followed
+by a dust/shockwave impact. War cry uses a subtle continuous aura and affected
+enemies get a ground glow. These combat tells are not tutorial text.
+
+Rain of Arrows shows a circle while targeting and many downward arrow shafts
+landing inside it during the barrage. Active barrages render from simulation
+state so pause, speed changes and reloads remain consistent. Keep the mobile
+ability button outside the minimap and construction panel, with large confirm
+and cancel controls. Use existing command-deck textures, not placeholder icons.
+
+Single-cell walls keep the existing textured stone/wood materials and height.
+Their dirt footprint, picking bounds and health bars match the smaller cell.
+Legacy saved ramparts retain their old physical footprint and share the same
+40-unit visual tiles, so new cells join their perimeter without internal rails.

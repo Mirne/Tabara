@@ -4,8 +4,10 @@ const Sim=preload("res://scripts/simulation.gd")
 const PLAN=[
  [Vector2(4760,2440),"wood"],[Vector2(5480,3240),"stone"],[Vector2(4480,2760),"arrow"],
  [Vector2(5480,2600),"stone"],[Vector2(4480,2880),"cannon"],
- [Vector2(4160,2600),"wall"],[Vector2(4160,2680),"wall"],[Vector2(4160,2760),"wall"],
- [Vector2(4160,2840),"wall"],[Vector2(4160,2920),"wall"],[Vector2(4160,3000),"wall"],
+ [Vector2(4180,2580),"wall"],[Vector2(4180,2620),"wall"],[Vector2(4180,2660),"wall"],
+ [Vector2(4180,2700),"wall"],[Vector2(4180,2740),"wall"],[Vector2(4180,2780),"wall"],
+ [Vector2(4180,2820),"wall"],[Vector2(4180,2860),"wall"],[Vector2(4180,2900),"wall"],
+ [Vector2(4180,2940),"wall"],[Vector2(4180,2980),"wall"],[Vector2(4180,3020),"wall"],
  [Vector2(5200,2800),"workshop"],
  [Vector2(5360,2440),"wood"],[Vector2(4500,3120),"arrow"],
  [Vector2(4720,3056),"cannon"],[Vector2(4520,2720),"arrow"],

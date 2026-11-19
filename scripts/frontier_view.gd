@@ -156,7 +156,8 @@ func _draw()->void:
  drawn_entities=entities.size()
  for b in sim.buildings:
   if b==null or not visible_world.has_point(b.pos): continue
-  draw_texture_rect(preload("res://assets/frontier/earth.png"),Art.dirt_rect(sim.DEFINITIONS[b.kind].art,b.pos),false,Color(0.83,0.85,0.75,0.85))
+  var dirt:Rect2=sim.building_foundation(b).grow(8) if b.kind=="wall" else Art.dirt_rect(sim.DEFINITIONS[b.kind].art,b.pos)
+  draw_texture_rect(preload("res://assets/frontier/earth.png"),dirt,false,Color(0.83,0.85,0.75,0.85))
  # Keep ground shadows together so a horde does not switch textures per soldier.
  for entity in entities:
   if entity.has("enemy"):
@@ -165,6 +166,8 @@ func _draw()->void:
    var b:Dictionary=sim.buildings[entity.building]
    var radius:float=sim.footprint(b.kind)
    draw_texture_rect(shadow,Rect2(b.pos-Vector2(radius+35,27),Vector2(radius*2+70,70)),false)
+ draw_boss_telegraphs()
+ draw_rain_circles()
  if game.selected>=0 and game.selected<sim.buildings.size() and sim.buildings[game.selected]!=null:
   var b:Dictionary=sim.buildings[game.selected]
   if sim.DEFINITIONS[b.kind].has("range") and b.hp>0:
@@ -192,6 +195,7 @@ func _draw()->void:
   elif entity.has("deposit"): draw_deposit(entity.deposit)
   else: draw_enemy(entity.enemy,entity.pos)
  draw_effects()
+ draw_arrow_barrages()
  preview_range=0.0
  if game.build_kind!="" and game.placement_ready and sim.DEFINITIONS[game.build_kind].has("range"):
   preview_range=float(sim.DEFINITIONS[game.build_kind].range)
@@ -242,8 +246,8 @@ func draw_grid()->void:
  for b in game.sim.buildings:
   if b==null or not visible_world.has_point(b.pos): continue
   var color:=Color(0.91,0.2,0.14,0.26) if b.hp>0 else Color(0.7,0.47,0.2,0.2)
-  draw_rect(game.sim.foundation_rect(b.pos,b.kind),color)
-  draw_rect(game.sim.foundation_rect(b.pos,b.kind),Color(color,0.85),false,1.2/game.zoom)
+  draw_rect(game.sim.building_foundation(b),color)
+  draw_rect(game.sim.building_foundation(b),Color(color,0.85),false,1.2/game.zoom)
  var area:=Rect2(game.camera_center-game.VIEW.size/(game.zoom*2),game.VIEW.size/game.zoom)
  for x in range(maxi(0,floori(area.position.x/grid)),mini(int(Map.SIZE.x/grid),ceili(area.end.x/grid))+1):
   draw_line(Vector2(x*grid,maxf(0,area.position.y)),Vector2(x*grid,minf(Map.SIZE.y,area.end.y)),Color(0.91,0.86,0.65,0.16 if x%2 else 0.28),1/game.zoom)
@@ -285,14 +289,17 @@ func draw_building(index:int)->void:
  if selected:
   ground_ring(p,radius+7,Color("d9bc71"))
  if selected or b.hp<sim.stat(b,"hp")*0.95:
+  var bar_width:float=sim.building_foundation(b).size.x-8 if b.kind=="wall" else 84.0
   var top:Vector2=Vector2(p.x-42,Art.building_rect(sim.DEFINITIONS[b.kind].art,p).position.y-13)
-  if b.kind=="wall": top=p-Vector2(42,106)
+  if b.kind=="wall": top=p-Vector2(bar_width*0.5,106)
   if b.hp<=0: top=p-Vector2(42,105)
-  draw_rect(Rect2(top,Vector2(84,6)),Color("242b20"))
-  draw_rect(Rect2(top,Vector2(84*clampf(b.hp/sim.stat(b,"hp"),0,1),6)),Color("9bac68") if b.hp>0 else Color("a45839"))
+  draw_rect(Rect2(top,Vector2(bar_width,6)),Color("242b20"))
+  draw_rect(Rect2(top,Vector2(bar_width*clampf(b.hp/sim.stat(b,"hp"),0,1),6)),Color("9bac68") if b.hp>0 else Color("a45839"))
   if selected: draw_string(Body,top-Vector2(0,7),"%s · %d"%[sim.DEFINITIONS[b.kind].name,b.level],HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("f3e6c2"))
 
 func draw_enemy(e:Dictionary,p:Vector2)->void:
+ if bool(e.get("rallied",false)):
+  ground_ring(p,24,Color(0.95,0.47,0.23,0.65))
  var row:int=UNIT_ROWS[e.kind]
  var frame:int=int(game.animation_clock*(10 if e.kind=="runner" else 6)+e.phase)%4
  if game.reduced_motion: frame=0
@@ -320,7 +327,59 @@ func draw_deposit(index:int)->void:
 
 func draw_joined_wall(index:int,tint:Color)->void:
  var b:Dictionary=game.sim.buildings[index]
- Ramparts.piece(self,b.pos,game.sim.wall_neighbors(index),tint)
+ for point in game.sim.wall_tiles(b):
+  Ramparts.piece(self,point,game.sim.wall_tile_neighbors(point),tint)
+
+func draw_boss_telegraphs()->void:
+ var abilities=game.sim.Abilities
+ for enemy in game.sim.enemies:
+  if enemy.kind!="boss" or enemy.hp<=0:continue
+  var radius:float=abilities.WARCRY_RADIUS
+  if not visible_world.grow(radius).has_point(enemy.pos):continue
+  var glow:float=0.23 if game.reduced_motion else 0.18+0.06*sin(game.animation_clock*2.5)
+  draw_circle(enemy.pos,radius,Color(0.82,0.34,0.12,0.025))
+  draw_arc(enemy.pos,radius,0,TAU,96,Color(0.93,0.48,0.20,glow),1.4/game.zoom,true)
+  if enemy.smash_left>0:
+   var center:Vector2=enemy.smash_center
+   var progress:float=1.0-float(enemy.smash_left)/abilities.SMASH_WINDUP
+   draw_circle(center,abilities.SMASH_RADIUS,Color(0.95,0.23,0.10,0.12))
+   draw_circle(center,abilities.SMASH_RADIUS*progress,Color(1.0,0.41,0.15,0.12))
+   draw_arc(center,abilities.SMASH_RADIUS,0,TAU,72,Color(1.0,0.47,0.21,0.95),2.5/game.zoom,true)
+
+func draw_rain_circles()->void:
+ var radius:float=game.sim.Abilities.RAIN_RADIUS
+ for rain in game.sim.arrow_rains:
+  draw_circle(rain.pos,radius,Color(0.83,0.77,0.43,0.07))
+  draw_arc(rain.pos,radius,0,TAU,96,Color(0.92,0.84,0.52,0.4),1.4/game.zoom,true)
+ if game.ability_mode and game.ability_placed:
+  var valid:bool=game.sim.rain_target_error(game.ability_target)==""
+  var color:=Color("8bc5ce") if valid else Color("e39367")
+  draw_circle(game.ability_target,radius,Color(color,0.09))
+  draw_arc(game.ability_target,radius,0,TAU,96,Color(color,0.95),2/game.zoom,true)
+  draw_circle(game.ability_target,4,Color(color,0.9))
+
+func draw_arrow_barrages()->void:
+ var radius:float=game.sim.Abilities.RAIN_RADIUS
+ for rain in game.sim.arrow_rains:
+  var age:float=game.sim.Abilities.RAIN_DURATION-rain.left
+  var per_wave:int=12 if game.reduced_motion else 24
+  for i in per_wave*6:
+   var emitted:float=(i/per_wave)*0.45+(i%per_wave)*(0.024 if game.reduced_motion else 0.012)
+   var flight:float=(age-emitted)/0.38
+   if flight<0 or flight>1.55:continue
+   var angle:float=i*2.39996322
+   var landing:Vector2=rain.pos+Vector2.from_angle(angle)*sqrt(fposmod(i*0.618033+0.21,1.0))*radius*0.97
+   var direction:=Vector2(110,430).normalized()
+   if flight<=1:
+    var tip:Vector2=landing-Vector2(110,430)*(1-flight)
+    draw_line(tip,tip-direction*30,Color(0.21,0.17,0.1,0.8),3,true)
+    draw_line(tip,tip-direction*29,Color("d7cba7"),1.2,true)
+    draw_line(tip-direction*28,tip-direction*24+Vector2(-3,0),Color("c7b390"),1.4,true)
+    draw_line(tip,tip-direction*6+Vector2(3,-1),Color("eee4c4"),2,true)
+   else:
+    var alpha:float=clampf((1.55-flight)/0.55,0,1)
+    draw_line(landing,landing-direction*13,Color(0.74,0.67,0.43,alpha),1.3,true)
+    draw_texture_rect(cloud,Rect2(landing-Vector2(12,8),Vector2(24,16)),false,Color(0.69,0.6,0.4,alpha*0.4))
 
 func mask_texture(revision:int)->ImageTexture:
  if water_masks.has(revision): return water_masks[revision]
@@ -475,5 +534,12 @@ func draw_effects()->void:
   elif e.type=="hit":
    var size:float=(30+t*100)*(2 if e.type=="ruin" else 0.5)
    draw_texture_rect(cloud,Rect2(e.pos-Vector2.ONE*size/2-Vector2(0,t*30),Vector2.ONE*size),false,Color(0.7,0.6,0.45,1-t))
+  elif e.type=="smash":
+   var radius:float=float(e.radius)*(0.3+t*0.85)
+   draw_arc(e.pos,radius,0,TAU,72,Color(0.91,0.68,0.38,(1-t)*0.72),4*(1-t)+1,true)
+   for i in 9:
+    var at:Vector2=e.pos+Vector2.from_angle(i*TAU/9.0)*radius*0.7
+    var size:float=42+85*t
+    draw_texture_rect(cloud,Rect2(at-Vector2.ONE*size/2,Vector2.ONE*size),false,Color(0.72,0.56,0.36,(1-t)*0.6))
   elif e.type in ["gather","build"]:
    draw_string(Body,e.pos-Vector2(30,70+t*30),e.text,HORIZONTAL_ALIGNMENT_LEFT,-1,18,Color(0.95,0.86,0.6,1-t))
