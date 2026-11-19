@@ -33,9 +33,8 @@ Rendered tests compare actual left/right walking and attack sprites for all six
 combat types, pose changes, foot anchors, source-cell boundaries, reduced motion,
 and enemy strikes against walls. The attack showcase uses six level-100 walls
 and granted supplies to isolate animation; it is not campaign evidence.
-The [direction sheet](screenshots/final-warlord-directions.png),
-[wall strikes](screenshots/final-warlord-attacks.png), and
-[recovery poses](screenshots/final-warlord-recovery.png) are actual engine captures.
+The [direction sheet](screenshots/final-warlord-directions.png) and
+[wall strikes](screenshots/final-warlord-attacks.png) are actual engine captures.
 The launcher resources were extracted from the built APK and visually checked.
 The menu no longer shows the SINGLE PLAYER / OFFLINE footer.
 
