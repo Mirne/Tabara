@@ -475,7 +475,7 @@ def native_checks(back_only=False):
                 rain_fixture["camera"]=[4840.0,2800.0,.72]
                 victim=copy.deepcopy(final_bosses[0])
                 victim.update(id=rain_fixture["next_id"],kind="elite",mission_boss=False,boss_rank=0,
-                              hp=5000.0,max_hp=5000.0,damage=1.0,speed=86.0,pos=[5480.0,2800.0],
+                              hp=5000.0,max_hp=5000.0,damage=1.0,speed=86.0,pos=[5480.0,3100.0],
                               target=-1,aim=0.0,anger=-1,anger_left=0.0,attacking=False,attack_left=0.0,
                               smash_clock=0.0,smash_left=0.0,smash_center=[0.0,0.0])
                 rain_fixture["next_id"]+=1
@@ -486,9 +486,12 @@ def native_checks(back_only=False):
                 wait_menu()
                 tap(260,462)
                 time.sleep(6)
-                tap(391,756)
+                tap(1338,43)
                 current=save()
                 rain_target=next(e for e in current["enemies"] if e["id"]==victim["id"])
+                print("RAIN TARGET SNAPSHOT:",rain_target["pos"],flush=True)
+                tap(720,505)
+                tap(391,756)
                 tap(*world_point(*rain_target["pos"]))
                 screen("12-rain-preview")
                 check(save()["rain_cooldown"]==0 and not save()["arrow_rains"],
@@ -524,7 +527,7 @@ def native_checks(back_only=False):
             diagnostic = save()
             (OUT / "failed-save.json").write_text(json.dumps(diagnostic, indent=2))
             print("FAILED STATE:", {key: diagnostic.get(key) for key in
-                  ["elapsed", "resources", "research_levels", "regeneration_level", "boss_intervals"]}, flush=True)
+                  ["elapsed", "resources", "research_levels", "regeneration_level", "boss_intervals", "rain_cooldown", "arrow_rains", "camera"]}, flush=True)
             screen("failed-state")
         except Exception:
             pass
