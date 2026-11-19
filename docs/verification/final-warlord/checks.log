@@ -1,0 +1,476 @@
+game	Set up job	﻿2026-11-19T10:13:46.2425466Z Current runner version: '2.338.2'
+game	Set up job	2026-11-19T10:13:46.2462972Z ##[group]Runner Image Provisioner
+game	Set up job	2026-11-19T10:13:46.2464484Z Hosted Compute Agent
+game	Set up job	2026-11-19T10:13:46.2465644Z Version: 20261103.629
+game	Set up job	2026-11-19T10:13:46.2466834Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+game	Set up job	2026-11-19T10:13:46.2468676Z Build Date: 2026-11-03T17:26:59Z
+game	Set up job	2026-11-19T10:13:46.2469964Z Worker ID: {0a722172-d122-441f-b6f9-09ded6ea64ed}
+game	Set up job	2026-11-19T10:13:46.2471499Z Region: eastus
+game	Set up job	2026-11-19T10:13:46.2472518Z Cloud: Azure
+game	Set up job	2026-11-19T10:13:46.2473744Z ##[endgroup]
+game	Set up job	2026-11-19T10:13:46.2476288Z ##[group]Operating System
+game	Set up job	2026-11-19T10:13:46.2477665Z Ubuntu
+game	Set up job	2026-11-19T10:13:46.2478588Z 26.04.1
+game	Set up job	2026-11-19T10:13:46.2479435Z LTS
+game	Set up job	2026-11-19T10:13:46.2480504Z ##[endgroup]
+game	Set up job	2026-11-19T10:13:46.2481521Z ##[group]Runner Image
+game	Set up job	2026-11-19T10:13:46.2482699Z Image: ubuntu-26.04
+game	Set up job	2026-11-19T10:13:46.2483711Z Version: 20261111.196.1
+game	Set up job	2026-11-19T10:13:46.2485816Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261111.196/images/ubuntu/Ubuntu2604-Readme.md
+game	Set up job	2026-11-19T10:13:46.2489176Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261111.196
+game	Set up job	2026-11-19T10:13:46.2490865Z ##[endgroup]
+game	Set up job	2026-11-19T10:13:46.2492768Z ##[group]GITHUB_TOKEN Permissions
+game	Set up job	2026-11-19T10:13:46.2495330Z Contents: read
+game	Set up job	2026-11-19T10:13:46.2496558Z Metadata: read
+game	Set up job	2026-11-19T10:13:46.2497790Z ##[endgroup]
+game	Set up job	2026-11-19T10:13:46.2501074Z Secret source: Actions
+game	Set up job	2026-11-19T10:13:46.2502595Z Cache mode: write
+game	Set up job	2026-11-19T10:13:46.2503913Z Prepare workflow directory
+game	Set up job	2026-11-19T10:13:46.3045789Z Prepare all required actions
+game	Set up job	2026-11-19T10:13:46.3093357Z Getting action download info
+game	Set up job	2026-11-19T10:13:46.4936267Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+game	Set up job	2026-11-19T10:13:46.5931725Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+game	Set up job	2026-11-19T10:13:46.7788858Z Complete job name: game
+game	Run actions/checkout@v4	﻿2026-11-19T10:13:46.8662511Z ##[group]Run actions/checkout@v4
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8663455Z with:
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8663902Z   repository: Mirne/Tabara
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8667693Z   token: ***
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8668137Z   ssh-strict: true
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8668714Z   ssh-user: git
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8669315Z   persist-credentials: true
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8669808Z   clean: true
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8670253Z   sparse-checkout-cone-mode: true
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8670788Z   fetch-depth: 1
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8671221Z   fetch-tags: false
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8671660Z   show-progress: true
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8672122Z   lfs: false
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8672531Z   submodules: false
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8672974Z   set-safe-directory: true
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8673485Z   allow-unsafe-pr-checkout: false
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8674254Z env:
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8674758Z   GODOT: /tmp/godot/Godot_v4.6.3-stable_linux.x86_64
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8675390Z   XDG_DATA_HOME: /tmp/tabara-ci-data
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8675955Z   XDG_CONFIG_HOME: /tmp/tabara-ci-config
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8676584Z   XDG_CACHE_HOME: /tmp/tabara-ci-cache
+game	Run actions/checkout@v4	2026-11-19T10:13:46.8677258Z ##[endgroup]
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1482971Z Syncing repository: Mirne/Tabara
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1485686Z ##[group]Getting Git version info
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1487137Z Working directory is '/home/runner/work/Tabara/Tabara'
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1488945Z [command]/usr/bin/git version
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1498442Z git version 2.56.1
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1521963Z ##[endgroup]
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1546114Z Temporarily overriding HOME='/home/runner/work/_temp/5bdfe25a-c380-438b-b1a0-160db7dc929c' before making global git config changes
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1549025Z Adding repository directory to the temporary git global config as a safe directory
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1559025Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Tabara/Tabara
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1617371Z Deleting the contents of '/home/runner/work/Tabara/Tabara'
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1623331Z ##[group]Initializing the repository
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1627628Z [command]/usr/bin/git init /home/runner/work/Tabara/Tabara
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1738177Z hint: Using 'master' as the name for the initial branch. This default branch name
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1740338Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1742348Z hint: to use in all of your new repositories, which will suppress this warning,
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1744003Z hint: call:
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1744950Z hint:
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1746068Z hint: 	git config --global init.defaultBranch <name>
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1747589Z hint:
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1748839Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1750742Z hint: 'development'. The just-created branch can be renamed via this command:
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1752298Z hint:
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1753285Z hint: 	git branch -m <name>
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1754349Z hint:
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1755777Z hint: Disable this message with "git config set advice.defaultBranchName false"
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1758009Z Initialized empty Git repository in /home/runner/work/Tabara/Tabara/.git/
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1762017Z [command]/usr/bin/git remote add origin https://github.com/Mirne/Tabara
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1815135Z ##[endgroup]
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1816847Z ##[group]Disabling automatic garbage collection
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1819880Z [command]/usr/bin/git config --local gc.auto 0
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1857870Z ##[endgroup]
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1859568Z ##[group]Setting up auth
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1865884Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+game	Run actions/checkout@v4	2026-11-19T10:13:47.1904600Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+game	Run actions/checkout@v4	2026-11-19T10:13:47.2424102Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+game	Run actions/checkout@v4	2026-11-19T10:13:47.2465781Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+game	Run actions/checkout@v4	2026-11-19T10:13:47.2816080Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+game	Run actions/checkout@v4	2026-11-19T10:13:47.2858284Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+game	Run actions/checkout@v4	2026-11-19T10:13:47.3168721Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+game	Run actions/checkout@v4	2026-11-19T10:13:47.3217745Z ##[endgroup]
+game	Run actions/checkout@v4	2026-11-19T10:13:47.3219537Z ##[group]Fetching the repository
+game	Run actions/checkout@v4	2026-11-19T10:13:47.3229838Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b489e8dae95acd317c1604bddcbf04866ca6a336:refs/remotes/origin/main
+game	Run actions/checkout@v4	2026-11-19T10:14:00.6173228Z From https://github.com/Mirne/Tabara
+game	Run actions/checkout@v4	2026-11-19T10:14:00.6174525Z  * [new ref]         b489e8dae95acd317c1604bddcbf04866ca6a336 -> origin/main
+game	Run actions/checkout@v4	2026-11-19T10:14:00.6180358Z ##[endgroup]
+game	Run actions/checkout@v4	2026-11-19T10:14:00.6181214Z ##[group]Determining the checkout info
+game	Run actions/checkout@v4	2026-11-19T10:14:00.6182118Z ##[endgroup]
+game	Run actions/checkout@v4	2026-11-19T10:14:00.6188112Z [command]/usr/bin/git sparse-checkout disable
+game	Run actions/checkout@v4	2026-11-19T10:14:00.6241922Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+game	Run actions/checkout@v4	2026-11-19T10:14:00.6272815Z ##[group]Checking out the ref
+game	Run actions/checkout@v4	2026-11-19T10:14:00.6277804Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+game	Run actions/checkout@v4	2026-11-19T10:14:01.3479257Z Switched to a new branch 'main'
+game	Run actions/checkout@v4	2026-11-19T10:14:01.3484457Z branch 'main' set up to track 'origin/main'.
+game	Run actions/checkout@v4	2026-11-19T10:14:01.3530644Z ##[endgroup]
+game	Run actions/checkout@v4	2026-11-19T10:14:01.3580910Z [command]/usr/bin/git log -1 --format=%H
+game	Run actions/checkout@v4	2026-11-19T10:14:01.3606267Z b489e8dae95acd317c1604bddcbf04866ca6a336
+game	Install official Godot build	﻿2026-11-19T10:14:01.3824012Z ##[group]Run mkdir -p /tmp/godot
+game	Install official Godot build	2026-11-19T10:14:01.3824511Z [36;1mmkdir -p /tmp/godot[0m
+game	Install official Godot build	2026-11-19T10:14:01.3825260Z [36;1mcurl -fL https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip -o /tmp/godot.zip[0m
+game	Install official Godot build	2026-11-19T10:14:01.3826295Z [36;1munzip -q /tmp/godot.zip -d /tmp/godot[0m
+game	Install official Godot build	2026-11-19T10:14:01.3826629Z [36;1mchmod +x "$GODOT"[0m
+game	Install official Godot build	2026-11-19T10:14:01.3879124Z shell: /usr/bin/bash -e {0}
+game	Install official Godot build	2026-11-19T10:14:01.3879435Z env:
+game	Install official Godot build	2026-11-19T10:14:01.3879709Z   GODOT: /tmp/godot/Godot_v4.6.3-stable_linux.x86_64
+game	Install official Godot build	2026-11-19T10:14:01.3880079Z   XDG_DATA_HOME: /tmp/tabara-ci-data
+game	Install official Godot build	2026-11-19T10:14:01.3880412Z   XDG_CONFIG_HOME: /tmp/tabara-ci-config
+game	Install official Godot build	2026-11-19T10:14:01.3880737Z   XDG_CACHE_HOME: /tmp/tabara-ci-cache
+game	Install official Godot build	2026-11-19T10:14:01.3881027Z ##[endgroup]
+game	Install official Godot build	2026-11-19T10:14:01.4088081Z   % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+game	Install official Godot build	2026-11-19T10:14:01.4089366Z                                  Dload  Upload  Total   Spent   Left   Speed
+game	Install official Godot build	2026-11-19T10:14:01.4090153Z 
+game	Install official Godot build	2026-11-19T10:14:01.4273612Z   0      0   0      0   0      0      0      0                              0
+game	Install official Godot build	2026-11-19T10:14:01.4274697Z   0      0   0      0   0      0      0      0                              0
+game	Install official Godot build	2026-11-19T10:14:01.4275456Z   0      0   0      0   0      0      0      0                              0
+game	Install official Godot build	2026-11-19T10:14:01.4276024Z 
+game	Install official Godot build	2026-11-19T10:14:01.6630298Z   0      0   0      0   0      0      0      0                              0
+game	Install official Godot build	2026-11-19T10:14:01.6631400Z 100 68.47M 100 68.47M   0      0 268.7M      0                              0
+game	Install official Godot build	2026-11-19T10:14:01.6632343Z 100 68.47M 100 68.47M   0      0 268.7M      0                              0
+game	Install official Godot build	2026-11-19T10:14:01.6633286Z 100 68.47M 100 68.47M   0      0 268.6M      0                              0
+game	Import assets	﻿2026-11-19T10:14:02.6146176Z ##[group]Run $GODOT --headless --editor --single-threaded-scene --path . --import --quit
+game	Import assets	2026-11-19T10:14:02.6147123Z [36;1m$GODOT --headless --editor --single-threaded-scene --path . --import --quit[0m
+game	Import assets	2026-11-19T10:14:02.6196604Z shell: /usr/bin/bash -e {0}
+game	Import assets	2026-11-19T10:14:02.6197031Z env:
+game	Import assets	2026-11-19T10:14:02.6197317Z   GODOT: /tmp/godot/Godot_v4.6.3-stable_linux.x86_64
+game	Import assets	2026-11-19T10:14:02.6197676Z   XDG_DATA_HOME: /tmp/tabara-ci-data
+game	Import assets	2026-11-19T10:14:02.6198001Z   XDG_CONFIG_HOME: /tmp/tabara-ci-config
+game	Import assets	2026-11-19T10:14:02.6198314Z   XDG_CACHE_HOME: /tmp/tabara-ci-cache
+game	Import assets	2026-11-19T10:14:02.6198601Z ##[endgroup]
+game	Import assets	2026-11-19T10:14:02.6675731Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Import assets	2026-11-19T10:14:02.7117429Z 
+game	Import assets	2026-11-19T10:14:06.6893010Z [   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+game	Import assets	2026-11-19T10:14:06.6894277Z [   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+game	Import assets	2026-11-19T10:14:06.6901694Z [  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+game	Import assets	2026-11-19T10:14:06.6929802Z [  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+game	Import assets	2026-11-19T10:14:06.6930731Z [  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+game	Import assets	2026-11-19T10:14:06.6931791Z [  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+game	Import assets	2026-11-19T10:14:06.6932691Z [  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+game	Import assets	2026-11-19T10:14:06.6933535Z [92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+game	Import assets	2026-11-19T10:14:06.6934060Z [0m
+game	Import assets	2026-11-19T10:14:06.7528026Z [   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (21 steps)[39m[0m
+game	Import assets	2026-11-19T10:14:06.7529527Z [   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7530808Z [   4% ] [90m[1mupdate_scripts_classes[22m | FrontierArt[39m[0m
+game	Import assets	2026-11-19T10:14:06.7531855Z [   9% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7532885Z [  13% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7534028Z [  18% ] [90m[1mupdate_scripts_classes[22m | Settlement[39m[0m
+game	Import assets	2026-11-19T10:14:06.7535233Z [  22% ] [90m[1mupdate_scripts_classes[22m | RampartArt[39m[0m
+game	Import assets	2026-11-19T10:14:06.7537704Z [  27% ] [90m[1mupdate_scripts_classes[22m | FrontierMap[39m[0m
+game	Import assets	2026-11-19T10:14:06.7538923Z [  31% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7540044Z [  36% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7541024Z [  40% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7542132Z [  45% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7543205Z [  50% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7544297Z [  54% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7545303Z [  59% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7546274Z [  63% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7547458Z [  68% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7548213Z [  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7548994Z [  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7549717Z [  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7550388Z [  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7551060Z [  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+game	Import assets	2026-11-19T10:14:06.7551722Z [92m[ DONE ][39m [1mupdate_scripts_classes[22m
+game	Import assets	2026-11-19T10:14:06.7552267Z [0m
+game	Import assets	2026-11-19T10:14:06.7552998Z [   0% ] [90m[1m_update_scan_actions[22m | Started Scanning actions... (54 steps)[39m[0m
+game	Import assets	2026-11-19T10:14:06.7553979Z [   0% ] [90m[1m_update_scan_actions[22m | buildings.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7554797Z [   1% ] [90m[1m_update_scan_actions[22m | workshop.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7555924Z [   3% ] [90m[1m_update_scan_actions[22m | build.wav[39m[0m
+game	Import assets	2026-11-19T10:14:06.7556692Z [   5% ] [90m[1m_update_scan_actions[22m | cannon.wav[39m[0m
+game	Import assets	2026-11-19T10:14:06.7558113Z [   7% ] [90m[1m_update_scan_actions[22m | click.wav[39m[0m
+game	Import assets	2026-11-19T10:14:06.7558913Z [   9% ] [90m[1m_update_scan_actions[22m | defeat.wav[39m[0m
+game	Import assets	2026-11-19T10:14:06.7559660Z [  10% ] [90m[1m_update_scan_actions[22m | gather.wav[39m[0m
+game	Import assets	2026-11-19T10:14:06.7560380Z [  12% ] [90m[1m_update_scan_actions[22m | hearth.ogg[39m[0m
+game	Import assets	2026-11-19T10:14:06.7561119Z [  14% ] [90m[1m_update_scan_actions[22m | victory.wav[39m[0m
+game	Import assets	2026-11-19T10:14:06.7561897Z [  16% ] [90m[1m_update_scan_actions[22m | Body.ttf[39m[0m
+game	Import assets	2026-11-19T10:14:06.7562675Z [  18% ] [90m[1m_update_scan_actions[22m | Title.ttf[39m[0m
+game	Import assets	2026-11-19T10:14:06.7563443Z [  20% ] [90m[1m_update_scan_actions[22m | attacks.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7564344Z [  21% ] [90m[1m_update_scan_actions[22m | earth.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7565159Z [  23% ] [90m[1m_update_scan_actions[22m | elites.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7565966Z [  25% ] [90m[1m_update_scan_actions[22m | icons.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7566753Z [  27% ] [90m[1m_update_scan_actions[22m | menu.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7567902Z [  29% ] [90m[1m_update_scan_actions[22m | miniboss.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7568755Z [  30% ] [90m[1m_update_scan_actions[22m | mountains.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7569571Z [  32% ] [90m[1m_update_scan_actions[22m | panel.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7570346Z [  34% ] [90m[1m_update_scan_actions[22m | props.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7571135Z [  36% ] [90m[1m_update_scan_actions[22m | terrain.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7571913Z [  38% ] [90m[1m_update_scan_actions[22m | units.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7578312Z [  40% ] [90m[1m_update_scan_actions[22m | water.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7579187Z [  41% ] [90m[1m_update_scan_actions[22m | canopy-infill.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7580080Z [  43% ] [90m[1m_update_scan_actions[22m | eastern_shore.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7580943Z [  45% ] [90m[1m_update_scan_actions[22m | northeast_fingers.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7581827Z [  47% ] [90m[1m_update_scan_actions[22m | northern_shore.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7582941Z [  49% ] [90m[1m_update_scan_actions[22m | northwest_crown.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7583833Z [  50% ] [90m[1m_update_scan_actions[22m | northwest_ridge.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7584748Z [  52% ] [90m[1m_update_scan_actions[22m | north_crown.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7587308Z [  54% ] [90m[1m_update_scan_actions[22m | north_gate.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7589314Z [  56% ] [90m[1m_update_scan_actions[22m | sites.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7591578Z [  58% ] [90m[1m_update_scan_actions[22m | southeast_woodland.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7593629Z [  60% ] [90m[1m_update_scan_actions[22m | southern_timberline.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7595654Z [  61% ] [90m[1m_update_scan_actions[22m | southwest_border.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7598005Z [  63% ] [90m[1m_update_scan_actions[22m | southwest_fingers.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7599931Z [  65% ] [90m[1m_update_scan_actions[22m | south_buttress.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7601968Z [  67% ] [90m[1m_update_scan_actions[22m | south_gate.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7604032Z [  69% ] [90m[1m_update_scan_actions[22m | western_margin.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7606155Z [  70% ] [90m[1m_update_scan_actions[22m | cliffs.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7608347Z [  72% ] [90m[1m_update_scan_actions[22m | ground.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7610351Z [  74% ] [90m[1m_update_scan_actions[22m | landmarks.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7612429Z [  76% ] [90m[1m_update_scan_actions[22m | north_crown.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7614365Z [  78% ] [90m[1m_update_scan_actions[22m | north_gate.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7616364Z [  80% ] [90m[1m_update_scan_actions[22m | overview-v07.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7618775Z [  81% ] [90m[1m_update_scan_actions[22m | overview-v08.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7620472Z [  83% ] [90m[1m_update_scan_actions[22m | overview.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7622616Z [  85% ] [90m[1m_update_scan_actions[22m | south_buttress.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7624579Z [  87% ] [90m[1m_update_scan_actions[22m | south_gate.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7626362Z [  89% ] [90m[1m_update_scan_actions[22m | wall-icon.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7628656Z [  90% ] [90m[1m_update_scan_actions[22m | wall-stone.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7630679Z [  92% ] [90m[1m_update_scan_actions[22m | wall-walk.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7632462Z [  94% ] [90m[1m_update_scan_actions[22m | icon-adaptive.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7634137Z [  96% ] [90m[1m_update_scan_actions[22m | icon.png[39m[0m
+game	Import assets	2026-11-19T10:14:06.7634953Z [92m[ DONE ][39m [1m_update_scan_actions[22m
+game	Import assets	2026-11-19T10:14:06.7635510Z [0m
+game	Import assets	2026-11-19T10:14:06.7636138Z [   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (54 steps)[39m[0m
+game	Import assets	2026-11-19T10:14:06.7637238Z [   0% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7638138Z [   1% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7639209Z [   3% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7640937Z [   5% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7642244Z [   7% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7643623Z [   9% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7644930Z [  10% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7646318Z [  12% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7647974Z [  14% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7649326Z [  16% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7650705Z [  18% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7652124Z [  20% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7653805Z [  21% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7655233Z [  23% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7656855Z [  25% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7658580Z [  27% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7659996Z [  29% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7661590Z [  30% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7663065Z [  32% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7664480Z [  34% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7665955Z [  36% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7667514Z [  38% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7668984Z [  40% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7670468Z [  41% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7672088Z [  43% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7673685Z [  45% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7675274Z [  47% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7677153Z [  49% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7678842Z [  50% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7680428Z [  52% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7682050Z [  54% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7683676Z [  56% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7685273Z [  58% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7687057Z [  60% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7688750Z [  61% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7690391Z [  63% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7692064Z [  65% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7693745Z [  67% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7695446Z [  69% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7697297Z [  70% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7699059Z [  72% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7700701Z [  74% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7702386Z [  76% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7704045Z [  78% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7705701Z [  80% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7707489Z [  81% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7709303Z [  83% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7710759Z [  85% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7712421Z [  87% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7714053Z [  89% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7715490Z [  90% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7717391Z [  92% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7719318Z [  94% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7720584Z [  96% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7722083Z [   0% ] [90m[1mreimport[22m | Executing pre-reimport operations...[39m[0m
+game	Import assets	2026-11-19T10:14:06.7738093Z [   0% ] [90m[1mreimport[22m | Body.ttf[39m[0m
+game	Import assets	2026-11-19T10:14:06.7805107Z [   1% ] [90m[1mreimport[22m | Title.ttf[39m[0m
+game	Import assets	2026-11-19T10:14:06.7831009Z [   3% ] [90m[1mreimport[22m | hearth.ogg[39m[0m
+game	Import assets	2026-11-19T10:14:06.7877592Z [   5% ] [90m[1mreimport[22m | Body.ttf[39m[0m
+game	Import assets	2026-11-19T10:14:07.0887956Z [   7% ] [90m[1mreimport[22m | Title.ttf[39m[0m
+game	Import assets	2026-11-19T10:14:07.1076193Z [   9% ] [90m[1mreimport[22m | hearth.ogg[39m[0m
+game	Import assets	2026-11-19T10:14:07.2209947Z [  10% ] [90m[1mreimport[22m | north_crown.png[39m[0m
+game	Import assets	2026-11-19T10:14:07.2680098Z [  12% ] [90m[1mreimport[22m | north_gate.png[39m[0m
+game	Import assets	2026-11-19T10:14:07.3257948Z [  14% ] [90m[1mreimport[22m | sites.png[39m[0m
+game	Import assets	2026-11-19T10:14:07.4788177Z [  16% ] [90m[1mreimport[22m | southeast_woodland.png[39m[0m
+game	Import assets	2026-11-19T10:14:07.5918195Z [  18% ] [90m[1mreimport[22m | southern_timberline.png[39m[0m
+game	Import assets	2026-11-19T10:14:07.6428020Z [  20% ] [90m[1mreimport[22m | southwest_border.png[39m[0m
+game	Import assets	2026-11-19T10:14:07.9088027Z [  21% ] [90m[1mreimport[22m | southwest_fingers.png[39m[0m
+game	Import assets	2026-11-19T10:14:07.9129620Z [  23% ] [90m[1mreimport[22m | south_buttress.png[39m[0m
+game	Import assets	2026-11-19T10:14:08.2208162Z [  25% ] [90m[1mreimport[22m | south_gate.png[39m[0m
+game	Import assets	2026-11-19T10:14:08.4055941Z [  27% ] [90m[1mreimport[22m | western_margin.png[39m[0m
+game	Import assets	2026-11-19T10:14:08.6823045Z [  29% ] [90m[1mreimport[22m | cliffs.png[39m[0m
+game	Import assets	2026-11-19T10:14:08.7513564Z [  30% ] [90m[1mreimport[22m | ground.png[39m[0m
+game	Import assets	2026-11-19T10:14:08.8803173Z [  32% ] [90m[1mreimport[22m | landmarks.png[39m[0m
+game	Import assets	2026-11-19T10:14:08.9818231Z [  34% ] [90m[1mreimport[22m | north_crown.png[39m[0m
+game	Import assets	2026-11-19T10:14:09.0672050Z [  36% ] [90m[1mreimport[22m | north_gate.png[39m[0m
+game	Import assets	2026-11-19T10:14:09.3938189Z [  38% ] [90m[1mreimport[22m | overview-v07.png[39m[0m
+game	Import assets	2026-11-19T10:14:09.4027890Z [  40% ] [90m[1mreimport[22m | overview-v08.png[39m[0m
+game	Import assets	2026-11-19T10:14:09.5728143Z [  41% ] [90m[1mreimport[22m | overview.png[39m[0m
+game	Import assets	2026-11-19T10:14:09.5902757Z [  43% ] [90m[1mreimport[22m | south_buttress.png[39m[0m
+game	Import assets	2026-11-19T10:14:09.5947942Z [  45% ] [90m[1mreimport[22m | south_gate.png[39m[0m
+game	Import assets	2026-11-19T10:14:09.7958034Z [  47% ] [90m[1mreimport[22m | wall-icon.png[39m[0m
+game	Import assets	2026-11-19T10:14:10.1655677Z [  49% ] [90m[1mreimport[22m | wall-stone.png[39m[0m
+game	Import assets	2026-11-19T10:14:10.2595133Z [  50% ] [90m[1mreimport[22m | wall-walk.png[39m[0m
+game	Import assets	2026-11-19T10:14:10.5838119Z [  52% ] [90m[1mreimport[22m | icon-adaptive.png[39m[0m
+game	Import assets	2026-11-19T10:14:10.7268060Z [  54% ] [90m[1mreimport[22m | icon.png[39m[0m
+game	Import assets	2026-11-19T10:14:10.9958047Z [  56% ] [90m[1mreimport[22m | buildings.png[39m[0m
+game	Import assets	2026-11-19T10:14:11.4149515Z [  58% ] [90m[1mreimport[22m | workshop.png[39m[0m
+game	Import assets	2026-11-19T10:14:11.8150003Z [  60% ] [90m[1mreimport[22m | attacks.png[39m[0m
+game	Import assets	2026-11-19T10:14:11.9897655Z [  61% ] [90m[1mreimport[22m | earth.png[39m[0m
+game	Import assets	2026-11-19T10:14:12.3358300Z [  63% ] [90m[1mreimport[22m | elites.png[39m[0m
+game	Import assets	2026-11-19T10:14:12.6287999Z [  65% ] [90m[1mreimport[22m | icons.png[39m[0m
+game	Import assets	2026-11-19T10:14:12.6437680Z [  67% ] [90m[1mreimport[22m | menu.png[39m[0m
+game	Import assets	2026-11-19T10:14:12.9630586Z [  69% ] [90m[1mreimport[22m | miniboss.png[39m[0m
+game	Import assets	2026-11-19T10:14:13.3947956Z [  70% ] [90m[1mreimport[22m | mountains.png[39m[0m
+game	Import assets	2026-11-19T10:14:13.9117964Z [  72% ] [90m[1mreimport[22m | panel.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.0037661Z [  74% ] [90m[1mreimport[22m | props.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.2397995Z [  76% ] [90m[1mreimport[22m | terrain.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.3298031Z [  78% ] [90m[1mreimport[22m | units.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.4097845Z [  80% ] [90m[1mreimport[22m | water.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.5768037Z [  81% ] [90m[1mreimport[22m | canopy-infill.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.6237894Z [  83% ] [90m[1mreimport[22m | eastern_shore.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.6676644Z [  85% ] [90m[1mreimport[22m | northeast_fingers.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.7527977Z [  87% ] [90m[1mreimport[22m | Body.ttf[39m[0m
+game	Import assets	2026-11-19T10:14:14.7547759Z [  89% ] [90m[1mreimport[22m | Title.ttf[39m[0m
+game	Import assets	2026-11-19T10:14:14.7570543Z [  90% ] [90m[1mreimport[22m | hearth.ogg[39m[0m
+game	Import assets	2026-11-19T10:14:14.7574778Z [  92% ] [90m[1mreimport[22m | north_crown.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.7590115Z [  94% ] [90m[1mreimport[22m | north_gate.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.7593429Z [  96% ] [90m[1mreimport[22m | sites.png[39m[0m
+game	Import assets	2026-11-19T10:14:14.7596659Z [  98% ] [90m[1mreimport[22m | Finalizing Asset Import...[39m[0m
+game	Import assets	2026-11-19T10:14:14.7603025Z [92m[ DONE ][39m [1mreimport[22m
+game	Import assets	2026-11-19T10:14:14.7603519Z [0m
+game	Import assets	2026-11-19T10:14:14.7604131Z [   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (54 steps)[39m[0m
+game	Import assets	2026-11-19T10:14:14.7605089Z [   0% ] [90m[1mreimport[22m | Executing post-reimport operations...[39m[0m
+game	Import assets	2026-11-19T10:14:14.7605824Z [92m[ DONE ][39m [1mreimport[22m
+game	Import assets	2026-11-19T10:14:14.7606270Z [0m
+game	Import assets	2026-11-19T10:14:14.7632078Z [   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+game	Import assets	2026-11-19T10:14:14.7633095Z [   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+game	Import assets	2026-11-19T10:14:14.7634308Z [  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+game	Import assets	2026-11-19T10:14:14.7634994Z [92m[ DONE ][39m [1mloading_editor_layout[22m
+game	Import assets	2026-11-19T10:14:14.7635510Z [0m
+game	Import assets	2026-11-19T10:14:15.8469740Z cannot connect to daemon at tcp:5037: Connection refused
+game	Verify simulation and rendered interactions	﻿2026-11-19T10:14:16.9179378Z ##[group]Run xvfb-run -a python3 tools/verify.py --ui
+game	Verify simulation and rendered interactions	2026-11-19T10:14:16.9179833Z [36;1mxvfb-run -a python3 tools/verify.py --ui[0m
+game	Verify simulation and rendered interactions	2026-11-19T10:14:16.9228092Z shell: /usr/bin/bash -e {0}
+game	Verify simulation and rendered interactions	2026-11-19T10:14:16.9228402Z env:
+game	Verify simulation and rendered interactions	2026-11-19T10:14:16.9228698Z   GODOT: /tmp/godot/Godot_v4.6.3-stable_linux.x86_64
+game	Verify simulation and rendered interactions	2026-11-19T10:14:16.9229103Z   XDG_DATA_HOME: /tmp/tabara-ci-data
+game	Verify simulation and rendered interactions	2026-11-19T10:14:16.9229458Z   XDG_CONFIG_HOME: /tmp/tabara-ci-config
+game	Verify simulation and rendered interactions	2026-11-19T10:14:16.9229823Z   XDG_CACHE_HOME: /tmp/tabara-ci-cache
+game	Verify simulation and rendered interactions	2026-11-19T10:14:16.9230152Z ##[endgroup]
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3498125Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3498875Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3499259Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3499808Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3500189Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3500810Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3501191Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3501852Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3502231Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3502795Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3503167Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3503773Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3504162Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3504791Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3505162Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3505725Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3506088Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3506608Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3507123Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3507678Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3508103Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3508688Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3509042Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3509974Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3510390Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3511005Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3511367Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3512016Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3512426Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3513002Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3513455Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3514289Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3514645Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3515143Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3515484Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3515990Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3516329Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3516829Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3517228Z RESULT: 1877 checks, 0 failures
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3517848Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3518371Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3518561Z AUTHORED RESULT: 81 checks, 0 failures
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3519197Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3519695Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3520033Z AUTHORED WALKS RESULT: 46 traces, 12620 positions, 0 failures
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3520743Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3521643Z WARNING: Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3522548Z      at: set_use_vsync (platform/linuxbsd/x11/gl_manager_x11.cpp:364)
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3523463Z OpenGL API 4.5 (Core Profile) Mesa 26.0.8-1ubuntu0.3 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 21.1.8, 256 bits)
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3524161Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3524312Z UI RESULT: 166 checks, 0 failures
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3525224Z Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3526228Z WARNING: Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3527480Z      at: set_use_vsync (platform/linuxbsd/x11/gl_manager_x11.cpp:364)
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3528580Z OpenGL API 4.5 (Core Profile) Mesa 26.0.8-1ubuntu0.3 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 21.1.8, 256 bits)
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3529381Z 
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3530411Z WARNING: Loaded resource as image file, this will not work on export: 'res://assets/frontier/attacks.png'. Instead, import the image file as an Image resource and load it normally as a resource.
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3531796Z      at: load_from_file (core/io/image.cpp:2766)
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3532338Z      GDScript backtrace (most recent call first):
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3532904Z          [0] run (res://tests/test_combat_art.gd:57)
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3533448Z COMBAT ART RESULT: 85 checks, 0 failures
+game	Verify simulation and rendered interactions	2026-11-19T10:15:00.3533907Z All requested checks passed.
+game	Save UI screenshots	﻿2026-11-19T10:15:00.3671268Z ##[group]Run actions/upload-artifact@v4
+game	Save UI screenshots	2026-11-19T10:15:00.3671590Z with:
+game	Save UI screenshots	2026-11-19T10:15:00.3671793Z   name: game-screenshots
+game	Save UI screenshots	2026-11-19T10:15:00.3672036Z   path: test-results/*.png
+game	Save UI screenshots	2026-11-19T10:15:00.3672267Z   retention-days: 7
+game	Save UI screenshots	2026-11-19T10:15:00.3672475Z   if-no-files-found: warn
+game	Save UI screenshots	2026-11-19T10:15:00.3672700Z   compression-level: 6
+game	Save UI screenshots	2026-11-19T10:15:00.3672916Z   overwrite: false
+game	Save UI screenshots	2026-11-19T10:15:00.3673129Z   include-hidden-files: false
+game	Save UI screenshots	2026-11-19T10:15:00.3673358Z env:
+game	Save UI screenshots	2026-11-19T10:15:00.3673586Z   GODOT: /tmp/godot/Godot_v4.6.3-stable_linux.x86_64
+game	Save UI screenshots	2026-11-19T10:15:00.3673906Z   XDG_DATA_HOME: /tmp/tabara-ci-data
+game	Save UI screenshots	2026-11-19T10:15:00.3674183Z   XDG_CONFIG_HOME: /tmp/tabara-ci-config
+game	Save UI screenshots	2026-11-19T10:15:00.3674459Z   XDG_CACHE_HOME: /tmp/tabara-ci-cache
+game	Save UI screenshots	2026-11-19T10:15:00.3674773Z ##[endgroup]
+game	Save UI screenshots	2026-11-19T10:15:00.5378108Z (node:2811) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+game	Save UI screenshots	2026-11-19T10:15:00.5379221Z (Use `node --trace-deprecation ...` to show where the warning was created)
+game	Save UI screenshots	2026-11-19T10:15:00.5527623Z With the provided path, there will be 13 files uploaded
+game	Save UI screenshots	2026-11-19T10:15:00.5528547Z Artifact name is valid!
+game	Save UI screenshots	2026-11-19T10:15:00.5528934Z Root directory input is valid!
+game	Save UI screenshots	2026-11-19T10:15:00.7754343Z Beginning upload of artifact content to blob storage
+game	Save UI screenshots	2026-11-19T10:15:01.0797046Z (node:2811) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+game	Save UI screenshots	2026-11-19T10:15:01.3465530Z Uploaded bytes 8388608
+game	Save UI screenshots	2026-11-19T10:15:01.5441137Z Uploaded bytes 16777216
+game	Save UI screenshots	2026-11-19T10:15:01.7398065Z Uploaded bytes 23498726
+game	Save UI screenshots	2026-11-19T10:15:01.7603312Z Finished uploading artifact content to blob storage!
+game	Save UI screenshots	2026-11-19T10:15:01.7608611Z SHA256 digest of uploaded artifact zip is 4a5b154963e8bf809e00da91e0cb6d763544e377480a2bf5aa2583945ceebdd1
+game	Save UI screenshots	2026-11-19T10:15:01.7610066Z Finalizing artifact upload
+game	Save UI screenshots	2026-11-19T10:15:02.0993456Z Artifact game-screenshots.zip successfully finalized. Artifact ID 14518252131
+game	Save UI screenshots	2026-11-19T10:15:02.0995467Z Artifact game-screenshots has been successfully uploaded! Final size is 23498726 bytes. Artifact ID is 14518252131
+game	Save UI screenshots	2026-11-19T10:15:02.1001928Z Artifact download URL: https://github.com/Mirne/Tabara/actions/runs/44503676499/artifacts/14518252131
+game	Post Run actions/checkout@v4	﻿2026-11-19T10:15:02.1296304Z Post job cleanup.
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2143367Z [command]/usr/bin/git version
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2189316Z git version 2.56.1
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2228879Z Temporarily overriding HOME='/home/runner/work/_temp/3f096f37-5a29-4e49-83e2-7fe37d5b3747' before making global git config changes
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2230278Z Adding repository directory to the temporary git global config as a safe directory
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2235141Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Tabara/Tabara
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2279142Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2318379Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2625757Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2653716Z http.https://github.com/.extraheader
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2666241Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.2719814Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.3041709Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+game	Post Run actions/checkout@v4	2026-11-19T10:15:02.3082741Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+game	Complete job	﻿2026-11-19T10:15:02.3541905Z Cleaning up orphan processes
+game	Complete job	2026-11-19T10:15:02.3935722Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

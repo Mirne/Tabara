@@ -1,37 +1,36 @@
 # Tabara: Last Hearth
 
 An offline Android settlement-defense game built in **Godot 4.6.3**. Build a
-settlement in a wooded valley, gather supplies, and defend the main hall for
-**15 in-game minutes**. Victory unlocks endless survival.
+settlement in a wooded valley, gather supplies, and defend the main hall. Defeat
+the **final Warlord arriving at 15:00** to unlock endless survival.
 
 ![Settlement and Workshop](docs/screenshots/building-rules-workshop.png)
 
-## Version 0.10
+## Version 0.11
 
-Marketplace produces **2 gold per game second**, with individual income upgrades.
-Buying, selling and trade cooldowns are removed. Woodcutters, quarries, the Hall,
-Marketplace and Workshop upgrade from their own panels. Walls and both tower
-types retain global Workshop upgrades. Regeneration is in that same Upgrades
-list: it starts at 0.3% maximum HP/sec and reaches **20% at level 100**.
+All six attacking enemy types have painted wind-up, strike and recovery frames.
+Walking and attacking units mirror when they face left. Attack pacing and ordinary
+enemy damage are unchanged. The launcher and startup image use a new painted Hall
+icon. The decorative SINGLE PLAYER / OFFLINE menu footer is removed.
 
-Building panels show actual current/next effects and prices. Purchase buttons say
-**Upgrade**. Repeated Workshop explanations and routine tutorial popups are removed.
-A quarry and its rocks draw as one stable group. Enemies detect resource producers
-within 1,600 world units and retarget after an outpost falls, while still attacking
-blocking defenses and respecting impassable terrain.
+Warlords enter every five game minutes and grow stronger. The 10:00 miniboss is
+stronger than the 05:00 one; the 15:00 final Warlord has four times the old
+same-wave boss's health and twice its damage. Reaching 15:00 keeps the battle
+running. Victory requires killing that specific boss while the Hall survives;
+endless mode then continues with further five-minute bosses.
 
-The existing map, building costs, enemy stats, victory time, five-minute minibosses,
-continuous construction tools and joined wall geometry are retained. No new
-settlement is needed for these changes. Existing buildings keep their levels;
-new non-defense buildings start at one. New defenses inherit their global level.
+Existing unfinished settlements adopt the final-boss objective. Completed old
+endless settlements retain their earned victory; start a new settlement to play
+the revised objective after an old win. Terrain, foundations, purchased upgrades,
+passive Marketplace income and all unspecified mechanics are retained.
 
 The persistent [owner rules](docs/gameplay/NOTES.md) and [building/NPC specifications](docs/gameplay/INDEX.md)
 must be read before implementing further changes.
 
 ## Play on Android
 
-Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/main/builds/tabara-frontier-v0.10.apk)
-from GitHub. Open the link in Chrome, then open `tabara-frontier-v0.10.apk` from
+Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/main/builds/tabara-frontier-v0.11.apk)
+from GitHub. Open the link in Chrome, then open `tabara-frontier-v0.11.apk` from
 **Downloads** or Samsung **My Files → Downloads**. Install it over the previous
 version to retain the settlement. Existing saves retain their terrain, foundations and purchased levels.
 
@@ -48,7 +47,7 @@ advertising, analytics, or runtime network connection are required.
    blocking them. Red cells reject construction and block passage.
 4. Upgrade producers at their own panels. Build a Marketplace for passive gold.
    The Workshop upgrades defenses and Regeneration.
-5. Survive to 15:00, then continue until the hall falls.
+5. Defeat the final Warlord arriving at 15:00, then continue until the hall falls.
 
 | Building | Role |
 | --- | --- |
@@ -68,8 +67,8 @@ construction, **U** opens the Workshop, **R** opens Regeneration, **F** finds th
 **Space** pauses, and **Esc** goes back.
 
 The game saves every ten real seconds, on pause, when backgrounded, and when
-returning to the menu. Foregrounding requires explicit resume. Save format nine
-loads frontier versions 2–8 and preserves their geography, foundations and levels. An
+returning to the menu. Foregrounding requires explicit resume. Save format ten
+loads frontier versions 2–9 and preserves their geography, foundations and levels. An
 already-paid v0.8 research order completes once on migration; any remaining paid
 local repair finishes once before its manual job is removed. Previously purchased Regeneration levels are retained; it stays locked when
 not previously purchased. Old save times do not trigger a backlog of minibosses.
@@ -91,8 +90,8 @@ SDK and Java paths in Godot's Editor Settings.
 ```sh
 godot --headless --editor --single-threaded-scene --path . --import --quit
 mkdir -p builds
-godot --headless --path . --export-debug Android builds/tabara-frontier-v0.10-unpacked.apk
-python3 tools/package_android.py builds/tabara-frontier-v0.10-unpacked.apk builds/tabara-frontier-v0.10.apk --sdk "$ANDROID_HOME"
+godot --headless --path . --export-debug Android builds/tabara-frontier-v0.11-unpacked.apk
+python3 tools/package_android.py builds/tabara-frontier-v0.11-unpacked.apk builds/tabara-frontier-v0.11.apk --sdk "$ANDROID_HOME"
 ```
 
 The packaging tool losslessly ZIP-compresses texture containers, verifies every
@@ -119,10 +118,12 @@ Back, saves, restart, panning and app switching. Configure `ANDROID_ADB`,
 `ANDROID_SERIAL`, `ANDROID_ADB_PORT`, `ANDROID_APK`, `ANDROID_REPORT_NAME` and
 `ANDROID_COMMAND_TIMEOUT` and `ANDROID_TAP_DELAY` as needed. Slower software
 emulators can use an eight-second tap delay. It clears only this game's data on that
-emulator. `tests/android_upgrade.py` installs the published v0.9 APK, migrates its save to
-v0.10, and tests local producer/Marketplace upgrades and passive income. Set
-`ANDROID_PREVIOUS_APK` to the old download. Its later UI fixture explicitly grants
-supplies; migration retains the original economy and restores it afterward.
+emulator. `tests/android_upgrade.py` installs the published v0.10 APK, migrates its save to
+v0.11, and checks native left/right attacks, the 15:00 arrival, final-boss victory
+and endless mode. Set `ANDROID_PREVIOUS_APK` to the old download. Encounter fixtures
+advance the clock, reposition enemies, reinforce walls and lower final-boss HP
+for a tower kill. They do not represent a normal campaign. The original migrated
+settlement is restored afterward.
 
 The manually triggered Android GitHub workflow uses an accelerated API 35 emulator.
 See [verification evidence and limits](docs/QA.md), [rules and architecture](docs/DESIGN.md),

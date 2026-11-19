@@ -1,4 +1,4 @@
-# Hearthvale Basin: building rules
+# Hearthvale Basin: final Warlord
 
 ## Direction and geography
 
@@ -97,8 +97,10 @@ force, so intervening walls are attacked before reaching the target.
 Spatial indexes, five-hertz local crowd separation, bounded neighbor searches,
 and short target caches limit per-step work. Towers prioritize threats near the
 hall. Kill rewards vary by enemy type, are paid once, and show a coin
-visual. Victory occurs at 900 game seconds, then the player may continue endlessly.
-Speed controls change game time, not the victory threshold.
+visual. The final Warlord enters at 900 game seconds. Victory requires killing
+that specific boss while the Hall survives. Hall destruction takes precedence
+if both fall in one simulation tick. Further waves continue during the encounter;
+endless mode follows victory. Speed controls change game time.
 
 Walls use 80-unit sections, Manhattan drag strokes, and at most 64 sections per
 confirmation. Blocked terrain is skipped. The first complete green foundation establishes the stroke lattice, and neighboring walls align subsequent rows. Only eligible, non-overlapping foundations are charged; affordability and capacity are checked before construction. Live endpoints are
@@ -106,15 +108,22 @@ reused without charging twice. Cardinal neighbors share textured stone faces,
 wooden walkways and continuous UVs. Internal faces and parapets are omitted. Dense blocks share one continuous deck and only exterior corners have capstones. Destruction opens a breach; a newly built section
 joins its neighbors and inherits global wall research.
 
-A Warlord miniboss enters at each 300-second boundary, starting at 05:00 and
-continuing at 10:00, 15:00, 20:00 and beyond. It has 26 times ordinary health,
-4.5 times ordinary attack and 62% of ordinary speed, all on the usual wave growth
-curve. It awards 60 gold and has no incoming-damage modifiers. It spawns at the
-western entrance, follows the same routing and retaliation rules, and has its own
-four-frame raster strip and permanent health bar. A saved interval counter avoids
-duplicate spawns after reload; population-cap delays are retained until a slot
-opens. The 15-minute Warlord enters as endless mode unlocks; the original timed
-victory condition is unchanged.
+A Warlord enters every 300 game seconds at the western entrance. Boss baseline
+health is 26 times ordinary health, attack 4.5 times ordinary attack, and speed
+62% of ordinary speed. Regular interval N further multiplies health by
+`1 + 0.5 × (N - 1)` and damage by `1 + 0.15 × (N - 1)`. Boss wave growth uses at
+least wave `N × 10 + 1`, avoiding floating-point boundary differences. The 15:00
+final boss instead has four times the old same-wave boss health and twice its
+damage: about 29,864 HP and 620 damage versus about 2,328 HP at 05:00 and 6,253 HP
+at 10:00. Later regular bosses continue scaling. Incoming damage has no special
+resistance or per-hit limits, and boss kills still award 60 gold.
+
+The final boss is identified separately from other Warlords. Killing an earlier
+miniboss after 15:00 cannot win. A saved interval counter and final-boss identity
+prevent duplicate spawns after reload. At the population cap, the final boss has
+priority over ordinary reinforcements as soon as a slot opens. Missed regular
+intervals remain queued. The final boss follows normal navigation, blocking and
+retaliation rules and has a persistent health bar.
 
 ## Rendering and mobile interaction
 
@@ -123,7 +132,12 @@ A macro ground painting and sharp raster materials are composed into a cached
 above it. Water is separately animated. Entities are culled and sorted by their
 feet with a deterministic tie-break at equal Y positions. Occupied resource rocks
 are drawn directly before their quarry in the same entity group; workers, smoke, four-frame unit strips, projectiles and brief collapse FX
-provide animation. The minimap is rendered from actual terrain. Layout three
+provide animation. All six combat types use four painted attack poses, selected
+from their actual attack state and existing 1.15-second damage cadence. Sprites
+mirror from movement or target direction, retain that direction on death, and
+keep their foot anchor between walk and attack sheets. Reduced motion uses a
+stationary strike pose. The launcher and startup use a painted Hall emblem.
+The minimap is rendered from actual terrain. Layout three
 retains its original overview, while layout four retains its v0.8 overview; layout five uses the current overview.
 
 With nothing selected, the right rail shows seven large construction cards.
@@ -153,13 +167,13 @@ same logical canvas. No Guide or mobile zoom buttons are shown.
 
 ## Saves and reproducibility
 
-Format nine records per-building local levels and global defense levels, Regeneration, the miniboss interval
-counter, terrain revision, structures, enemies, retaliation,
+Format ten records per-building local levels and global defense levels, Regeneration, the miniboss interval
+counter, final-boss identity/defeat, earned victory, attack/facing state, terrain revision, structures, enemies, retaliation,
 economy, mission time, random state, camera and zoom. No trade cooldowns, active research or manual repair jobs are stored. Transient A* paths are rebuilt after load. JSON uses full
 precision, validates fields, and is atomically renamed over the prior file.
 Backgrounding pauses and saves; foregrounding requires resume.
 
-Versions 2–8 preserve terrain, positions and sites (layouts 0–5).
+Versions 2–9 preserve terrain, positions and sites (layouts 0–5).
 Standing non-defense buildings retain their old purchased levels as individual
 levels; new replacements begin at one. Defenses keep shared type-wide levels. A paid
 version-seven research order completes once on migration without another charge,
@@ -168,7 +182,10 @@ then its job is removed. Versions 2–7 initialize Regeneration locked; version-
 purchased Regeneration level. The old
 elapsed time seeds the miniboss interval counter so past bosses are not spawned
 retroactively. Version-one fixed-plot files remain untouched and are not loaded.
-No new settlement is required for v0.10. The off-path sites originally added in
+Completed old endless saves retain their earned victory. Unfinished old saves
+require the new final boss, including late unfinished saves whose old miniboss
+counter already reached three. Existing living old bosses retain their stats and
+are not reclassified as the final encounter. The off-path sites originally added in
 v0.9 remain specific to layout five; legacy maps remain unchanged.
 
 `tools/bake_world.gd` reproducibly stores six terrain/navigation fields. The five

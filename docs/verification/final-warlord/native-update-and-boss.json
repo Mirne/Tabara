@@ -1,0 +1,147 @@
+{
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "label": "Published v0.10 APK installs without clearing its settlement",
+      "passed": true
+    },
+    {
+      "label": "A compatible old settlement exists before updating",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Actual v0.10 app writes its format-nine save",
+      "passed": true
+    },
+    {
+      "label": "Signed v0.11 APK updates v0.10 with the same certificate",
+      "passed": true
+    },
+    {
+      "label": "Android installation preserves the complete old save file",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "New save format retains the existing map",
+      "passed": true
+    },
+    {
+      "label": "All local/global building levels and foundations survive migration",
+      "passed": true
+    },
+    {
+      "label": "Defense upgrades and Regeneration are retained",
+      "passed": true
+    },
+    {
+      "label": "Updating retains the original economy",
+      "passed": true
+    },
+    {
+      "label": "Updating retains mission progress and kills",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Fifteen minutes keeps the native battle running without victory",
+      "passed": true
+    },
+    {
+      "label": "Exactly one final Warlord enters at fifteen minutes",
+      "passed": true
+    },
+    {
+      "label": "Native final boss uses its substantially stronger profile",
+      "passed": true
+    },
+    {
+      "label": "Final Warlord enters at the western approach",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "A native unit attacking a target on its left mirrors and attacks",
+      "passed": true
+    },
+    {
+      "label": "Native attack animation accompanies real building damage",
+      "passed": true
+    },
+    {
+      "label": "Restart preserves the living final boss and unfinished mission",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "A native unit switches back to a right-facing attack",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Actual native tower damage kills the final boss and opens victory",
+      "passed": true
+    },
+    {
+      "label": "Victory requires the final boss dead and the Hall alive",
+      "passed": true
+    },
+    {
+      "label": "Native endless survival resumes after the final-boss victory",
+      "passed": true
+    },
+    {
+      "label": "Native diagnostics have no script, shader or fatal error",
+      "passed": true
+    }
+  ],
+  "actual_seconds": 1200.3110760210002,
+  "apk_sha256": "aebb450fdcdd2c94cde0d48eee8ba50cbab2eeebee2c427b4ef2775dc9bba650",
+  "previous_apk_sha256": "2895f181a5a705c4c053c4db769418e110b6457002a9adb032b3b1a0f4ce5844",
+  "mode": "actual-v010-update-attacks-and-final-boss",
+  "fixtures": "Migration keeps the old economy and clears incoming attackers. Later fixtures advance the clock to 899.95, reinforce existing walls to level 100 and disable Regeneration for isolated target-facing attack captures, reposition the final boss, and lower its HP to 1 for an actual tower kill. They grant no supplies and are not normal-cost campaign evidence. The pre-fixture migrated settlement is restored afterward."
+}
