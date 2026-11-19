@@ -56,3 +56,5 @@ requested scope, not a separate owner-confirmed change. A later answer overrides
   nor award victory merely because the clock passed 15:00. Existing completed
   endless saves retain their earned victory. Unfinished late legacy saves receive
   one final Warlord without replaying all past miniboss intervals.
+
+- Owner follow-up: remove the menu footer text “SINGLE PLAYER / OFFLINE”.

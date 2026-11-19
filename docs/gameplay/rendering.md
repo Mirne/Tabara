@@ -15,3 +15,5 @@ Death effects retain the unit's last facing direction instead of snapping right.
 The launcher and boot splash use a new raster icon matching the red-roof Hall,
 warm windows, dark woodland palette and existing building artwork. Keep important
 features within Android adaptive-icon safe bounds. Do not introduce new UI tips.
+
+Remove the decorative “SINGLE PLAYER / OFFLINE” menu footer, as requested.

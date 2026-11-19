@@ -642,7 +642,6 @@ func draw_menu()->void:
  if save_available: button(Rect2(80,506,390,52),"New frontier","new",false,true,18)
  button(Rect2(80,580,390,50),"Settings","settings",false,true,17)
  button(Rect2(80,646,185,46),"Credits","credits",false,true,16)
- label("SINGLE PLAYER   /   OFFLINE",Vector2(83,754),13,MUTED)
  Art.skin(self,Rect2(971,620,414,142),Color(0.87,0.9,0.83))
  label("MISSION 01",Vector2(997,650),13,GOLD)
  label("The Hearthvale Basin",Vector2(996,685),26,IVORY,true)
