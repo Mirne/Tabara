@@ -159,6 +159,10 @@ func run()->void:
   check(sim.rain_ready(),"Rain becomes available again after its game-time recharge")
  Sim.Abilities.rain_recharge_seconds=60
  sim=quiet()
+ sim.cast_rain(Vector2(6200,2820))
+ for i in 60:sim.step(0.05)
+ check(sim.arrow_rains.is_empty() and restored(sim)!=null,"Saving on the exact barrage-end frame keeps a valid settlement")
+ sim=quiet()
  var victim:Dictionary=sim.spawn_enemy(0,"raider")
  victim.pos=Vector2(6200,2820)
  victim.hp=1

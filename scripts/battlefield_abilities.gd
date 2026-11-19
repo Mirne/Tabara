@@ -18,9 +18,11 @@ static var rain_recharge_seconds:float=60.0
 
 static func step_rain(sim,delta:float)->void:
  sim.rain_cooldown=maxf(0,sim.rain_cooldown-delta)
+ if sim.rain_cooldown<0.00001:sim.rain_cooldown=0.0
  for i in range(sim.arrow_rains.size()-1,-1,-1):
   var rain:Dictionary=sim.arrow_rains[i]
   rain.left=maxf(0,float(rain.left)-delta)
+  if rain.left<0.00001:rain.left=0.0
   var age:float=RAIN_DURATION-rain.left
   while rain.pulses<RAIN_PULSES and age+0.00001>=(rain.pulses+1)*RAIN_PULSE_INTERVAL:
    for enemy in sim.nearby_enemies(rain.pos,RAIN_RADIUS):
@@ -45,8 +47,10 @@ static func begin_smash(enemy:Dictionary,position:Vector2)->void:
 
 static func step_smash(sim,enemy:Dictionary,delta:float)->bool:
  enemy.smash_clock=maxf(0,float(enemy.smash_clock)-delta)
+ if enemy.smash_clock<0.00001:enemy.smash_clock=0.0
  if enemy.smash_left<=0:return false
  enemy.smash_left=maxf(0,float(enemy.smash_left)-delta)
+ if enemy.smash_left<0.00001:enemy.smash_left=0.0
  enemy.attacking=true
  var horizontal:float=enemy.smash_center.x-enemy.pos.x
  if absf(horizontal)>1:enemy.facing_left=horizontal<0
