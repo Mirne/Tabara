@@ -12,6 +12,10 @@ v0.11 signing key. See [packaging record](verification/battlefield-skills/packag
 The [v0.11 evidence](https://github.com/Mirne/Tabara/blob/v0.11.0/docs/QA.md)
 remains available through its release tag.
 
+The complete [public APK download](https://raw.githubusercontent.com/Mirne/Tabara/a60fb83bd341a60aad0a56449dab730806d72e47/builds/tabara-frontier-v0.12.apk)
+was downloaded again and matched the tested size and SHA-256 exactly.
+See [download verification](verification/battlefield-skills/public-download.json).
+
 ## Source, gameplay and rendering
 
 **1,877 existing model checks**, **61 battlefield-mechanic checks**, **81 terrain /
@@ -82,6 +86,24 @@ has 20,000 HP for repeated captures. The final boss has one HP and attacks the
 quarry outside Hall/tower range, isolating Rain as its killing source. These are
 transition tests, not paid campaigns. The pre-fixture migrated settlement was
 restored afterward.
+
+## Independent Android 15 fresh install
+
+[API 35 CI](https://github.com/Mirne/Tabara/actions/runs/44537623656) passed
+**76 checks** in **820.55 seconds** with a separately built and signed test APK.
+This covers paid mobile construction, twelve-cell walls, upgrades, lifecycle,
+boss transitions, tower-kill victory, Rain preview and real damage, and recharge
+after a cold restart. The CI APK hash is recorded separately from the downloadable
+APK in the [report](verification/battlefield-skills/android-api35.json) and
+[run identity](verification/battlefield-skills/android-ci.json).
+
+No resource grants were used in that run. Boss transition fixtures advance the
+clock and use a one-HP final boss for the tower-kill check. Rain uses a 5,000-HP,
+one-damage elite beside the quarry. Earlier fixture attempts aimed at a stale
+saved position while the enemy moved away; the corrected harness pauses for a
+fresh position before targeting. Only the test fixture changed. The successful
+run observed two 55-damage pulses and 58.85 seconds of recharge after casting.
+Its original native settlement was restored after the controlled checks.
 
 ## Paid campaigns and limits
 
