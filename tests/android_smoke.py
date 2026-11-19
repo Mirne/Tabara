@@ -487,13 +487,17 @@ def native_checks(back_only=False):
                 tap(260,462)
                 time.sleep(6)
                 tap(391,756)
-                tap(*world_point(5360,2800))
+                current=save()
+                rain_target=next(e for e in current["enemies"] if e["id"]==victim["id"])
+                tap(*world_point(*rain_target["pos"]))
                 screen("12-rain-preview")
                 check(save()["rain_cooldown"]==0 and not save()["arrow_rains"],
                       "Native Rain selection and target tap only preview without casting")
                 tap(1273,685)
                 tap(1338,43)
                 cast=save()
+                print("RAIN CAST STATE:",{"recharge":cast["rain_cooldown"],"barrages":cast["arrow_rains"],
+                      "enemies":[(e["id"],e["hp"],e["pos"]) for e in cast["enemies"]]},flush=True)
                 check(cast["rain_cooldown"]>0 and cast["enemies"][0]["hp"]<5000,
                       "Native Rain confirmation starts recharge and damages the real target")
                 screen("13-rain-cast")

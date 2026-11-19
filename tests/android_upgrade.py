@@ -152,8 +152,12 @@ def run():
         workshop=finish['buildings'][workshop_index]
         workshop['hp']*=1.085**(100-workshop['level'])
         workshop['level']=100
-        finish['enemies'][0].update(hp=1.0,pos=[5480.0,2800.0],target=workshop_index,aim=.2,
-                                   cooldown=0.0,anger=workshop_index,anger_left=7.0,
+        quarry_index=next(i for i,b in enumerate(finish['buildings']) if b and b['kind']=='stone')
+        quarry=finish['buildings'][quarry_index]
+        quarry['hp']*=1.085**(100-quarry['level'])
+        quarry['level']=100
+        finish['enemies'][0].update(hp=1.0,pos=[5480.0,3100.0],target=quarry_index,aim=.2,
+                                   cooldown=0.0,anger=quarry_index,anger_left=7.0,
                                    smash_clock=0.0,smash_left=0.0,smash_center=[0.0,0.0])
         finish['camera']=[4840.0,2800.0,.72]
         ready=load_fixture(finish)
@@ -162,7 +166,7 @@ def run():
                 'Rain kill fixture holds the final boss alive outside Hall and tower range')
         n.tap(720,505)
         n.tap(391,756)
-        n.tap(*n.world_point(5360,2800))
+        n.tap(*n.world_point(*actor['pos']))
         n.screen('09-rain-preview')
         n.check(n.save()['rain_cooldown']==0 and not n.save()['arrow_rains'],
                 'Selecting and targeting Rain does not spend a cast')
@@ -204,7 +208,7 @@ def run():
                 'error':error,'checks':n.checks,'actual_seconds':time.monotonic()-started,
                 'apk_sha256':n.APK_SHA256,'previous_apk_sha256':hashlib.file_digest(PREVIOUS.open('rb'),'sha256').hexdigest(),
                 'mode':'actual-v011-update-walls-miniboss-skills-and-rain',
-                'fixtures':'Migration preserves the old economy and clears attackers. Later UI checks grant 1,000 of each resource, advance clocks to 299.95/899.95, reinforce walls and Workshop to level 100, disable Regeneration, and reposition enemies. The miniboss has 20,000 HP for repeatable skill captures. The final boss has one HP and is held outside tower/Hall range for an actual Rain kill. These are controlled transition fixtures, not paid campaigns. The pre-fixture migrated settlement is restored.'}
+                'fixtures':'Migration preserves the old economy and clears attackers. Later UI checks set a 1,000-resource budget, advance clocks to 299.95/899.95, reinforce walls, Workshop and quarry to level 100, disable Regeneration, and reposition enemies. The miniboss has 20,000 HP for repeatable skill captures. The final boss has one HP and is held at the quarry outside tower/Hall range for an actual Rain kill. These are controlled transition fixtures, not paid campaigns. The pre-fixture migrated settlement is restored.'}
         (n.OUT/'report.json').write_text(json.dumps(report,indent=2))
         print(json.dumps(report),flush=True)
     return 0 if report['passed'] else 1
