@@ -15,3 +15,5 @@ no replay of all missed minibosses.
 
 The map, economy, resource counts, building prices/upgrades, ordinary waves and
 other unit stats are unchanged by this request.
+
+Menu and briefing objectives must describe the final-boss kill, not a timed win.

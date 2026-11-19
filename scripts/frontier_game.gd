@@ -646,7 +646,7 @@ func draw_menu()->void:
  Art.skin(self,Rect2(971,620,414,142),Color(0.87,0.9,0.83))
  label("MISSION 01",Vector2(997,650),13,GOLD)
  label("The Hearthvale Basin",Vector2(996,685),26,IVORY,true)
- wrapped("A vast valley. One approach. Fifteen minutes to secure your foothold.",Vector2(997,716),360,15,MUTED,23)
+ wrapped("A vast valley. One approach. Defeat the final Warlord arriving at 15:00.",Vector2(997,716),360,15,MUTED,23)
  if best>0:
   Art.skin(self,Rect2(1170,27,230,43),Color(0.86,0.9,0.83),9)
   centered("BEST HOLD  "+time_label(best),Rect2(1170,27,230,43),14,IVORY)
