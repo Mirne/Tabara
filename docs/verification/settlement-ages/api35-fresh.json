@@ -1,0 +1,319 @@
+{
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "label": "Android boot and package service are ready",
+      "passed": true
+    },
+    {
+      "label": "Frontier APK installs",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native producer preview renders green buildable tiles",
+      "passed": true
+    },
+    {
+      "label": "Native preview never constructs before confirmation",
+      "passed": true
+    },
+    {
+      "label": "Native placement constructs two producers and two towers without reopening the tower catalogue",
+      "passed": true
+    },
+    {
+      "label": "Native wall drag previews without constructing",
+      "passed": true
+    },
+    {
+      "label": "Native mission starts in Wood age on the two-yard terrain",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs wood",
+      "passed": true
+    },
+    {
+      "label": "Native save retains wood world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs stone",
+      "passed": true
+    },
+    {
+      "label": "Native save retains stone world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs arrow",
+      "passed": true
+    },
+    {
+      "label": "Native save retains arrow world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs arrow",
+      "passed": true
+    },
+    {
+      "label": "Native save retains arrow world coordinates",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4800, 2480)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4680, 3120)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4480, 2760)",
+      "passed": true
+    },
+    {
+      "label": "Native confirmed building follows the grid at (4640, 2760)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2580)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2620)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2660)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2700)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2740)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2780)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2820)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2860)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2900)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2940)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 2980)",
+      "passed": true
+    },
+    {
+      "label": "Native wall stroke creates a single-cell joined piece at (4180, 3020)",
+      "passed": true
+    },
+    {
+      "label": "Native mission contains exactly one timber yard and one quarry",
+      "passed": true
+    },
+    {
+      "label": "Native mission advances",
+      "passed": true
+    },
+    {
+      "label": "Native pause freezes the saved clock beyond autosave interval",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back resumes the clock before pausing again",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back then keeps combat paused",
+      "passed": true
+    },
+    {
+      "label": "Back handling retains the native game activity",
+      "passed": true
+    },
+    {
+      "label": "Native producer upgrade is local and needs no Workshop",
+      "passed": true
+    },
+    {
+      "label": "Native touch constructs an operational Workshop",
+      "passed": true
+    },
+    {
+      "label": "Workshop Arrow damage purchase advances only its damage line",
+      "passed": true
+    },
+    {
+      "label": "Native Workshop purchases global automatic Regeneration",
+      "passed": true
+    },
+    {
+      "label": "Paid Hall advancement reaches Stone while keeping Arrow damage research",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Cold restart retains elapsed time",
+      "passed": true
+    },
+    {
+      "label": "Cold restart retains all confirmed structures and coordinates",
+      "passed": true
+    },
+    {
+      "label": "Cold restart retains instant upgrades and automatic Regeneration",
+      "passed": true
+    },
+    {
+      "label": "Native one-finger drag moves the camera",
+      "passed": true
+    },
+    {
+      "label": "Native drag creates no accidental building",
+      "passed": true
+    },
+    {
+      "label": "Backgrounding persists the current settlement",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back resumes the clock before pausing again",
+      "passed": true
+    },
+    {
+      "label": "Hardware Back then keeps combat paused",
+      "passed": true
+    },
+    {
+      "label": "Back handling retains the native game activity",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native five-minute boundary spawns exactly one miniboss at the western entrance",
+      "passed": true
+    },
+    {
+      "label": "Native miniboss has its own stronger stats and starts on the approach",
+      "passed": true
+    },
+    {
+      "label": "Native Regeneration heals the damaged Hall without a repair tap",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native final boss enters at fifteen minutes without ending the battle",
+      "passed": true
+    },
+    {
+      "label": "Native final boss has a unique identity and much stronger health",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Actual native tower damage kills the final boss and opens victory",
+      "passed": true
+    },
+    {
+      "label": "Native endless survival continues after final-boss victory",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native Rain selection and target tap only preview without casting",
+      "passed": true
+    },
+    {
+      "label": "Native Rain confirmation starts recharge and damages the real target",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Native Rain recharge survives a cold restart without resetting",
+      "passed": true
+    },
+    {
+      "label": "Captured native diagnostics contain no script, shader, or fatal error",
+      "passed": true
+    }
+  ],
+  "actual_seconds": 905.993159703,
+  "apk_sha256": "aa4fb07bdac02c3c328db720a32e5583e9da88c4a200a0c5639b61f0822ec8d5",
+  "mode": "full-native",
+  "prior_segment": null,
+  "fixtures": "Restore/lifecycle checks clear incoming attackers after paid construction. Boss checks advance saved clocks to 299.95 and 899.95 seconds. The first damages the Hall; the final kill fixture lowers final-boss HP to 1 for actual tower damage. Rain uses a repositioned 5,000-HP elite with one attack damage to isolate targeting, real damage and recharge persistence. No resources are granted. These are transition fixtures, not paid-campaign evidence. The original native settlement is restored"
+}
