@@ -312,6 +312,7 @@ def native_checks(back_only=False):
             tap(1338, 43)  # Explicit known pause.
             screen("04-built-and-paused")
             data = wait_saved_structure(16, "wall")
+            paid_defenses = data
             check(data["version"] == 12 and data["terrain_revision"] == 6 and data["settlement_age"] == 1, "Native mission starts in Wood age on the two-yard terrain")
             for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow"), (4, "arrow")]:
                 check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
@@ -348,6 +349,7 @@ def native_checks(back_only=False):
             tap(*world_point(5200, 2800))
             tap(1338, 43)
             checkpoint = save()
+            paid_defenses = checkpoint
             check(checkpoint["version"] == 12 and checkpoint["terrain_revision"] == 6,
                   "Resumed checkpoint retains the current save format and map")
             check(checkpoint["tower_tracks"]["arrow_damage"] == 1 and checkpoint["regeneration_level"] == 0,
@@ -484,7 +486,9 @@ def native_checks(back_only=False):
                 screen("09-miniboss-and-regeneration")
                 # Explicit final-boss boundary, followed by an actual tower kill.
                 adb("shell", "am", "force-stop", PACKAGE)
-                final_boundary = copy.deepcopy(normal)
+                # Both towers can legitimately fall during the later live test.
+                # Use the original paid formation for this isolated tower shot.
+                final_boundary = copy.deepcopy(paid_defenses)
                 final_boundary.update(elapsed=899.95, wave=30, boss_intervals=2, enemies=[],
                                       spawn_remaining=0, spawn_clock=30.0, victory=False, victory_seen=False,
                                       final_boss_id=0, final_boss_defeated=False, legacy_completion=False)
@@ -503,16 +507,20 @@ def native_checks(back_only=False):
                 check(final_bosses[0]["id"] == final_observed["final_boss_id"] and final_bosses[0]["max_hp"] > 20000,
                       "Native final boss has a unique identity and much stronger health")
                 finish = copy.deepcopy(final_observed)
-                arrow = next(b for b in finish["buildings"] if b and b["kind"] == "arrow")
+                arrow = next((b for b in finish["buildings"] if b and b["kind"] == "arrow"), None)
+                check(arrow is not None, "The final encounter fixture retains a paid Arrow tower")
                 final_actor = copy.deepcopy(final_bosses[0])
-                final_actor.update(hp=1.0, pos=[arrow["pos"][0]+100, arrow["pos"][1]],
+                final_actor.update(hp=1.0, pos=[arrow["pos"][0]-240, arrow["pos"][1]],
                                    target=-1, aim=0.0, attacking=False, attack_left=0.0)
                 finish["enemies"] = [final_actor]
                 finish["spawn_remaining"] = 0
                 finish["spawn_clock"] = 30.0
                 finish["camera"] = [4840.0, 2800.0, .72]
                 for b in finish["buildings"]:
-                    if b and b["kind"] in ["arrow", "cannon", "hall"]: b["cooldown"] = 0.0
+                    if b and b["kind"] == "arrow":
+                        b["cooldown"] = 0.0
+                    elif b and b["kind"] in ("cannon", "hall"):
+                        b["cooldown"] = 20.0
                 adb("shell", "am", "force-stop", PACKAGE)
                 write_save(finish)
                 launch()
@@ -531,7 +539,8 @@ def native_checks(back_only=False):
 
                 # Isolated native ability target: high HP and low attack keep the
                 # real settlement safe while checking input, damage and recharge.
-                rain_fixture=copy.deepcopy(normal)
+                # The selected wall was built by the same native drag earlier.
+                rain_fixture=copy.deepcopy(paid_defenses)
                 rain_fixture.update(enemies=[],spawn_remaining=0,spawn_clock=30.0,rain_cooldown=0.0,arrow_rains=[])
                 rain_fixture["camera"]=[4840.0,2800.0,.72]
                 # Use a real western wall and isolate the Rain hit from friendly tower fire.
@@ -610,7 +619,7 @@ def native_checks(back_only=False):
                   "error": error, "checks": checks, "actual_seconds": time.monotonic() - started,
                   "apk_sha256": APK_SHA256, "mode": "foreground-back" if back_only else ("resumed-native" if resume_log else "full-native"),
                   "prior_segment": prior_segment,
-                  "fixtures": "Restore/lifecycle checks clear incoming attackers after paid construction. Boss checks advance saved clocks to 299.95 and 899.95 seconds. The first damages the Hall; the final kill fixture lowers final-boss HP to 1 for actual tower damage. Rain uses a repositioned 5,000-HP elite with one attack damage to isolate targeting, real damage and recharge persistence. No resources are granted. These are transition fixtures, not paid-campaign evidence. The original native settlement is restored" if not back_only else "existing settlement"}
+                  "fixtures": "Restore/lifecycle checks clear incoming attackers after paid construction. Boss checks advance saved clocks to 299.95 and 899.95 seconds. The first damages the Hall; the final kill uses the original paid defensive formation, sets final-boss HP to 1 and delays Hall fire to isolate actual Arrow tower damage. Rain reuses its paid wall and a repositioned 5,000-HP elite with one attack damage to isolate targeting, real damage and recharge persistence. No resources are granted. These are transition fixtures, not paid-campaign evidence. The original native settlement is restored" if not back_only else "existing settlement"}
         (OUT / "report.json").write_text(json.dumps(report, indent=2))
         print(json.dumps(report), flush=True)
     return 0 if report["passed"] else 1
