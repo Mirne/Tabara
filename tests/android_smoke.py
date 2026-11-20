@@ -5,7 +5,6 @@ emulator. ANDROID_APK, ANDROID_ADB, ANDROID_SERIAL, ANDROID_ADB_PORT,
 ANDROID_REPORT_NAME, ANDROID_COMMAND_TIMEOUT customize the local setup.
 """
 from __future__ import annotations
-import base64
 import copy
 import shlex
 import hashlib
@@ -13,10 +12,12 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+from xml.etree import ElementTree
 from PIL import Image, ImageChops, ImageStat
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,9 +42,9 @@ MENU_REGION = (1100, 100, 1390, 570)
 with APK.open("rb") as stream:
     APK_SHA256 = hashlib.file_digest(stream, "sha256").hexdigest()
 
-def adb(*args, binary=False, timeout=None):
+def adb(*args, binary=False, timeout=None, input_data=None):
     result = subprocess.run([ADB, "-P", PORT, "-s", SERIAL, *map(str, args)],
-                            capture_output=True, timeout=timeout or TIMEOUT)
+                            input=input_data, capture_output=True, timeout=timeout or TIMEOUT)
     if result.returncode:
         raise RuntimeError(f"adb {args}: " + result.stderr.decode(errors="replace")[-1200:] + result.stdout.decode(errors="replace")[-1200:])
     return result.stdout if binary else result.stdout.decode().strip()
@@ -71,8 +72,34 @@ def menu_matches(image):
     diff = ImageStat.Stat(ImageChops.difference(image.crop(MENU_REGION), reference.crop(MENU_REGION)))
     return sum(diff.mean) / 3 < 20
 
+
+def wait_for_quickstep():
+    # Slow hosted boots can leave the AOSP launcher's ANR over a healthy game.
+    # Act only on its focused dialog and Android's actual Wait button.
+    windows = adb("shell", "dumpsys", "window", "windows", timeout=15)
+    focus = next((line for line in windows.splitlines() if "mCurrentFocus=" in line), "")
+    if not re.search(r"Application Not Responding:\s+com\.android\.launcher3(?=[}\s]|$)", focus):
+        return False
+    dump = adb("shell", "uiautomator", "dump", "/dev/tty", timeout=20)
+    hierarchy = re.search(r"<hierarchy\b.*?</hierarchy>", dump, re.S)
+    if not hierarchy:
+        return False
+    for node in ElementTree.fromstring(hierarchy.group()).iter("node"):
+        if node.get("resource-id") != "android:id/aerr_wait":
+            continue
+        bounds = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
+        if bounds:
+            left, top, right, bottom = map(int, bounds.groups())
+            screen("launcher-anr-before-wait")
+            adb("shell", "input", "tap", (left + right) // 2, (top + bottom) // 2)
+            print("HOST: tapped Wait on Android's Quickstep launcher dialog", flush=True)
+            return True
+    return False
+
+
 def wait_menu():
     end = time.monotonic() + float(os.environ.get("ANDROID_MENU_TIMEOUT", "300"))
+    launcher_recovered = False
     while time.monotonic() < end:
         try:
             frame = screen()
@@ -86,6 +113,11 @@ def wait_menu():
                 check(f"{size[0]}x{size[1]}" == expected,
                       f"Android landscape screenshot matches the requested {expected} raster")
             return
+        if not launcher_recovered:
+            try:
+                launcher_recovered = wait_for_quickstep()
+            except (RuntimeError, subprocess.TimeoutExpired, ElementTree.ParseError):
+                pass  # Keep waiting for the actual illustrated menu.
         time.sleep(4)
     screen("menu-timeout")
     raise TimeoutError("Native menu did not match the rendered frontier art")
@@ -136,16 +168,18 @@ def wait_saved_kind(kind):
 
 def write_save(data):
     # Normal shell protocol works on API 24 as well as modern adbd.
-    payload = base64.b64encode(json.dumps(data).encode()).decode("ascii")
+    payload = json.dumps(data).encode()
     destination = SAVE_FILE if ROOTED_EMULATOR else "files/frontier-settlement.json"
-    inner = "printf '%s' " + shlex.quote(payload) + " | base64 -d > " + shlex.quote(destination)
+    temporary = shlex.quote(destination + ".testing")
+    inner = "cat > " + temporary + " && mv " + temporary + " " + shlex.quote(destination)
     if ROOTED_EMULATOR:
         owner = adb("shell", "stat", "-c", "%u:%g", SAVE_DIRECTORY)
-        adb("shell", inner, timeout=120)
+        adb("shell", "-T", inner, input_data=payload, timeout=120)
         adb("shell", "chown", owner, destination)
         adb("shell", "restorecon", destination)
     else:
-        adb("shell", "run-as " + shlex.quote(PACKAGE) + " sh -c " + shlex.quote(inner), timeout=120)
+        adb("shell", "-T", "run-as " + shlex.quote(PACKAGE) + " sh -c " + shlex.quote(inner),
+            input_data=payload, timeout=120)
     if save() != data:
         raise RuntimeError("Test fixture transfer did not preserve the complete save")
 

@@ -1,0 +1,199 @@
+{
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "label": "The published v0.12 APK installs",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "v0.12 loaded and saved the eight-site legacy settlement",
+      "passed": true
+    },
+    {
+      "label": "Old APK retained the fixture foundations",
+      "passed": true
+    },
+    {
+      "label": "The signed ages APK updates v0.12 in place",
+      "passed": true
+    },
+    {
+      "label": "The Android update preserves the complete previous save",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Legacy settlement starts in Wood with its original geography",
+      "passed": true
+    },
+    {
+      "label": "All original resource sites, workers\u2019 buildings, tower levels and wall footprints survive",
+      "passed": true
+    },
+    {
+      "label": "Old defense grades and Regeneration survive",
+      "passed": true
+    },
+    {
+      "label": "Purchased damage carries over into both tower lines",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Hall touch purchase advances exactly to tier 2",
+      "passed": true
+    },
+    {
+      "label": "All paid legacy foundations and levels survive age 2",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Hall touch purchase advances exactly to tier 3",
+      "passed": true
+    },
+    {
+      "label": "All paid legacy foundations and levels survive age 3",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Hall touch purchase advances exactly to tier 4",
+      "passed": true
+    },
+    {
+      "label": "All paid legacy foundations and levels survive age 4",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Hall touch purchase advances exactly to tier 5",
+      "passed": true
+    },
+    {
+      "label": "All paid legacy foundations and levels survive age 5",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Hall touch purchase advances exactly to tier 6",
+      "passed": true
+    },
+    {
+      "label": "All paid legacy foundations and levels survive age 6",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Hall touch purchase advances exactly to tier 7",
+      "passed": true
+    },
+    {
+      "label": "All paid legacy foundations and levels survive age 7",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Hall touch purchase advances exactly to tier 8",
+      "passed": true
+    },
+    {
+      "label": "All paid legacy foundations and levels survive age 8",
+      "passed": true
+    },
+    {
+      "label": "The seven paid age transitions completed inside the isolated opening wave",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Crown and inherited tower ranks survive cold restart",
+      "passed": true
+    },
+    {
+      "label": "Age changes preserve legacy foundations and levels",
+      "passed": true
+    },
+    {
+      "label": "Native progression run has no fatal, script or shader diagnostics",
+      "passed": true
+    }
+  ],
+  "seconds": 2073.5630660770003,
+  "apk_sha256": "aa4fb07bdac02c3c328db720a32e5583e9da88c4a200a0c5639b61f0822ec8d5",
+  "previous_apk_sha256": "82e1915bb3bcb6873a3fb2fc4e9bee04e4ddb523fcf0835ea7f015b1067ad39e",
+  "isolate_each_age": true,
+  "fixture": "Actual v0.12 save with eight paid producers. The incoming wave is cleared before both versions render the baseline. Migration retains the old economy, levels and progress. Then a separate fixture grants 10,000 of each resource, resets elapsed time to zero and suppresses the opening wave while checking all seven paid age changes and cold reload."
+}

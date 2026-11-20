@@ -1,0 +1,20 @@
+{
+  "started_utc": "2026-11-20T17:55:23.414187+00:00",
+  "apk_sha256": "aa4fb07bdac02c3c328db720a32e5583e9da88c4a200a0c5639b61f0822ec8d5",
+  "input_sha256": "e4c02a30dba2196d50103dfb84c62a2e732f2eae924ebbb053a8543a77e09c0d",
+  "starting_elapsed": 985.999999999651,
+  "starting_boss_hp": 261.97564914922384,
+  "starting_boss_max_hp": 29866.154099148942,
+  "starting_hall": 4200.0,
+  "method": "Loaded unmodified normal-price seed 913 live save after its last order onto the actual Android app. No grant, time change, repositioning, or alteration of health. Only Continue settlement and Continue endless survival were tapped.",
+  "final_elapsed": 986.4499999996506,
+  "ending_kills": 2218,
+  "ending_wave": 33,
+  "ending_hall": 4200.0,
+  "endless_elapsed": 987.04999999965,
+  "endless_wave": 33,
+  "endless_hall": 4200.0,
+  "passed": true,
+  "original_emulator_save_restored": true,
+  "ended_utc": "2026-11-20T17:58:52.383748+00:00"
+}

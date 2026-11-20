@@ -78,6 +78,13 @@ exercised all seven Hall advances. The fresh-install checks bought the two
 producers, built towers and walls, and used real Workshop and Hall controls.
 [Android run](https://github.com/Mirne/Tabara/actions/runs/44776918637) · [Native Stone preview](screenshots/android-ages-stone-preview.webp) · [Native Crown Hall](screenshots/android-ages-crown-hall.webp)
 
+A second paid campaign was saved after its last wall order at 16:26.00.
+The Warlord had 261.98 of its original 29,866.15 HP. Loading that exact
+settlement into the signed Android APK reproduced the kill at 16:26.45
+without another battlefield order. Tapping Continue endless survival resumed
+combat with the Hall at 4,200 HP. The test restored the emulator's original
+saved settlement afterward. [Android fight record](verification/settlement-ages/api24-paid-finish.json) · [Victory on Android](screenshots/android-ages-normal-cost-victory.webp)
+
 ---
 
 # Walls and battlefield abilities v0.12 verification
