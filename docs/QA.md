@@ -5,6 +5,12 @@ Version code 14 uses the same Android signing certificate as v0.13.0. The releas
 The Godot checks passed for simulation, seven map layouts, combat art, mobile
 gestures and all eight ages.
 
+An Android 16 emulator at 1544×720 installed the published v0.13.0 APK and
+bought both workyards, a Workshop, Stone age, a Woodcutter level and Arrowheads.
+Installing v0.13.1 preserved the save byte for byte. The resumed game restored
+the camera, building positions, resources and research ranks and continued the
+battle. All 29 native checks passed. [Installation record](verification/settlement-ages/workyard-android-update.json) · [GitHub run](https://github.com/Mirne/Tabara/actions/runs/44835562535).
+
 The Hall comparison was played at 1544×720. In a live settlement the player
 browsed the Hall, Woodcutter and Stonemason, then spent 130 wood, 90 stone
 and 50 gold to enter Stone while keeping the selected Stonemason preview.
