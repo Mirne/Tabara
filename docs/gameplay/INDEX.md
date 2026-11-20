@@ -11,3 +11,4 @@ These files are the behavior contract; the release QA records describe evidence.
   [Siege cart](npcs/siege-cart.md), [Elite](npcs/elite.md), [Warlord](npcs/warlord.md), [Worker](npcs/worker.md).
 - Shared systems: [Upgrades](upgrades.md), [Rendering](rendering.md),
   [Enemy targeting](targeting.md), [Mission victory](mission.md), [Battlefield abilities](abilities.md).
+- [Settlement age rework plan](../AGE-REWORK.md)

@@ -75,3 +75,7 @@ requested scope, not a separate owner-confirmed change. A later answer overrides
   Mobile targeting uses a preview and explicit confirmation. Owner confirmed
   a free cast with **60 game seconds recharge**. Do not add tutorial/filler
   tooltips or cooldowns to existing buildings.
+
+## Settlement ages requested after v0.12
+
+The owner requested Wood, Stone and Iron followed by five more premodern ages at the Main hall. Advancing should visibly change buildings and Workshop research icons. Each tower type gets several distinct upgrades. New settlements have one of each resource building, improved locally, with deliberately placed sites. Use generated paintings and playtest the changing economy. The [rework plan](../AGE-REWORK.md) records the proposed age sequence, implementation work and verification goals.
