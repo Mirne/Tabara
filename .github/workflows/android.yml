@@ -3,6 +3,15 @@ name: Verify native Android
 on:
   workflow_dispatch:
     inputs:
+      android_api:
+        description: Android API level to verify
+        type: choice
+        default: all
+        options:
+          - all
+          - '24'
+          - '35'
+          - '36'
       attach_to_v013_draft:
         description: Attach the verified APK and checksum to the v0.13.0 release draft
         type: boolean
@@ -17,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api: [24, 35, 36]
+        api: ${{ fromJSON(inputs.android_api == 'all' && '[24,35,36]' || format('[{0}]', inputs.android_api)) }}
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -74,7 +83,7 @@ jobs:
 
   attach-tested-build:
     needs: android
-    if: github.ref == 'refs/heads/main' && inputs.attach_to_v013_draft
+    if: github.ref == 'refs/heads/main' && inputs.android_api == 'all' && inputs.attach_to_v013_draft
     runs-on: ubuntu-latest
     permissions:
       contents: write
