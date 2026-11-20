@@ -1,0 +1,182 @@
+{
+  "01-menu": {
+    "width": 1544,
+    "height": 720,
+    "dark_edge_columns": [
+      132,
+      132
+    ],
+    "expected_game_x_bounds_exclusive": [
+      132,
+      1412
+    ],
+    "left_bar_rgb_extrema": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "right_bar_rgb_extrema": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "content_mean_r_g_b": [
+      64.3,
+      64.1,
+      56.5
+    ]
+  },
+  "03-initial-mission": {
+    "width": 1544,
+    "height": 720,
+    "dark_edge_columns": [
+      132,
+      132
+    ],
+    "expected_game_x_bounds_exclusive": [
+      132,
+      1412
+    ],
+    "left_bar_rgb_extrema": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "right_bar_rgb_extrema": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "content_mean_r_g_b": [
+      82.1,
+      72.5,
+      40.3
+    ]
+  },
+  "04d-wood-to-stone-preview": {
+    "width": 1544,
+    "height": 720,
+    "dark_edge_columns": [
+      132,
+      132
+    ],
+    "expected_game_x_bounds_exclusive": [
+      132,
+      1412
+    ],
+    "left_bar_rgb_extrema": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "right_bar_rgb_extrema": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "content_mean_r_g_b": [
+      82.8,
+      72.2,
+      40.7
+    ]
+  },
+  "05-crown-hall": {
+    "width": 1544,
+    "height": 720,
+    "dark_edge_columns": [
+      132,
+      132
+    ],
+    "expected_game_x_bounds_exclusive": [
+      132,
+      1412
+    ],
+    "left_bar_rgb_extrema": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "right_bar_rgb_extrema": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "content_mean_r_g_b": [
+      83.2,
+      72.6,
+      40.7
+    ]
+  }
+}
