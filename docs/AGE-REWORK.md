@@ -18,3 +18,7 @@ A new settlement has a single timber yard at the northern woodland edge and one 
 | Deliver on Android | Test the signed update over v0.12, exercise the touch purchase flow and run the source/render suite. Publish a GitHub release and verify its downloadable APK. | Installable download, migration evidence and release notes describe the tested build. |
 
 Seven hours of development and testing were requested. Time is measured from 16:59 Prague time on 20 November 2026. Concurrent workers, accelerated game clocks and separate campaign seeds do not add to elapsed time. Actual results will be recorded after testing.
+
+## Painted age sets
+
+Each row in the [building sheet](screenshots/age-buildings.jpg) shows one age, from Wood through Crown. Its columns are Hall, woodcutter, quarry, Marketplace, arrow tower, cannon tower, Workshop and the wall catalogue icon. Connected walls use eight corresponding sets of wall materials. The [Workshop sheet](screenshots/age-workshop-icons.jpg) shows three arrow projects followed by three cannon projects for each age.

@@ -12,3 +12,4 @@ These files are the behavior contract; the release QA records describe evidence.
 - Shared systems: [Upgrades](upgrades.md), [Rendering](rendering.md),
   [Enemy targeting](targeting.md), [Mission victory](mission.md), [Battlefield abilities](abilities.md).
 - [Settlement age rework plan](../AGE-REWORK.md)
+- [Age paintings and research icons](age-art.md)
