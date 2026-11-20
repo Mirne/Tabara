@@ -78,6 +78,12 @@ exercised all seven Hall advances. The fresh-install checks bought the two
 producers, built towers and walls, and used real Workshop and Hall controls.
 [Android run](https://github.com/Mirne/Tabara/actions/runs/44776918637) · [Native Stone preview](screenshots/android-ages-stone-preview.webp) · [Native Crown Hall](screenshots/android-ages-crown-hall.webp)
 
+Android 16 (API 36) passed 42 update and 86 fresh-install checks on a
+1544×720 landscape display matching the S23 Ultra's proportions. The real
+touch flow covered both workyards, repeated tower and wall placement,
+Workshop research, Hall advancement, camera movement and Android's immersive
+Back gesture. Tests used Android emulators. [Android 16 run](https://github.com/Mirne/Tabara/actions/runs/44788374002) · [Update checks](verification/settlement-ages/api36-upgrade.json) · [Fresh-install checks](verification/settlement-ages/api36-fresh.json)
+
 A second paid campaign was saved after its last wall order at 16:26.00.
 The Warlord had 261.98 of its original 29,866.15 HP. Loading that exact
 settlement into the signed Android APK reproduced the kill at 16:26.45

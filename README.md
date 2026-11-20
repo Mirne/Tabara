@@ -126,6 +126,6 @@ APK and `ANDROID_APK` to the new signed APK. The harness restores the original
 settlement after its controlled checks.
 
 The manually triggered Android GitHub workflow checks the APK's published
-checksum, then installs that file on API 24 and API 35 emulators. See the
+checksum, then installs that file on API 24, 35 and 36 emulators. The Android 16 check uses a wide 1544×720 landscape display. See the
 [verification record](docs/QA.md), [game design](docs/DESIGN.md) and
 [art credits](docs/ASSETS.md).
