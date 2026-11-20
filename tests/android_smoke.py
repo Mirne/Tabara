@@ -146,6 +146,11 @@ def write_save(data):
         raise RuntimeError("Test fixture transfer did not preserve the complete save")
 
 
+def resume_with_touch():
+    # Setup actions use the actual Resume button. System Back is tested separately.
+    adb("shell", "input", "tap", *physical(720, 505))
+
+
 def wait_supplies(data, required):
     # Called while paused; all supplies come from production and real kills.
     end = time.monotonic() + 900
@@ -153,7 +158,7 @@ def wait_supplies(data, required):
         print("WAITING FOR SUPPLIES:", data["resources"], "game seconds:", data["elapsed"], flush=True)
         if time.monotonic() >= end:
             raise TimeoutError("Native defender did not earn its paid upgrade supplies")
-        adb("shell", "input", "keyevent", "4")
+        resume_with_touch()
         time.sleep(15)
         tap(1338, 43)
         data = save()
@@ -161,16 +166,30 @@ def wait_supplies(data, required):
 
 
 def back_sequence():
+    # Target-36 apps receive predictive Back through the Android navigation
+    # dispatcher. Inject a gesture from the physical display edge, outside the
+    # letterboxed game. Older images also expose Back as a hardware key.
+    gesture = int(adb("shell", "getprop", "ro.build.version.sdk")) >= 36
+    action = "System Back gesture" if gesture else "Hardware Back"
+
+    def navigate_back():
+        if gesture:
+            adb("shell", "input", "swipe", 1, size[1] // 2, size[0] // 5, size[1] // 2, "260")
+        else:
+            adb("shell", "input", "keyevent", "4")
+
     before = save()["elapsed"]
-    adb("shell", "input", "keyevent", "4")
+    navigate_back()
     time.sleep(12)
-    adb("shell", "input", "keyevent", "4")
+    if gesture:
+        screen("system-back-first")
+    navigate_back()
     time.sleep(5)
     after = save()["elapsed"]
     print(f"BACK CLOCKS: {before} -> {after}", flush=True)
-    check(after > before + 0.01, "Hardware Back resumes the clock before pausing again")
+    check(after > before + 0.01, f"{action} resumes the clock before pausing again")
     time.sleep(12)  # Longer than the real-time autosave interval.
-    check(save()["elapsed"] == after, "Hardware Back then keeps combat paused")
+    check(save()["elapsed"] == after, f"{action} then keeps combat paused")
     windows = adb("shell", "dumpsys", "window", timeout=60)
     check(any(PACKAGE in line for line in windows.splitlines() if "mCurrentFocus" in line), "Back handling retains the native game activity")
     screen("hardware-back-paused")
@@ -194,6 +213,16 @@ def native_checks(back_only=False):
         else:
             raise TimeoutError("Disposable emulator did not finish booting")
         check(True, "Android boot and package service are ready")
+        if int(adb("shell", "getprop", "ro.build.version.sdk")) >= 36:
+            adb("shell", "cmd", "overlay", "enable-exclusive", "--category",
+                "com.android.internal.systemui.navbar.gestural")
+            deadline = time.monotonic() + 20
+            while time.monotonic() < deadline:
+                if adb("shell", "settings", "get", "secure", "navigation_mode") == "2":
+                    break
+                time.sleep(1)
+            else:
+                raise RuntimeError("Android emulator did not enable system gesture navigation")
         if not back_only and not resume_log:
             installed = adb("install", "--no-incremental", "-r", APK, timeout=300)
             check("Success" in installed, "Frontier APK installs")
@@ -245,7 +274,7 @@ def native_checks(back_only=False):
                 tap(1338, 43)
                 preview_save = save()
                 check(len(preview_save["buildings"]) == 1, "Native preview never constructs before confirmation")
-                adb("shell", "input", "keyevent", "4")
+                resume_with_touch()
                 time.sleep(4)
                 tap(1194, 218)
                 tap(*world_point(4800, 2480))
@@ -263,7 +292,7 @@ def native_checks(back_only=False):
                 before_wall = save()
                 check(len(before_wall["buildings"]) == 5, "Native placement constructs two producers and two towers without reopening the tower catalogue")
                 before_wall = wait_supplies(before_wall, {"wood": 300, "stone": 660, "gold": 120})
-                adb("shell", "input", "keyevent", "4")
+                resume_with_touch()
                 time.sleep(4)
                 tap(1352, 376)
                 start = world_point(4180, 2400)
@@ -273,7 +302,7 @@ def native_checks(back_only=False):
                 screen("03b-wall-preview")
                 tap(1338, 43)
                 check(len(save()["buildings"]) == 5, "Native wall drag previews without constructing")
-                adb("shell", "input", "keyevent", "4")
+                resume_with_touch()
                 time.sleep(4)
                 tap(1352, 376)
                 adb("shell", "input", "swipe", *physical(*start), *physical(*finish), "700")
@@ -302,7 +331,7 @@ def native_checks(back_only=False):
             back_sequence()
             if not back_only:
                 wait_supplies(save(), {"wood": 50, "stone": 25, "gold": 15})
-                adb("shell", "input", "keyevent", "4")
+                resume_with_touch()
                 time.sleep(max(4, TAP_DELAY))
                 tap(*world_point(4800, 2420))
                 tap(1273, 584)
@@ -329,7 +358,7 @@ def native_checks(back_only=False):
             if not resume_log:
                 # Add the Workshop using its larger catalogue card and research controls.
                 wait_supplies(save(), {"wood": 140, "stone": 100, "gold": 70})
-                adb("shell", "input", "keyevent", "4")
+                resume_with_touch()
                 time.sleep(4)
                 tap(1273, 692)
                 tap(*world_point(5200, 2800))
@@ -344,13 +373,13 @@ def native_checks(back_only=False):
                         break
                     if time.monotonic() >= end:
                         raise TimeoutError("Native Workshop did not finish construction")
-                    adb("shell", "input", "keyevent", "4")
+                    resume_with_touch()
                     time.sleep(8)
                 check(True, "Native touch constructs an operational Workshop")
             else:
                 workshop_save = save()
             workshop_save = wait_supplies(workshop_save, {"wood": 110, "stone": 70, "gold": 40})
-            adb("shell", "input", "keyevent", "4")
+            resume_with_touch()
             time.sleep(4)
             tap(1194, 250)  # Arrow upgrade subject.
             tap(1273, 678)
@@ -362,7 +391,7 @@ def native_checks(back_only=False):
             screen("04b-workshop-research")
             # Regeneration is a paid global upgrade, with no local repair buttons.
             wait_supplies(save(), {"wood": 120, "stone": 90, "gold": 60})
-            adb("shell", "input", "keyevent", "4")
+            resume_with_touch()
             time.sleep(4)
             tap(1352, 330)  # Regeneration is in the same Upgrades list.
             tap(1273, 678)
@@ -370,7 +399,7 @@ def native_checks(back_only=False):
             check(save()["regeneration_level"] == 1, "Native Workshop purchases global automatic Regeneration")
             screen("04c-regeneration")
             wait_supplies(save(), {"wood": 130, "stone": 90, "gold": 50})
-            adb("shell", "input", "keyevent", "4")
+            resume_with_touch()
             time.sleep(max(4, TAP_DELAY))
             tap(1194, 43)  # Main hall
             screen("04d-wood-to-stone-preview")
@@ -401,7 +430,7 @@ def native_checks(back_only=False):
                   "Cold restart retains instant upgrades and automatic Regeneration")
             screen("06-restored-and-paused")
             # Test camera movement with a real drag; this must not construct anything.
-            adb("shell", "input", "keyevent", "4")
+            resume_with_touch()
             time.sleep(4)
             start = physical(700, 350)
             finish = physical(900, 380)
@@ -413,7 +442,7 @@ def native_checks(back_only=False):
             check(len(dragged["buildings"]) == len(restored["buildings"]), "Native drag creates no accidental building")
             screen("07-panned")
             # Home must save and pause; foreground may recreate the activity.
-            adb("shell", "input", "keyevent", "4")
+            resume_with_touch()
             time.sleep(5)
             adb("shell", "input", "keyevent", "3")
             time.sleep(5)

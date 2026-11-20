@@ -3,6 +3,8 @@
 Targets a disposable Android emulator. Preserves its original game save when
 available. Uses a v0.12 save with multiple paid producers and tower upgrades so
 we can exercise compatibility that fresh v0.13 settlements cannot reproduce.
+ANDROID_ISOLATE_EACH_AGE=1 reopens each paid receipt in a quiet opening for
+slow software emulators. Only the first receipt receives the test budget.
 """
 from __future__ import annotations
 
@@ -36,6 +38,10 @@ def continue_and_pause(capture):
     return device.save()
 
 
+def quiet_opening(receipt):
+    return dict(receipt, elapsed=0.0, wave=1, enemies=[], spawn_clock=30.0, spawn_remaining=0)
+
+
 def purchase_age(expected):
     # advance_age saves synchronously. Read the receipt as soon as Android handles
     # the touch so waiting for seven separate pause/resume cycles cannot start a raid.
@@ -61,6 +67,7 @@ def run():
     device.OUT.mkdir(parents=True, exist_ok=True)
     old_bytes = None
     failure = None
+    isolate_each_age = os.environ.get('ANDROID_ISOLATE_EACH_AGE') == '1'
     started = time.monotonic()
     try:
         stop()
@@ -97,25 +104,42 @@ def run():
         device.check(all(after['tower_tracks'][kind + '_damage'] == before['research_levels'][kind]
                          for kind in ('arrow', 'cannon')), 'Purchased damage carries over into both tower lines')
         # The rest of the check uses a temporary late-game budget and an empty incoming wave.
-        funded = dict(after, resources={'wood': 10000.0, 'stone': 10000.0, 'gold': 10000.0},
-                      elapsed=0.0, wave=1, enemies=[], spawn_clock=30.0, spawn_remaining=0)
-        stop()
-        device.write_save(funded)
-        continue_and_pause('03-funded-legacy-settlement')
-        device.tap(720, 505)
-        device.tap(1194, 43)
+        purchased = quiet_opening(dict(after, resources={'wood': 10000.0, 'stone': 10000.0, 'gold': 10000.0}))
+        if not isolate_each_age:
+            stop()
+            device.write_save(purchased)
+            continue_and_pause('03-funded-legacy-settlement')
+            device.tap(720, 505)
+            device.tap(1194, 43)
         for expected_age in range(2, 9):
+            if isolate_each_age:
+                stop()
+                device.write_save(quiet_opening(purchased))
+                device.launch()
+                device.wait_menu()
+                device.tap(260, 462)
+                device.tap(1194, 43)
             purchased = purchase_age(expected_age)
             device.check(foundations(purchased) == foundations(before),
                          f'All paid legacy foundations and levels survive age {expected_age}')
-            if expected_age in (2, 4):
+            if not isolate_each_age and expected_age in (2, 4):
                 device.screen(f'04-hall-age-{expected_age}')
         device.check(purchased['wave'] == 1 and not purchased['enemies'],
                      'The seven paid age transitions completed inside the isolated opening wave')
-        device.screen('05-crown-hall')
-        device.tap(1338, 43)
-        stop()
-        reloaded = continue_and_pause('06-crown-reloaded')
+        if isolate_each_age:
+            stop()
+            device.write_save(quiet_opening(purchased))
+            device.launch()
+            device.wait_menu()
+            device.tap(260, 462)
+            device.tap(1338, 43)
+            reloaded = device.save()
+            device.screen('06-crown-reloaded')
+        else:
+            device.screen('05-crown-hall')
+            device.tap(1338, 43)
+            stop()
+            reloaded = continue_and_pause('06-crown-reloaded')
         device.check(reloaded['settlement_age'] == 8 and reloaded['tower_tracks'] == after['tower_tracks'],
                      'Crown and inherited tower ranks survive cold restart')
         device.check(foundations(reloaded) == foundations(before), 'Age changes preserve legacy foundations and levels')
@@ -141,6 +165,7 @@ def run():
     report = {'passed': failure is None, 'error': failure, 'checks': device.checks,
               'seconds': time.monotonic() - started, 'apk_sha256': device.APK_SHA256,
               'previous_apk_sha256': hashlib.sha256(PREVIOUS.read_bytes()).hexdigest(),
+              'isolate_each_age': isolate_each_age,
               'fixture': 'Actual v0.12 save with eight paid producers. The incoming wave is cleared before both versions render the baseline. Migration retains the old economy, levels and progress. Then a separate fixture grants 10,000 of each resource, resets elapsed time to zero and suppresses the opening wave while checking all seven paid age changes and cold reload.'}
     (device.OUT / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report), flush=True)
