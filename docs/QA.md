@@ -37,6 +37,47 @@ defenses, a Marketplace and a Workshop. It reached Stone at 78.15 game seconds
 and Iron at 107.45. The gallery uses staged settlements to compare the same
 workyards, towers and ramparts across ages. [Opening record](verification/settlement-ages/touch-opening.json) · [Age gallery](screenshots/age-gallery.webp) · [Design and playtest plan](AGE-REWORK.md).
 
+## Campaign decisions at normal prices
+
+An uninterrupted settlement on seed 2718 killed the full-strength final
+Warlord at **16:23.75**. The Hall still had all 4,200 HP. It reached Iron,
+raised the three arrow projects to rank 8 and supported its archers with
+cannons and walls. The player cast Rain when the Warlord entered the road and
+again at the fort after recharge. A fresh replay at the game's 50 ms tick
+accepted all 125 normal-price inputs, reproduced 2,224 kills and continued
+through the victory screen into wave 34. This was the first victory in 15
+tactical trials across seven seeds. [Runs and winning inputs](verification/settlement-ages/clean-campaigns.json)
+
+Nine fresh runs used three spending plans across three seeds. All three
+age-first runs bought Castle at 7:54, killed the first miniboss and fell
+between 8:35 and 8:53. All three fortification runs killed both minibosses and
+reached the final Warlord, falling between 15:56 and 16:12. The balanced runs
+lasted 14:48 to 15:15. These scripts bought at most one order per game second.
+[Prices, seeds and results](verification/settlement-ages/paid-campaigns.json)
+
+Two branches of a paid 11:40 opening reached Crown at 15:33 and 15:44. A
+different branch purchased rank 12 Round shot at 15:37. Its roughly 314 damage
+cleared an ordinary wave-31 raider in one shell, where rank 11 dealt roughly
+285 against 287 HP. The closest of those sixteen branches left the final
+Warlord with approximately 12,707 of 29,866 HP. They share a starting
+settlement and count as strategy comparisons. [Late-game decision record](verification/settlement-ages/paid-late-strategies.json)
+
+A separate desktop fixture rendered a Crown settlement for 65 seconds with
+512 buildings, 1,000 durable enemies and all six research projects at rank
+100. It checks rendering and state under load. The desktop software renderer
+ran at low scheduling priority and its timings cannot establish handset FPS.
+[Stress fixture](verification/settlement-ages/crown-stress.json) · [Age transition and rendering measurements](verification/settlement-ages/desktop-render-timing.json)
+
+## Android update and touch tests
+
+The same signed APK passed 37 update checks and 77 fresh-install checks on
+each of Android 7.0 (API 24) and Android 15 (API 35). The old v0.12 app first
+wrote the paid eight-site settlement. The update preserved its complete save,
+its producers and its defensive research. A separate controlled budget then
+exercised all seven Hall advances. The fresh-install checks bought the two
+producers, built towers and walls, and used real Workshop and Hall controls.
+[Android run](https://github.com/Mirne/Tabara/actions/runs/44776918637) · [Native Stone preview](screenshots/android-ages-stone-preview.webp) · [Native Crown Hall](screenshots/android-ages-crown-hall.webp)
+
 ---
 
 # Walls and battlefield abilities v0.12 verification
