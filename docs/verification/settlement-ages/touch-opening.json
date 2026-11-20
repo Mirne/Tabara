@@ -1,0 +1,257 @@
+{
+ "history": [
+  {
+   "action": "Starting stock at ten-times speed",
+   "age": 1,
+   "hall_hp": 4200.0,
+   "kills": 0,
+   "resources": {
+    "gold": 180.345,
+    "stone": 321.552499999999,
+    "wood": 452.760000000001
+   },
+   "time": 3.45
+  },
+  {
+   "action": "Built wood",
+   "age": 1,
+   "hall_hp": 4200.0,
+   "kills": 0,
+   "resources": {
+    "gold": 171.264999999999,
+    "stone": 305.692499999995,
+    "wood": 407.370000000005
+   },
+   "time": 12.65
+  },
+  {
+   "action": "Built stone",
+   "age": 1,
+   "hall_hp": 4200.0,
+   "kills": 0,
+   "resources": {
+    "gold": 157.199999999998,
+    "stone": 303.649999999991,
+    "wood": 391.600000000009
+   },
+   "time": 22.0000000000002
+  },
+  {
+   "action": "Built arrow",
+   "age": 1,
+   "hall_hp": 4200.0,
+   "kills": 0,
+   "resources": {
+    "gold": 98.1399999999971,
+    "stone": 266.629999999989,
+    "wood": 306.120000000013
+   },
+   "time": 31.4000000000003
+  },
+  {
+   "action": "Built market",
+   "age": 1,
+   "hall_hp": 4200.0,
+   "kills": 0,
+   "resources": {
+    "gold": 41.9849999999967,
+    "stone": 249.944999999987,
+    "wood": 240.930000000014
+   },
+   "time": 40.8499999999998
+  },
+  {
+   "action": "Upgraded wood to 2",
+   "age": 1,
+   "hall_hp": 4200.0,
+   "kills": 0,
+   "resources": {
+    "gold": 37.7999999999964,
+    "stone": 259.449999999986,
+    "wood": 221.340000000015
+   },
+   "time": 45.9999999999995
+  },
+  {
+   "action": "Upgraded stone to 2",
+   "age": 1,
+   "hall_hp": 4200.0,
+   "kills": 5,
+   "resources": {
+    "gold": 54.5999999999959,
+    "stone": 273.649999999983,
+    "wood": 225.940000000015
+   },
+   "time": 53.9999999999991
+  },
+  {
+   "action": "Built workshop",
+   "age": 1,
+   "hall_hp": 4200.0,
+   "kills": 13,
+   "resources": {
+    "gold": 47.7649999999964,
+    "stone": 307.929999999988,
+    "wood": 201.570000000016
+   },
+   "time": 72.649999999998
+  },
+  {
+   "action": "Advanced Stone",
+   "age": 2,
+   "hall_hp": 4200.0,
+   "kills": 15,
+   "resources": {
+    "gold": 15.3149999999961,
+    "stone": 257.52999999999,
+    "wood": 105.670000000016
+   },
+   "time": 78.1499999999977
+  },
+  {
+   "action": "Bought arrow_range",
+   "age": 2,
+   "hall_hp": 4200.0,
+   "kills": 23,
+   "resources": {
+    "gold": 44.3049999999957,
+    "stone": 308.209999999993,
+    "wood": 124.450000000017
+   },
+   "time": 90.049999999997
+  },
+  {
+   "action": "Advanced Iron",
+   "age": 3,
+   "hall_hp": 4200.0,
+   "kills": 31,
+   "resources": {
+    "gold": 29.8449999999964,
+    "stone": 298.489999999998,
+    "wood": 37.3300000000173
+   },
+   "time": 107.449999999996
+  },
+  {
+   "action": "Bought arrow_cadence",
+   "age": 3,
+   "hall_hp": 4200.0,
+   "kills": 40,
+   "resources": {
+    "gold": 61.9399999999961,
+    "stone": 349.530000000001,
+    "wood": 56.4200000000179
+   },
+   "time": 119.399999999995
+  },
+  {
+   "action": "Bought arrow_damage",
+   "age": 3,
+   "hall_hp": 4200.0,
+   "kills": 50,
+   "resources": {
+    "gold": 97.349999999997,
+    "stone": 401.650000000005,
+    "wood": 76.4400000000184
+   },
+   "time": 131.499999999996
+  },
+  {
+   "action": "Built cannon",
+   "age": 3,
+   "hall_hp": 4200.0,
+   "kills": 79,
+   "resources": {
+    "gold": 145.199999999992,
+    "stone": 478.850000000015,
+    "wood": 95.1400000000202
+   },
+   "time": 170.000000000004
+  },
+  {
+   "action": "Bought cannon_splash",
+   "age": 3,
+   "hall_hp": 4200.0,
+   "kills": 101,
+   "resources": {
+    "gold": 201.14999999999,
+    "stone": 472.250000000018,
+    "wood": 89.0400000000206
+   },
+   "time": 179.500000000007
+  },
+  {
+   "action": "Built arrow",
+   "age": 3,
+   "hall_hp": 4200.0,
+   "kills": 131,
+   "resources": {
+    "gold": 278.399999999995,
+    "stone": 534.250000000024,
+    "wood": 88.5400000000216
+   },
+   "time": 202.000000000012
+  },
+  {
+   "action": "Built cannon",
+   "age": 3,
+   "hall_hp": 4200.0,
+   "kills": 168,
+   "resources": {
+    "gold": 344.435000000007,
+    "stone": 574.370000000033,
+    "wood": 75.3100000000231
+   },
+   "time": 235.350000000019
+  },
+  {
+   "action": "Upgraded market to 2",
+   "age": 3,
+   "hall_hp": 4200.0,
+   "kills": 176,
+   "resources": {
+    "gold": 354.862000000008,
+    "stone": 572.890000000034,
+    "wood": 53.4800000000234
+   },
+   "time": 240.70000000002
+  },
+  {
+   "action": "Advanced Steel",
+   "age": 4,
+   "hall_hp": 4200.0,
+   "kills": 222,
+   "resources": {
+    "gold": 508.641000000023,
+    "stone": 687.770000000046,
+    "wood": 34.2100000000253
+   },
+   "time": 284.85000000003
+  },
+  {
+   "action": "First miniboss checkpoint · mission",
+   "age": 4,
+   "hall_hp": 4200.0,
+   "kills": 248,
+   "resources": {
+    "gold": 651.502000000044,
+    "stone": 830.690000000052,
+    "wood": 157.280000000026
+   },
+   "time": 304.700000000035
+  },
+  {
+   "action": "Finish · mission",
+   "age": 4,
+   "hall_hp": 4200.0,
+   "kills": 248,
+   "resources": {
+    "gold": 654.440000000046,
+    "stone": 840.050000000052,
+    "wood": 165.340000000026
+   },
+   "time": 306.000000000035
+  }
+ ],
+ "ui_errors": []
+}

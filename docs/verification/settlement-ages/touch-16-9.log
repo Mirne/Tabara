@@ -1,0 +1,38 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+WARNING: Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.
+     at: set_use_vsync (platform/linuxbsd/x11/gl_manager_x11.cpp:364)
+OpenGL API 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 19.1.7, 256 bits)
+
+hd-ratio: physical size (1280, 720) transform [X: (0.888889, 0.0), Y: (0.0, 0.888889), O: (0.0, 0.0)] logical [P: (0.0, 0.0), S: (1440.0, 810.0)]
+PASS hd-ratio eight age rectangles loaded
+PASS hd-ratio actual Wood paintings loaded
+PASS hd-ratio available build:wood
+PASS hd-ratio 44x44 touch area clear of all HUD wood
+PASS hd-ratio wrong site rejects wood
+PASS hd-ratio invalid confirm consumes no resources
+PASS hd-ratio edge tap snaps and only previews wood
+PASS hd-ratio available confirm_build
+PASS hd-ratio construction succeeds wood
+PASS hd-ratio available select:wood
+PASS hd-ratio built producer catalogue card selects original instance
+PASS hd-ratio available construction
+PASS hd-ratio available hall
+PASS hd-ratio available construction
+PASS hd-ratio available build:stone
+PASS hd-ratio 44x44 touch area clear of all HUD stone
+PASS hd-ratio wrong site rejects stone
+PASS hd-ratio invalid confirm consumes no resources
+PASS hd-ratio edge tap snaps and only previews stone
+PASS hd-ratio available confirm_build
+PASS hd-ratio construction succeeds stone
+PASS hd-ratio available select:stone
+PASS hd-ratio built producer catalogue card selects original instance
+PASS hd-ratio available construction
+PASS hd-ratio available hall
+PASS hd-ratio available construction
+PASS hd-ratio destroyed quarry restores build card
+PASS hd-ratio available build:stone
+PASS hd-ratio available confirm_build
+PASS hd-ratio rebuilt at original yard level one
+PASS hd-ratio actual Crown paintings loaded
+RESULT hd-ratio 31 checks 0 failures

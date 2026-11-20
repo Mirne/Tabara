@@ -1,0 +1,39 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+WARNING: Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.
+     at: set_use_vsync (platform/linuxbsd/x11/gl_manager_x11.cpp:364)
+OpenGL API 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 19.1.7, 256 bits)
+
+s23-ratio: physical size (1544, 720) transform [X: (0.888889, 0.0), Y: (0.0, 0.888889), O: (132.0, 0.0)] logical [P: (0.0, 0.0), S: (1440.0, 810.0)]
+PASS s23-ratio eight age rectangles loaded
+PASS s23-ratio actual Wood paintings loaded
+PASS s23-ratio black-bar tap cannot select a map target
+PASS s23-ratio available build:wood
+PASS s23-ratio 44x44 touch area clear of all HUD wood
+PASS s23-ratio wrong site rejects wood
+PASS s23-ratio invalid confirm consumes no resources
+PASS s23-ratio edge tap snaps and only previews wood
+PASS s23-ratio available confirm_build
+PASS s23-ratio construction succeeds wood
+PASS s23-ratio available select:wood
+PASS s23-ratio built producer catalogue card selects original instance
+PASS s23-ratio available construction
+PASS s23-ratio available hall
+PASS s23-ratio available construction
+PASS s23-ratio available build:stone
+PASS s23-ratio 44x44 touch area clear of all HUD stone
+PASS s23-ratio wrong site rejects stone
+PASS s23-ratio invalid confirm consumes no resources
+PASS s23-ratio edge tap snaps and only previews stone
+PASS s23-ratio available confirm_build
+PASS s23-ratio construction succeeds stone
+PASS s23-ratio available select:stone
+PASS s23-ratio built producer catalogue card selects original instance
+PASS s23-ratio available construction
+PASS s23-ratio available hall
+PASS s23-ratio available construction
+PASS s23-ratio destroyed quarry restores build card
+PASS s23-ratio available build:stone
+PASS s23-ratio available confirm_build
+PASS s23-ratio rebuilt at original yard level one
+PASS s23-ratio actual Crown paintings loaded
+RESULT s23-ratio 32 checks 0 failures

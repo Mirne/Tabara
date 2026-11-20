@@ -1,0 +1,73 @@
+{
+  "action_cycles": 1245,
+  "actual_real_seconds": 1351.522,
+  "approach": "fortify",
+  "camera": [
+    4800.0,
+    2800.0,
+    1.25
+  ],
+  "camera_tours": 51,
+  "campaign_results": [
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        78.6,
+        165.65,
+        314.05,
+        500.55
+      ],
+      "approach": "balanced",
+      "mission_seconds": 661.349999999946,
+      "paid_orders": 68,
+      "rain_casts": 11,
+      "seed": 1001,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 23
+    }
+  ],
+  "complete": false,
+  "current_age": 3,
+  "current_mission_age_seconds": [
+    0.0,
+    78.9,
+    200.55
+  ],
+  "current_mission_rain_casts": 6,
+  "current_mission_seconds": 406.050000000058,
+  "current_segment_real_seconds": 1351.522,
+  "current_segment_wall_seconds": 1351.908,
+  "current_session_seed": 1002,
+  "current_static_memory_bytes": 60461397,
+  "current_tower_tracks": {
+    "arrow_cadence": 1,
+    "arrow_damage": 1,
+    "arrow_range": 1,
+    "cannon_cadence": 1,
+    "cannon_damage": 1,
+    "cannon_splash": 1
+  },
+  "disk_resumes": 20,
+  "errors": [],
+  "excluded_stall_seconds": 0.386,
+  "fps": 7.0,
+  "game_version": "0.13.0",
+  "max_process_ms_after_warmup": 932.702,
+  "max_static_memory_bytes": 60618883,
+  "min_fps_after_warmup": 1.0,
+  "prior_confirmed_real_seconds": 0.0,
+  "requested_real_seconds": 24900,
+  "segments": 1,
+  "sessions": 2,
+  "source_commit": "development-v013-2026-11-20T1609Z",
+  "victories": 0
+}

@@ -1,0 +1,6 @@
+Signer #1 certificate DN: CN=Godot, OU=Godot Engine, O=Stichting Godot, C=NL
+Signer #1 certificate SHA-256 digest: dbd0f5f2a2a56082d36b733d6467f28dc7dc166e82ffe41d0dc2c2fe42cd6ebb
+Signer #1 certificate SHA-1 digest: 078cd679d0243a3a6b77712b1e5f9b2377e2c6f6
+Signer #1 certificate MD5 digest: cca0485654563e23043b21216bf4c2d0
+Payloads identical; 128,918,282 -> 104,006,410 bytes
+SHA-256: aa4fb07bdac02c3c328db720a32e5583e9da88c4a200a0c5639b61f0822ec8d5

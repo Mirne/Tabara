@@ -1,0 +1,330 @@
+{
+  "scope": "Twenty-four paid 400-game-second runs. Three seeds and four weapon/research choices on revision 6; no resource or enemy grants. Actions are selected by a deterministic strategy. Both sides use Rain against clusters.",
+  "before": "Reach +6, blast +3 per rank.",
+  "after": "Bounded reach 20r/(1+0.035r), blast 12r/(1+0.035r), r purchased ranks past rank one.",
+  "seeds": [
+    917,
+    507,
+    143
+  ],
+  "pairs": [
+    {
+      "seed": 917,
+      "branch": "arrow_damage",
+      "opening": "arrow",
+      "control": {
+        "age": 4,
+        "boss_death": 396,
+        "kills": 424,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 4,
+        "boss_death": 396,
+        "kills": 424,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 32,
+      "age_purchases": [
+        50,
+        167,
+        394
+      ]
+    },
+    {
+      "seed": 917,
+      "branch": "arrow_range",
+      "opening": "arrow",
+      "control": {
+        "age": 4,
+        "boss_death": 398,
+        "kills": 421,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 4,
+        "boss_death": 393,
+        "kills": 424,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 32,
+      "age_purchases": [
+        50,
+        166,
+        384
+      ]
+    },
+    {
+      "seed": 917,
+      "branch": "cannon_damage",
+      "opening": "cannon",
+      "control": {
+        "age": 3,
+        "boss_death": 379,
+        "kills": 429,
+        "rain_casts": 5,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 3,
+        "boss_death": 379,
+        "kills": 429,
+        "rain_casts": 5,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 84,
+      "age_purchases": [
+        97,
+        185
+      ]
+    },
+    {
+      "seed": 917,
+      "branch": "cannon_splash",
+      "opening": "cannon",
+      "control": {
+        "age": 3,
+        "boss_death": 380,
+        "kills": 426,
+        "rain_casts": 5,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 3,
+        "boss_death": 378,
+        "kills": 427,
+        "rain_casts": 5,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 84,
+      "age_purchases": [
+        97,
+        183
+      ]
+    },
+    {
+      "seed": 507,
+      "branch": "arrow_damage",
+      "opening": "arrow",
+      "control": {
+        "age": 4,
+        "boss_death": 390,
+        "kills": 414,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 4,
+        "boss_death": 390,
+        "kills": 414,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 32,
+      "age_purchases": [
+        50,
+        167,
+        394
+      ]
+    },
+    {
+      "seed": 507,
+      "branch": "arrow_range",
+      "opening": "arrow",
+      "control": {
+        "age": 4,
+        "boss_death": 390,
+        "kills": 417,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 4,
+        "boss_death": 390,
+        "kills": 416,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 32,
+      "age_purchases": [
+        50,
+        166,
+        384
+      ]
+    },
+    {
+      "seed": 507,
+      "branch": "cannon_damage",
+      "opening": "cannon",
+      "control": {
+        "age": 3,
+        "boss_death": 381,
+        "kills": 427,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 3,
+        "boss_death": 381,
+        "kills": 427,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 85,
+      "age_purchases": [
+        100,
+        185
+      ]
+    },
+    {
+      "seed": 507,
+      "branch": "cannon_splash",
+      "opening": "cannon",
+      "control": {
+        "age": 3,
+        "boss_death": 378,
+        "kills": 427,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 3,
+        "boss_death": 379,
+        "kills": 427,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 85,
+      "age_purchases": [
+        100,
+        183
+      ]
+    },
+    {
+      "seed": 143,
+      "branch": "arrow_damage",
+      "opening": "arrow",
+      "control": {
+        "age": 4,
+        "boss_death": 0,
+        "kills": 418,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 4,
+        "boss_death": 0,
+        "kills": 418,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 32,
+      "age_purchases": [
+        50,
+        167,
+        394
+      ]
+    },
+    {
+      "seed": 143,
+      "branch": "arrow_range",
+      "opening": "arrow",
+      "control": {
+        "age": 4,
+        "boss_death": 0,
+        "kills": 422,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 4,
+        "boss_death": 392,
+        "kills": 422,
+        "rain_casts": 6,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 32,
+      "age_purchases": [
+        50,
+        166,
+        384
+      ]
+    },
+    {
+      "seed": 143,
+      "branch": "cannon_damage",
+      "opening": "cannon",
+      "control": {
+        "age": 3,
+        "boss_death": 382,
+        "kills": 426,
+        "rain_casts": 5,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 3,
+        "boss_death": 382,
+        "kills": 426,
+        "rain_casts": 5,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 84,
+      "age_purchases": [
+        97,
+        185
+      ]
+    },
+    {
+      "seed": 143,
+      "branch": "cannon_splash",
+      "opening": "cannon",
+      "control": {
+        "age": 3,
+        "boss_death": 379,
+        "kills": 426,
+        "rain_casts": 5,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "adopted": {
+        "age": 3,
+        "boss_death": 379,
+        "kills": 426,
+        "rain_casts": 5,
+        "hall_300": 4200.0,
+        "hall_last": 4200.0
+      },
+      "first_research_second": 84,
+      "age_purchases": [
+        97,
+        183
+      ]
+    }
+  ]
+}

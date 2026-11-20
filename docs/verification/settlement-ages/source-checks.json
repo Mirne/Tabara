@@ -1,0 +1,17 @@
+{
+  "source": "ed491e0accc2256287dddbc2d7971e9a936a77f5",
+  "sha256": "e7b7d92deafa0378ad895813a44a139ce1e3f9e096ee12b3a5dd5e4eadd39788",
+  "pass": true,
+  "results": [
+    "RESULT: 1463 checks, 0 failures",
+    "AGE RESULT: 2515 checks, 0 failures",
+    "BATTLEFIELD RESULT: 61 checks, 0 failures",
+    "AUTHORED RESULT: 68 checks, 0 failures",
+    "AUTHORED WALKS RESULT: 46 traces, 12655 positions, 0 failures",
+    "UI RESULT: 164 checks, 0 failures",
+    "AGE ART RESULT: 432 checks, 0 failures",
+    "AGE UI RESULT: 63 checks, 0 failures",
+    "COMBAT ART RESULT: 85 checks, 0 failures",
+    "BATTLEFIELD UI RESULT: 24 checks, 0 failures"
+  ]
+}
