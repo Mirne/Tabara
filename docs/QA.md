@@ -1,3 +1,44 @@
+# Settlement ages v0.13 verification
+
+The v0.13 candidate uses Godot 4.6.3, Android version code 13, save format 12
+and terrain layout 6. The signed APK is 104,006,410 bytes with SHA-256
+`aa4fb07bdac02c3c328db720a32e5583e9da88c4a200a0c5639b61f0822ec8d5`.
+Its signer certificate matches the published v0.12 certificate,
+`dbd0f5f2a2a56082d36b733d6467f28dc7dc166e82ffe41d0dc2c2fe42cd6ebb`.
+Packaging verified that every uncompressed payload matched the export.
+
+## Age progression, research and saves
+
+The source check for `ed491e0accc2256287dddbc2d7971e9a936a77f5` passed with
+zero failures. It included 2,515 age and research checks, 432 age-art checks
+and 63 age-interface checks. The terrain suite covered all seven layouts and
+the movement suite checked 46 routes across 12,655 positions. The remaining
+simulation, combat and interface suites also passed. [Source CI report](https://github.com/Mirne/Tabara/actions/runs/44774432606).
+
+The tests exercise seven paid age advancements, the six tower projects and
+their effects, rank limits and save/reload. The migration fixture was written
+by v0.12 with four woodcutters, four quarries, paid tower research and
+Regeneration. Loading it checks the original geography and purchased benefits.
+[Fixture description](../tests/fixtures/README.md).
+
+## Touch controls and presentation
+
+Rendered gameplay passed 31 checks at 1280×720 and 32 at 1544×720 using window
+pixel coordinates for touch. Both workyards fit in the opening camera with a
+44×44 logical touch target clear of the HUD. Tapping the wrong resource spent
+nothing. An edge tap snapped to the correct yard, confirmation charged for the
+producer, and its catalogue card opened its local panel. Destroying the quarry
+restored its build card and a paid rebuild returned it to level one. The wide
+test also tapped the letterbox margin. These checks ran in the Godot renderer.
+[16:9 run](verification/settlement-ages/touch-16-9.log) · [S23 Ultra aspect-ratio run](verification/settlement-ages/touch-wide.log).
+
+The recorded touch opening paid for both producers, their local upgrades,
+defenses, a Marketplace and a Workshop. It reached Stone at 78.15 game seconds
+and Iron at 107.45. The gallery uses staged settlements to compare the same
+workyards, towers and ramparts across ages. [Opening record](verification/settlement-ages/touch-opening.json) · [Age gallery](screenshots/age-gallery.webp) · [Design and playtest plan](AGE-REWORK.md).
+
+---
+
 # Walls and battlefield abilities v0.12 verification
 
 ## Build identity

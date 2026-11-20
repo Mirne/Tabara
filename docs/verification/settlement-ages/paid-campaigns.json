@@ -1,0 +1,461 @@
+{
+  "start_utc": "2026-11-20T16:26:03.814328+00:00",
+  "end_utc": "2026-11-20T16:41:38.412338+00:00",
+  "runtime_and_policy_sha256": {
+    "scripts/simulation.gd": "b5edc88b7b61a570f061366c566b83976c1754f3e950df6731a55d60a814fdd7",
+    "scripts/battlefield_abilities.gd": "9b496b918d6afee0f3c11f4bceaa6013d4d9b2dbee6341b93cb9e53a1caf3060",
+    "scripts/world_data.gd": "849c215b9147a1199f16b90f91aa64d4c9255629fba96d59d2f72bff6cec3749",
+    "scripts/assault_navigation.gd": "11852c82ce7331114c5a96384c1758b464b4c4fd13b73628b630e8e78dbe09f2",
+    "tests/balance.gd": "077df1aa699248d3e02386dd3f36d8a28bdc9b8c1e6f3e38ed1c66a0c016aac3",
+    "tests/player_bot.gd": "b7d5f06da5144bb7bcef1e85702642c4d8ba0763246b7539570ec60427a4a999",
+    "assets/world/workyards.json": "68f099ba260ac6e703fef48cd1598db7b4b15a8e1d35c83fa44597e130664b69"
+  },
+  "matching_end_inputs": true,
+  "source_head_at_end": "46771c5b0f9935c4e282dbd75abb5ee6e20b164b",
+  "setup": "Fresh settlements, matched seeds per approach. Time advances in fixed 0.05 game-second steps. No resource or stat grants. At most one player purchase, rebuild, or Rain cast each game second. Each policy pays for sites, upgrades and defenses, and saves and restores a copy every minute.",
+  "campaigns": [
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.0,
+        177.0,
+        340.0,
+        501.0,
+        862.0
+      ],
+      "approach": "balanced",
+      "boss_kills": [
+        375.0,
+        699.0
+      ],
+      "buildings": 9,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 1835,
+      "paid_orders": 94,
+      "plan_next": 24,
+      "rain_casts": 14,
+      "research": {
+        "arrow": 1,
+        "cannon": 1,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 2,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 6787.37999999847,
+        "stone": 19.7664999995885,
+        "wood": 11.971599999926
+      },
+      "seconds": 904.799999999725,
+      "seed": 1,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 31
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.0,
+        177.0,
+        340.0,
+        501.0
+      ],
+      "approach": "balanced",
+      "boss_kills": [
+        378.0,
+        706.0
+      ],
+      "buildings": 13,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 1871,
+      "paid_orders": 102,
+      "plan_next": 24,
+      "rain_casts": 14,
+      "research": {
+        "arrow": 1,
+        "cannon": 1,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 2,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 7235.21499999817,
+        "stone": 0.733999999720982,
+        "wood": 604.612799999919
+      },
+      "seconds": 915.149999999715,
+      "seed": 2,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 31
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.0,
+        177.0,
+        340.0,
+        501.0,
+        838.0
+      ],
+      "approach": "balanced",
+      "boss_kills": [
+        375.0,
+        706.0
+      ],
+      "buildings": 9,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 1788,
+      "paid_orders": 91,
+      "plan_next": 24,
+      "rain_casts": 13,
+      "research": {
+        "arrow": 1,
+        "cannon": 1,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 2,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 6491.29499999848,
+        "stone": 15.3469999995644,
+        "wood": 44.5187999999321
+      },
+      "seconds": 887.94999999974,
+      "seed": 3,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 30
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.0,
+        135.0,
+        223.0,
+        337.0,
+        474.0
+      ],
+      "approach": "age_rush",
+      "boss_kills": [
+        376.0
+      ],
+      "buildings": 2,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 673,
+      "paid_orders": 20,
+      "plan_next": 11,
+      "rain_casts": 7,
+      "research": {
+        "arrow": 1,
+        "cannon": 1,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 1,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 2246.39500000016,
+        "stone": 1120.89000000022,
+        "wood": 22.3600000000076
+      },
+      "seconds": 532.950000000063,
+      "seed": 1,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 18
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.0,
+        135.0,
+        223.0,
+        337.0,
+        474.0
+      ],
+      "approach": "age_rush",
+      "boss_kills": [
+        377.0
+      ],
+      "buildings": 4,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 631,
+      "paid_orders": 19,
+      "plan_next": 11,
+      "rain_casts": 7,
+      "research": {
+        "arrow": 1,
+        "cannon": 1,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 1,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 2152.61500000014,
+        "stone": 1186.63000000021,
+        "wood": 49.1200000000081
+      },
+      "seconds": 515.150000000079,
+      "seed": 2,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 18
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.0,
+        135.0,
+        223.0,
+        337.0,
+        474.0
+      ],
+      "approach": "age_rush",
+      "boss_kills": [
+        377.0
+      ],
+      "buildings": 2,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 648,
+      "paid_orders": 19,
+      "plan_next": 11,
+      "rain_casts": 7,
+      "research": {
+        "arrow": 1,
+        "cannon": 1,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 1,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 2220.64000000014,
+        "stone": 1272.39250000021,
+        "wood": 20.4200000000085
+      },
+      "seconds": 522.400000000073,
+      "seed": 3,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 18
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.0,
+        259.0,
+        519.0,
+        819.0
+      ],
+      "approach": "fortify",
+      "boss_kills": [
+        375.0,
+        689.0
+      ],
+      "buildings": 6,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 2164,
+      "paid_orders": 101,
+      "plan_next": 29,
+      "rain_casts": 15,
+      "research": {
+        "arrow": 1,
+        "cannon": 1,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 3,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 7950.95999999802,
+        "stone": 29.086439999815,
+        "wood": 47.4071839999924
+      },
+      "seconds": 971.599999999664,
+      "seed": 1,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 4,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 33
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.0,
+        259.0,
+        519.0,
+        844.0
+      ],
+      "approach": "fortify",
+      "boss_kills": [
+        377.0,
+        689.0
+      ],
+      "buildings": 7,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 2063,
+      "paid_orders": 100,
+      "plan_next": 28,
+      "rain_casts": 15,
+      "research": {
+        "arrow": 1,
+        "cannon": 1,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 3,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 7662.26499999803,
+        "stone": 3.01839999982464,
+        "wood": 164.123823999985
+      },
+      "seconds": 955.649999999679,
+      "seed": 2,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 3,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 32
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.0,
+        259.0,
+        519.0,
+        809.0
+      ],
+      "approach": "fortify",
+      "boss_kills": [
+        375.0,
+        692.0
+      ],
+      "buildings": 6,
+      "defeated": true,
+      "hall_hp": 0.0,
+      "kills": 2168,
+      "paid_orders": 98,
+      "plan_next": 30,
+      "rain_casts": 15,
+      "research": {
+        "arrow": 1,
+        "cannon": 1,
+        "hall": 1,
+        "market": 1,
+        "stone": 1,
+        "wall": 4,
+        "wood": 1,
+        "workshop": 1
+      },
+      "resources": {
+        "gold": 7839.62499999797,
+        "stone": 9.268419999815,
+        "wood": 21.9226879999918
+      },
+      "seconds": 971.249999999664,
+      "seed": 3,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 4,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 33
+    }
+  ]
+}

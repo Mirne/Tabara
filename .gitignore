@@ -10,8 +10,9 @@ __pycache__/
 android/build/
 test-results/
 
-# Keep the current tested download on main. Other build outputs stay local.
+# Preserve the published v0.12 main download used by older Android installs.
 !builds/tabara-frontier-v0.12.apk
 !builds/tabara-frontier-v0.12.apk.sha256
+# The age-rework APK is also attached to its GitHub release.
 !builds/tabara-frontier-v0.13.apk
 !builds/tabara-frontier-v0.13.apk.sha256

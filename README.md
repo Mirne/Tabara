@@ -4,40 +4,32 @@ An offline Android settlement-defense game built in **Godot 4.6.3**. Build a
 settlement in a wooded valley, gather supplies, and defend the main hall. Defeat
 the **final Warlord arriving at 15:00** to unlock endless survival.
 
-![Warlord attacking the rampart on Android](docs/screenshots/android-battlefield-smash-left.png)
+![Crown age at the Hearthvale pass](docs/screenshots/settlement-crown.webp)
 
-## Version 0.12
+## Version 0.13
 
-New walls occupy **one 40×40 grid cell**. Adjacent sections share their textured
-stone faces, parapets and wooden deck, including corners and solid blocks.
-Blocked cells are skipped while dragging. Existing saved 80×80 wall foundations
-keep their size, health and levels, and visually join new cells along their edges.
-Wall prices and upgrades are unchanged.
+Every settlement starts in **Wood**. Tap **Hall → Age** to preview the next
+Hall, see which research it unlocks, and spend wood, stone and gold to advance. Stone, Iron, Steel,
+Keep, Castle, Citadel and Crown each bring new paintings for buildings, walls
+and Workshop projects. The Hall's **Building** tab upgrades its health and weapon.
 
-Every Warlord now has a **3-second ground smash** with a visible warning and area
-damage. Its **permanent war cry** grants nearby ordinary enemies 30% more movement
-speed; auras do not stack. The five-, ten- and fifteen-minute boss profiles and
-final-boss victory objective are retained.
+In Wood, the Workshop offers **Arrowheads** for arrow damage and **Round shot**
+for cannon damage. Stone adds arrow range and cannon blast radius. Iron adds
+faster firing and reloading. Later ages raise the maximum research rank. Each
+project shows the current stat, the next stat and the price. Arrowheads also
+improves Rain of Arrows. [See the age progression and playtest plan](docs/AGE-REWORK.md).
 
-**Rain of Arrows** is a free defensive ability with a **60-game-second recharge**.
-Select it, tap a battlefield circle, then confirm Release arrows. A three-second
-barrage deals 300 total damage at Arrow tower research level one; damage scales
-with existing Arrow tower upgrades. Previewing, cancelling, panning and pinching
-spend nothing. Active barrages and recharge survive saves and pause correctly.
-
-The map, ordinary enemy base stats, resource sites, Marketplace, building prices
-and existing upgrade rules are retained. No new settlement is required. Old
-completed endless saves still retain their earned victory.
-
-The persistent [owner rules](docs/gameplay/NOTES.md) and [building/NPC specifications](docs/gameplay/INDEX.md)
-must be read before implementing further changes.
+A new settlement has one timber yard below the northern forest and one quarry
+at the southern limestone shelf. Build on the matching site, then use that
+producer's catalogue card to open its local upgrades. Increasing output makes
+the same yard more productive. A destroyed producer can be rebuilt at level one.
+Earlier saves keep their original geography, standing producers and paid levels.
 
 ## Play on Android
 
-Download the [tested Android APK](https://raw.githubusercontent.com/Mirne/Tabara/main/builds/tabara-frontier-v0.12.apk)
-from GitHub. Open the link in Chrome, then open `tabara-frontier-v0.12.apk` from
-**Downloads** or Samsung **My Files → Downloads**. Install it over the previous
-version to retain the settlement. Existing saves retain their terrain, foundations and purchased levels.
+Download the signed Android APK from the [latest Tabara release on GitHub](https://github.com/Mirne/Tabara/releases/latest).
+On Samsung, open the APK from **My Files → Downloads**. Choose **Update**
+when installing over an earlier version to keep your settlement.
 
 ARM64 and x86-64, Android 7.0/API 24 or later, OpenGL ES 3.0. The S23 Ultra is
 supported. This is a development-signed sideload build. No accounts, purchases,
@@ -52,19 +44,19 @@ advertising, analytics, or runtime network connection are required.
    blocking them. Red cells reject construction and block passage.
 4. Use Rain of Arrows against clustered enemies; preview and confirm its circle.
    Upgrade producers at their own panels. Build a Marketplace for passive gold.
-   The Workshop upgrades defenses and Regeneration.
+   Advance the Hall to open new tower research. The Workshop also upgrades walls and Regeneration.
 5. Defeat the final Warlord arriving at 15:00, then continue until the hall falls.
 
 | Building | Role |
 | --- | --- |
-| Main hall | Headquarters, automatic arrows and modest passive income |
-| Woodcutter | Timber income, one per timber site |
-| Stonemason | Stone income, one per quarry |
+| Main hall | Age advancement, automatic arrows and starting income |
+| Woodcutter | Timber income from the northern working forest |
+| Stonemason | Stone income from the limestone yard |
 | Arrow tower | Rapid single-target damage |
 | Wall | Single-cell, joined draggable fortifications |
 | Cannon tower | Slower area damage |
 | Marketplace | Passive gold production and income upgrades; one per settlement |
-| Workshop | Global defense upgrades and Regeneration; one per settlement |
+| Workshop | Tower research, wall upgrades and automatic Regeneration |
 
 Drag to pan, pinch to zoom, and tap the minimap to travel. **Hall** returns to the
 headquarters. Speed cycles **1× → 2× → 5× → 10×**. Android Back cancels placement
@@ -72,22 +64,21 @@ or toggles pause. Desktop: drag or WASD/arrows pan, wheel zooms, **1–7** selec
 construction, **U** opens the Workshop, **R** opens Regeneration, **F** finds the hall,
 **Space** pauses, and **Esc** goes back.
 
-The game saves every ten real seconds, on pause, when backgrounded, and when
-returning to the menu. Foregrounding requires explicit resume. Save format eleven
-loads frontier versions 2–10 and preserves their geography, foundations and levels. An
-already-paid v0.8 research order completes once on migration; any remaining paid
-local repair finishes once before its manual job is removed. Previously purchased Regeneration levels are retained; it stays locked when
-not previously purchased. Old save times do not trigger a backlog of minibosses.
-Version-one fixed-plot saves remain untouched and are not loaded. Starting a new
-settlement replaces the active frontier after confirmation.
+The game saves every ten real seconds, on pause, when backgrounded and when
+returning to the menu. After foregrounding, tap Resume. Save format 12 loads
+frontier versions 2–11. Existing tower purchases keep their effects when
+the new research tracks appear. Older saved settlements also retain their
+foundations, producer levels, Regeneration purchases and earned endless
+victories. Starting a new settlement replaces the active one after confirmation.
+Details of earlier formats are in [save migration](docs/gameplay/upgrades.md).
 
 ## Development
 
-Read [the gameplay specifications](docs/gameplay/INDEX.md) before editing.
-Work directly on **main**. Keep the latest tested APK and checksum in `builds/`;
-previous downloads and reports remain reachable through [release history](docs/HISTORY.md).
-No feature or download branches are needed. Signing keys and toolchains stay
-outside Git.
+Read the [owner's instructions](docs/gameplay/NOTES.md) and the affected
+[building and NPC specifications](docs/gameplay/INDEX.md) before editing.
+Work directly on **main**. Keep the latest tested APK and checksum in `builds/`
+and signing keys outside Git. Previous versions and their verification records
+are linked from [release history](docs/HISTORY.md).
 
 Open `project.godot` in Godot 4.6.3 and press F5. For Android, install matching
 export templates, SDK build-tools 36.0.0 and OpenJDK 17 or 21. Configure Android
@@ -96,14 +87,16 @@ SDK and Java paths in Godot's Editor Settings.
 ```sh
 godot --headless --editor --single-threaded-scene --path . --import --quit
 mkdir -p builds
-godot --headless --path . --export-debug Android builds/tabara-frontier-v0.12-unpacked.apk
-python3 tools/package_android.py builds/tabara-frontier-v0.12-unpacked.apk builds/tabara-frontier-v0.12.apk --sdk "$ANDROID_HOME"
+godot --headless --path . --export-release Android builds/tabara-frontier-v0.13-unpacked.apk
+python3 tools/package_android.py builds/tabara-frontier-v0.13-unpacked.apk builds/tabara-frontier-v0.13.apk --sdk "$ANDROID_HOME"
 ```
 
-The packaging tool losslessly ZIP-compresses texture containers, verifies every
-payload, aligns the package, and signs it with the existing development key.
-Texture pixels and scripts are unchanged. A Play Store release requires the
-owner's production key and a Gradle AAB export; no production key is included.
+Set the Godot Android release keystore environment variables before exporting.
+The signer passed to `tools/package_android.py` must match the installed game's
+certificate for an update to retain a settlement. Set `--keystore` and supply
+`TABARA_KEY_ALIAS` and `TABARA_KEY_PASSWORD` for a non-default development key.
+The tool compresses texture containers, verifies all uncompressed payloads,
+aligns the APK and signs it. Keep certificate credentials outside Git.
 
 Use an isolated `XDG_DATA_HOME`: tests write test settlements.
 
@@ -124,14 +117,15 @@ Back, saves, restart, panning and app switching. Configure `ANDROID_ADB`,
 `ANDROID_SERIAL`, `ANDROID_ADB_PORT`, `ANDROID_APK`, `ANDROID_REPORT_NAME` and
 `ANDROID_COMMAND_TIMEOUT` and `ANDROID_TAP_DELAY` as needed. Slower software
 emulators can use an eight-second tap delay. It clears only this game's data on that
-emulator. `tests/android_upgrade.py` installs published v0.11 and checks migration, a new
-single-cell wall beside a legacy rampart, miniboss smashes in both directions,
-a native Rain kill of the final boss, and recharge persistence. Set
-`ANDROID_PREVIOUS_APK` to the old download. Its controlled UI/encounter fixtures
-set a 1,000-resource budget, reinforce structures, reposition enemies, advance
-the clock and lower final-boss HP. They are not paid-order campaign evidence;
-the pre-fixture migrated settlement is restored afterward.
+emulator. For a release template, use a disposable rooted AOSP emulator with
+`adb root` and `ANDROID_TEST_ROOT=1` so the harness can verify the app's saved
+state. `tests/android_upgrade.py` installs published v0.12, updates it in place,
+checks the legacy producers and tower purchases, then exercises all seven age
+advancements with a controlled budget. Set `ANDROID_PREVIOUS_APK` to the old
+APK and `ANDROID_APK` to the new signed APK. The harness restores the original
+settlement after its controlled checks.
 
-The manually triggered Android GitHub workflow uses an accelerated API 35 emulator.
-See [verification evidence and limits](docs/QA.md), [rules and architecture](docs/DESIGN.md),
-and [art credits](docs/ASSETS.md).
+The manually triggered Android GitHub workflow checks the APK's published
+checksum, then installs that file on API 24 and API 35 emulators. See the
+[verification record](docs/QA.md), [game design](docs/DESIGN.md) and
+[art credits](docs/ASSETS.md).
