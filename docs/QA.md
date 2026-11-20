@@ -1,6 +1,6 @@
 # Settlement ages v0.13 verification
 
-The v0.13 candidate uses Godot 4.6.3, Android version code 13, save format 12
+The released v0.13 APK uses Godot 4.6.3, Android version code 13, save format 12
 and terrain layout 6. The signed APK is 104,006,410 bytes with SHA-256
 `aa4fb07bdac02c3c328db720a32e5583e9da88c4a200a0c5639b61f0822ec8d5`.
 Its signer certificate matches the published v0.12 certificate,
@@ -90,6 +90,10 @@ settlement into the signed Android APK reproduced the kill at 16:26.45
 without another battlefield order. Tapping Continue endless survival resumed
 combat with the Hall at 4,200 HP. The test restored the emulator's original
 saved settlement afterward. [Android fight record](verification/settlement-ages/api24-paid-finish.json) · [Victory on Android](screenshots/android-ages-normal-cost-victory.webp)
+
+## Extended stability check
+
+At the release checkpoint, the normal-speed automated playtest had measured 24,418.0 active seconds across 32 settlements and 386 on-disk save restores with zero invariant errors. The first 1,351.5 seconds used a development build. The remaining 23,066.5 seconds used the published rules and artwork. [Checkpoint](verification/settlement-ages/release-checkpoint.json)
 
 ---
 

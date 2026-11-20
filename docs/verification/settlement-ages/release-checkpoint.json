@@ -1,0 +1,802 @@
+{
+  "action_cycles": 24130,
+  "actual_real_seconds": 24417.998999861,
+  "approach": "fortify",
+  "camera": [
+    7400.0,
+    4300.0,
+    1.25
+  ],
+  "camera_tours": 939,
+  "campaign_results": [
+    {
+      "age": 5.0,
+      "age_seconds": [
+        0.0,
+        78.6,
+        165.65,
+        314.05,
+        500.55
+      ],
+      "approach": "balanced",
+      "mission_seconds": 661.349999999946,
+      "paid_orders": 68.0,
+      "rain_casts": 11.0,
+      "seed": 1001.0,
+      "specializations": {
+        "arrow_cadence": 1.0,
+        "arrow_damage": 1.0,
+        "arrow_range": 1.0,
+        "cannon_cadence": 1.0,
+        "cannon_damage": 1.0,
+        "cannon_splash": 1.0
+      },
+      "victory": false,
+      "wave": 23.0
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        78.0,
+        134.4,
+        223.15,
+        336.4,
+        474.85
+      ],
+      "approach": "age_rush",
+      "mission_seconds": 534.800000000061,
+      "paid_orders": 22,
+      "rain_casts": 7,
+      "seed": 1003,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 18
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.05,
+        176.8,
+        340.35,
+        501.05
+      ],
+      "approach": "balanced",
+      "mission_seconds": 949.049999999685,
+      "paid_orders": 106,
+      "rain_casts": 14,
+      "seed": 1004,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 32
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        78.55,
+        258.35,
+        519.6,
+        815.75
+      ],
+      "approach": "fortify",
+      "mission_seconds": 958.599999999676,
+      "paid_orders": 98,
+      "rain_casts": 14,
+      "seed": 1005,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 4,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 32
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.3,
+        134.7,
+        222.75,
+        336.8,
+        474.05
+      ],
+      "approach": "age_rush",
+      "mission_seconds": 616.149999999987,
+      "paid_orders": 22,
+      "rain_casts": 9,
+      "seed": 1006,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 21
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.4,
+        176.15,
+        339.85,
+        501.6
+      ],
+      "approach": "balanced",
+      "mission_seconds": 917.699999999713,
+      "paid_orders": 103,
+      "rain_casts": 14,
+      "seed": 1007,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 31
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.1,
+        258.5,
+        519.0,
+        812.65
+      ],
+      "approach": "fortify",
+      "mission_seconds": 962.799999999672,
+      "paid_orders": 96,
+      "rain_casts": 15,
+      "seed": 1008,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 4,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 33
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.1,
+        134.2,
+        222.65,
+        336.4,
+        474.8
+      ],
+      "approach": "age_rush",
+      "mission_seconds": 521.900000000073,
+      "paid_orders": 20,
+      "rain_casts": 7,
+      "seed": 1009,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 18
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.3,
+        176.65,
+        340.25,
+        501.25
+      ],
+      "approach": "balanced",
+      "mission_seconds": 913.799999999717,
+      "paid_orders": 102,
+      "rain_casts": 14,
+      "seed": 1010,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 31
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.4,
+        258.3,
+        519.65,
+        914.2
+      ],
+      "approach": "fortify",
+      "mission_seconds": 962.349999999672,
+      "paid_orders": 98,
+      "rain_casts": 15,
+      "seed": 1011,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 3,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 33
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.3,
+        134.5,
+        222.9,
+        336.25,
+        474.8
+      ],
+      "approach": "age_rush",
+      "mission_seconds": 515.950000000078,
+      "paid_orders": 18,
+      "rain_casts": 7,
+      "seed": 1012,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 18
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.05,
+        176.4,
+        339.85,
+        501.3
+      ],
+      "approach": "balanced",
+      "mission_seconds": 922.799999999709,
+      "paid_orders": 105,
+      "rain_casts": 14,
+      "seed": 1013,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 31
+    },
+    {
+      "age": 4,
+      "age_seconds": [
+        0.0,
+        79.2,
+        258.25,
+        519.45
+      ],
+      "approach": "fortify",
+      "mission_seconds": 802.399999999818,
+      "paid_orders": 78,
+      "rain_casts": 12,
+      "seed": 1014,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 3,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 27
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.05,
+        134.35,
+        222.65,
+        337.1,
+        474.1
+      ],
+      "approach": "age_rush",
+      "mission_seconds": 518.000000000077,
+      "paid_orders": 20,
+      "rain_casts": 7,
+      "seed": 1015,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 18
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.2,
+        176.45,
+        339.6,
+        501.05
+      ],
+      "approach": "balanced",
+      "mission_seconds": 898.499999999731,
+      "paid_orders": 101,
+      "rain_casts": 13,
+      "seed": 1016,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 30
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.2,
+        258.6,
+        519.45,
+        808.55
+      ],
+      "approach": "fortify",
+      "mission_seconds": 955.149999999679,
+      "paid_orders": 94,
+      "rain_casts": 14,
+      "seed": 1017,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 4,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 32
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.05,
+        134.1,
+        223.5,
+        336.65,
+        474.35
+      ],
+      "approach": "age_rush",
+      "mission_seconds": 547.55000000005,
+      "paid_orders": 20,
+      "rain_casts": 7,
+      "seed": 1018,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 19
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.05,
+        176.55,
+        339.6,
+        500.9
+      ],
+      "approach": "balanced",
+      "mission_seconds": 915.349999999715,
+      "paid_orders": 101,
+      "rain_casts": 14,
+      "seed": 1019,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 31
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.25,
+        258.95,
+        518.7,
+        805.5
+      ],
+      "approach": "fortify",
+      "mission_seconds": 978.349999999658,
+      "paid_orders": 99,
+      "rain_casts": 15,
+      "seed": 1020,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 4,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 33
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.3,
+        134.4,
+        222.75,
+        336.75,
+        473.95
+      ],
+      "approach": "age_rush",
+      "mission_seconds": 536.00000000006,
+      "paid_orders": 20,
+      "rain_casts": 7,
+      "seed": 1021,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 18
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.1,
+        176.75,
+        339.9,
+        501.3
+      ],
+      "approach": "balanced",
+      "mission_seconds": 892.399999999736,
+      "paid_orders": 99,
+      "rain_casts": 13,
+      "seed": 1022,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 30
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.15,
+        258.8,
+        519.55,
+        812.35
+      ],
+      "approach": "fortify",
+      "mission_seconds": 966.999999999668,
+      "paid_orders": 97,
+      "rain_casts": 15,
+      "seed": 1023,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 4,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 33
+    },
+    {
+      "age": 6,
+      "age_seconds": [
+        0.0,
+        79.1,
+        134.3,
+        222.75,
+        337.05,
+        474.3
+      ],
+      "approach": "age_rush",
+      "mission_seconds": 517.550000000077,
+      "paid_orders": 18,
+      "rain_casts": 7,
+      "seed": 1024,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 18
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.1,
+        176.3,
+        339.9,
+        501.25
+      ],
+      "approach": "balanced",
+      "mission_seconds": 917.449999999713,
+      "paid_orders": 104,
+      "rain_casts": 14,
+      "seed": 1025,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 31
+    },
+    {
+      "age": 4,
+      "age_seconds": [
+        0.0,
+        79.25,
+        258.95,
+        519.35
+      ],
+      "approach": "fortify",
+      "mission_seconds": 857.599999999768,
+      "paid_orders": 83,
+      "rain_casts": 13,
+      "seed": 1026,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 3,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 29
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.1,
+        134.15,
+        223.5,
+        336.8
+      ],
+      "approach": "age_rush",
+      "mission_seconds": 518.800000000076,
+      "paid_orders": 19,
+      "rain_casts": 7,
+      "seed": 1027,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 18
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.15,
+        176.8,
+        340.25,
+        501.75
+      ],
+      "approach": "balanced",
+      "mission_seconds": 940.449999999692,
+      "paid_orders": 106,
+      "rain_casts": 14,
+      "seed": 1028,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 32
+    },
+    {
+      "age": 4,
+      "age_seconds": [
+        0.0,
+        79.2,
+        258.9,
+        518.65
+      ],
+      "approach": "fortify",
+      "mission_seconds": 797.699999999822,
+      "paid_orders": 74,
+      "rain_casts": 12,
+      "seed": 1029,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 3,
+        "cannon_damage": 4,
+        "cannon_splash": 4
+      },
+      "victory": false,
+      "wave": 27
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.35,
+        134.45,
+        222.75,
+        336.75
+      ],
+      "approach": "age_rush",
+      "mission_seconds": 588.800000000012,
+      "paid_orders": 22,
+      "rain_casts": 8,
+      "seed": 1030,
+      "specializations": {
+        "arrow_cadence": 1,
+        "arrow_damage": 1,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 1,
+        "cannon_splash": 1
+      },
+      "victory": false,
+      "wave": 20
+    },
+    {
+      "age": 5,
+      "age_seconds": [
+        0.0,
+        79.25,
+        176.45,
+        340.05,
+        500.85
+      ],
+      "approach": "balanced",
+      "mission_seconds": 919.799999999711,
+      "paid_orders": 102,
+      "rain_casts": 14,
+      "seed": 1031,
+      "specializations": {
+        "arrow_cadence": 2,
+        "arrow_damage": 3,
+        "arrow_range": 1,
+        "cannon_cadence": 1,
+        "cannon_damage": 3,
+        "cannon_splash": 3
+      },
+      "victory": false,
+      "wave": 31
+    }
+  ],
+  "complete": false,
+  "current_age": 2,
+  "current_mission_age_seconds": [
+    0.0,
+    78.7
+  ],
+  "current_mission_rain_casts": 1,
+  "current_mission_seconds": 133.849999999996,
+  "current_segment_real_seconds": 23066.476999861,
+  "current_segment_wall_seconds": 23066.778,
+  "current_session_seed": 1032,
+  "current_static_memory_bytes": 60602892,
+  "current_tower_tracks": {
+    "arrow_cadence": 1,
+    "arrow_damage": 1,
+    "arrow_range": 1,
+    "cannon_cadence": 1,
+    "cannon_damage": 2,
+    "cannon_splash": 1
+  },
+  "disk_resumes": 386,
+  "errors": [],
+  "excluded_stall_seconds": 0.687,
+  "fps": 15.0,
+  "game_version": "0.13.0",
+  "max_process_ms_after_warmup": 2300.167,
+  "max_static_memory_bytes": 61926402,
+  "min_fps_after_warmup": 1.0,
+  "prior_confirmed_real_seconds": 1351.522,
+  "requested_real_seconds": 25200,
+  "segments": 2,
+  "sessions": 32,
+  "source_commit": "worktree-sha256:b5299cf4c7912ff1f858197c96912b3ad64350d969681b35feb1516a3883425b",
+  "victories": 0
+}

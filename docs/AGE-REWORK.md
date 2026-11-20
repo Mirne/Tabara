@@ -17,7 +17,7 @@ A new settlement has a single timber yard at the northern woodland edge and one 
 | Play and tune | Compare normal-cost campaigns with different spending orders. Record age and research timing against the 05:00, 10:00 and 15:00 bosses. Exercise movement, targeting, save/reload and rebuilding over extended play. | Record observed outcomes and distinguish paid campaigns from resource-granted fixtures used to see late art and test migration. |
 | Deliver on Android | Test the signed update over v0.12, exercise the touch purchase flow and run the source/render suite. Publish a GitHub release and verify its downloadable APK. | Installable download, migration evidence and release notes describe the tested build. |
 
-Seven hours of development and testing were requested. Time is measured from 16:59 Prague time on 20 November 2026. Concurrent workers, accelerated game clocks and separate campaign seeds do not add to elapsed time. Actual results will be recorded after testing.
+Seven hours of development and testing were requested. Time is measured from 16:59 Prague time on 20 November 2026. Concurrent workers, accelerated game clocks and separate campaign seeds do not add to elapsed time. The [verification record](QA.md) includes the measured duration, paid campaign results and Android update checks.
 
 ## Painted age sets
 
