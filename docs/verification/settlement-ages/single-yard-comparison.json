@@ -1,0 +1,1205 @@
+{
+  "purpose": "Compare earned wood and stone between an old layout with two yards of each type and the new single-yard economy, using the same spending policy. Additional producer rates were tried only in isolated copies. Existing tower specialization is omitted in this particular comparison.",
+  "shipping_arm": "v013-one",
+  "sampling": "Three seeds per arm except the single old-terrain control. Purchases used normal prices. Earned income includes the Hall. Each entry records the five-minute and ten-minute checkpoint and Hall survival.",
+  "arms": {
+    "v012-two": [
+      {
+        "seed": 1,
+        "elapsed": 824.15,
+        "bosses": {
+          "1": 379.0,
+          "2": 686.0
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              3258.86,
+              3847.63,
+              1422.9
+            ],
+            "guns": 7,
+            "bows": 2,
+            "walls": 12,
+            "hall": 3,
+            "hp": 4944,
+            "income": {
+              "gold": 2.1,
+              "stone": 14.490000000000002,
+              "wood": 12.032
+            },
+            "defense": [
+              2744,
+              2888,
+              1376
+            ],
+            "kills": 243,
+            "econ_ranks": {
+              "wood": [
+                3,
+                2
+              ],
+              "stone": [
+                3,
+                2
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              7204.71,
+              8606.0,
+              4665.62
+            ],
+            "guns": 15,
+            "bows": 4,
+            "walls": 16,
+            "hall": 8,
+            "hp": 7435,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 16.826256000000004,
+              "wood": 13.901004800000003
+            },
+            "defense": [
+              6131,
+              6041,
+              3057
+            ],
+            "kills": 869,
+            "econ_ranks": {
+              "wood": [
+                5,
+                4
+              ],
+              "stone": [
+                5,
+                4
+              ]
+            }
+          }
+        }
+      },
+      {
+        "seed": 2,
+        "elapsed": 798.2,
+        "bosses": {
+          "1": 382.0,
+          "2": 698.0
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              3259.16,
+              3845.55,
+              1397.9
+            ],
+            "guns": 7,
+            "bows": 2,
+            "walls": 12,
+            "hall": 3,
+            "hp": 4944,
+            "income": {
+              "gold": 2.1,
+              "stone": 14.490000000000002,
+              "wood": 12.032
+            },
+            "defense": [
+              2606,
+              2784,
+              1307
+            ],
+            "kills": 241,
+            "econ_ranks": {
+              "wood": [
+                3,
+                2
+              ],
+              "stone": [
+                3,
+                2
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              7205.01,
+              8603.92,
+              4738.14
+            ],
+            "guns": 15,
+            "bows": 4,
+            "walls": 15,
+            "hall": 8,
+            "hp": 7435,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 16.826256000000004,
+              "wood": 13.901004800000003
+            },
+            "defense": [
+              6131,
+              6041,
+              3057
+            ],
+            "kills": 870,
+            "econ_ranks": {
+              "wood": [
+                5,
+                4
+              ],
+              "stone": [
+                5,
+                4
+              ]
+            }
+          }
+        }
+      },
+      {
+        "seed": 3,
+        "elapsed": 814.45,
+        "bosses": {
+          "1": 382.0,
+          "2": 691.0
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              3258.33,
+              3846.09,
+              1413.9
+            ],
+            "guns": 7,
+            "bows": 2,
+            "walls": 12,
+            "hall": 3,
+            "hp": 4944,
+            "income": {
+              "gold": 2.1,
+              "stone": 14.490000000000002,
+              "wood": 12.032
+            },
+            "defense": [
+              2744,
+              2888,
+              1376
+            ],
+            "kills": 238,
+            "econ_ranks": {
+              "wood": [
+                3,
+                2
+              ],
+              "stone": [
+                3,
+                2
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              7205.91,
+              8606.08,
+              4680.0
+            ],
+            "guns": 15,
+            "bows": 4,
+            "walls": 16,
+            "hall": 8,
+            "hp": 7435,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 16.826256000000004,
+              "wood": 13.901004800000003
+            },
+            "defense": [
+              6131,
+              6041,
+              3057
+            ],
+            "kills": 871,
+            "econ_ranks": {
+              "wood": [
+                5,
+                4
+              ],
+              "stone": [
+                5,
+                4
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "v012-one": [
+      {
+        "seed": 1,
+        "elapsed": 772.2,
+        "bosses": {
+          "1": 383.0,
+          "2": 691.0
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              1944.42,
+              2246.79,
+              1422.9
+            ],
+            "guns": 4,
+            "bows": 2,
+            "walls": 12,
+            "hall": 1,
+            "hp": 4200,
+            "income": {
+              "gold": 2.1,
+              "stone": 8.323200000000002,
+              "wood": 7.098560000000001
+            },
+            "defense": [
+              1720,
+              1850,
+              850
+            ],
+            "kills": 243,
+            "econ_ranks": {
+              "wood": [
+                4
+              ],
+              "stone": [
+                4
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              4258.63,
+              4962.09,
+              4552.17
+            ],
+            "guns": 9,
+            "bows": 2,
+            "walls": 12,
+            "hall": 5,
+            "hp": 5821,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 9.633300480000003,
+              "wood": 8.146640384000003
+            },
+            "defense": [
+              3603,
+              3702,
+              1799
+            ],
+            "kills": 865,
+            "econ_ranks": {
+              "wood": [
+                6
+              ],
+              "stone": [
+                6
+              ]
+            }
+          }
+        }
+      },
+      {
+        "seed": 2,
+        "elapsed": 697.5,
+        "bosses": {
+          "1": 388.0,
+          "2": null
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              1944.42,
+              2246.79,
+              1397.9
+            ],
+            "guns": 4,
+            "bows": 2,
+            "walls": 12,
+            "hall": 1,
+            "hp": 4200,
+            "income": {
+              "gold": 2.1,
+              "stone": 8.323200000000002,
+              "wood": 7.098560000000001
+            },
+            "defense": [
+              1720,
+              1850,
+              850
+            ],
+            "kills": 241,
+            "econ_ranks": {
+              "wood": [
+                4
+              ],
+              "stone": [
+                4
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              4258.63,
+              4962.09,
+              4640.17
+            ],
+            "guns": 9,
+            "bows": 2,
+            "walls": 12,
+            "hall": 5,
+            "hp": 5821,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 9.633300480000003,
+              "wood": 8.146640384000003
+            },
+            "defense": [
+              3603,
+              3702,
+              1799
+            ],
+            "kills": 870,
+            "econ_ranks": {
+              "wood": [
+                6
+              ],
+              "stone": [
+                6
+              ]
+            }
+          }
+        }
+      },
+      {
+        "seed": 3,
+        "elapsed": 706.15,
+        "bosses": {
+          "1": 387.0,
+          "2": 696.0
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              1944.42,
+              2246.79,
+              1413.9
+            ],
+            "guns": 4,
+            "bows": 2,
+            "walls": 12,
+            "hall": 1,
+            "hp": 4200,
+            "income": {
+              "gold": 2.1,
+              "stone": 8.323200000000002,
+              "wood": 7.098560000000001
+            },
+            "defense": [
+              1720,
+              1850,
+              850
+            ],
+            "kills": 238,
+            "econ_ranks": {
+              "wood": [
+                4
+              ],
+              "stone": [
+                4
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              4258.63,
+              4962.09,
+              4587.17
+            ],
+            "guns": 9,
+            "bows": 2,
+            "walls": 12,
+            "hall": 5,
+            "hp": 5821,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 9.633300480000003,
+              "wood": 8.146640384000003
+            },
+            "defense": [
+              3603,
+              3702,
+              1799
+            ],
+            "kills": 873,
+            "econ_ranks": {
+              "wood": [
+                6
+              ],
+              "stone": [
+                6
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "v013-old-terrain": [
+      {
+        "seed": 1,
+        "elapsed": 772.2,
+        "bosses": {
+          "1": 383.0,
+          "2": 691.0
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              1944.42,
+              2246.79,
+              1422.9
+            ],
+            "guns": 4,
+            "bows": 2,
+            "walls": 12,
+            "hall": 1,
+            "hp": 4200,
+            "income": {
+              "gold": 2.1,
+              "stone": 8.323200000000002,
+              "wood": 7.098560000000001
+            },
+            "defense": [
+              1720,
+              1850,
+              850
+            ],
+            "kills": 243,
+            "econ_ranks": {
+              "wood": [
+                4
+              ],
+              "stone": [
+                4
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              4258.63,
+              4962.09,
+              4552.17
+            ],
+            "guns": 9,
+            "bows": 2,
+            "walls": 12,
+            "hall": 5,
+            "hp": 5821,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 9.633300480000003,
+              "wood": 8.146640384000003
+            },
+            "defense": [
+              3603,
+              3702,
+              1799
+            ],
+            "kills": 865,
+            "econ_ranks": {
+              "wood": [
+                6
+              ],
+              "stone": [
+                6
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "v013-one": [
+      {
+        "seed": 1,
+        "elapsed": 724.0500000000001,
+        "bosses": {
+          "1": 386.0,
+          "2": 697.0
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              1944.42,
+              2246.79,
+              1397.9
+            ],
+            "guns": 4,
+            "bows": 2,
+            "walls": 12,
+            "hall": 1,
+            "hp": 4200,
+            "income": {
+              "gold": 2.1,
+              "stone": 8.323200000000002,
+              "wood": 7.098560000000001
+            },
+            "defense": [
+              1720,
+              1850,
+              850
+            ],
+            "kills": 237,
+            "econ_ranks": {
+              "wood": [
+                4
+              ],
+              "stone": [
+                4
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              4260.27,
+              4964.13,
+              4541.88
+            ],
+            "guns": 9,
+            "bows": 2,
+            "walls": 12,
+            "hall": 4,
+            "hp": 5365,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 9.633300480000003,
+              "wood": 8.146640384000003
+            },
+            "defense": [
+              3529,
+              3688,
+              1770
+            ],
+            "kills": 863,
+            "econ_ranks": {
+              "wood": [
+                6
+              ],
+              "stone": [
+                6
+              ]
+            }
+          }
+        }
+      },
+      {
+        "seed": 2,
+        "elapsed": 721.65,
+        "bosses": {
+          "1": 384.0,
+          "2": 700.0
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              1944.42,
+              2246.79,
+              1391.9
+            ],
+            "guns": 4,
+            "bows": 2,
+            "walls": 12,
+            "hall": 1,
+            "hp": 4200,
+            "income": {
+              "gold": 2.1,
+              "stone": 8.323200000000002,
+              "wood": 7.098560000000001
+            },
+            "defense": [
+              1720,
+              1850,
+              850
+            ],
+            "kills": 239,
+            "econ_ranks": {
+              "wood": [
+                4
+              ],
+              "stone": [
+                4
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              4260.27,
+              4964.13,
+              4569.81
+            ],
+            "guns": 9,
+            "bows": 2,
+            "walls": 11,
+            "hall": 5,
+            "hp": 5821,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 9.633300480000003,
+              "wood": 8.146640384000003
+            },
+            "defense": [
+              3578,
+              3647,
+              1789
+            ],
+            "kills": 855,
+            "econ_ranks": {
+              "wood": [
+                6
+              ],
+              "stone": [
+                6
+              ]
+            }
+          }
+        }
+      },
+      {
+        "seed": 3,
+        "elapsed": 777.95,
+        "bosses": {
+          "1": 387.0,
+          "2": 690.0
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              1944.42,
+              2246.79,
+              1386.9
+            ],
+            "guns": 4,
+            "bows": 2,
+            "walls": 12,
+            "hall": 1,
+            "hp": 4200,
+            "income": {
+              "gold": 2.1,
+              "stone": 8.323200000000002,
+              "wood": 7.098560000000001
+            },
+            "defense": [
+              1720,
+              1850,
+              850
+            ],
+            "kills": 231,
+            "econ_ranks": {
+              "wood": [
+                4
+              ],
+              "stone": [
+                4
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              4260.27,
+              4964.13,
+              4565.81
+            ],
+            "guns": 9,
+            "bows": 2,
+            "walls": 12,
+            "hall": 5,
+            "hp": 5821,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 9.633300480000003,
+              "wood": 8.146640384000003
+            },
+            "defense": [
+              3578,
+              3647,
+              1789
+            ],
+            "kills": 868,
+            "econ_ranks": {
+              "wood": [
+                6
+              ],
+              "stone": [
+                6
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "second-crew": [
+      {
+        "seed": 1,
+        "elapsed": 1011.3000000000001,
+        "bosses": {
+          "1": 385.0,
+          "2": 709.0,
+          "3": null
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              3407.66,
+              4033.82,
+              1397.9
+            ],
+            "guns": 7,
+            "bows": 2,
+            "walls": 12,
+            "hall": 3,
+            "hp": 4944,
+            "income": {
+              "gold": 2.1,
+              "stone": 16.196400000000004,
+              "wood": 13.397120000000003
+            },
+            "defense": [
+              2606,
+              2784,
+              1307
+            ],
+            "kills": 237,
+            "econ_ranks": {
+              "wood": [
+                5
+              ],
+              "stone": [
+                5
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              8291.16,
+              9943.86,
+              4649.51
+            ],
+            "guns": 15,
+            "bows": 4,
+            "walls": 16,
+            "hall": 8,
+            "hp": 7435,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 21.87280335974401,
+              "wood": 17.93824268779521
+            },
+            "defense": [
+              6651,
+              6432,
+              3317
+            ],
+            "kills": 864,
+            "econ_ranks": {
+              "wood": [
+                9
+              ],
+              "stone": [
+                9
+              ]
+            }
+          }
+        }
+      },
+      {
+        "seed": 2,
+        "elapsed": 1009.45,
+        "bosses": {
+          "1": 381.0,
+          "2": 696.0,
+          "3": null
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              3405.86,
+              4033.74,
+              1391.9
+            ],
+            "guns": 7,
+            "bows": 2,
+            "walls": 12,
+            "hall": 3,
+            "hp": 4944,
+            "income": {
+              "gold": 2.1,
+              "stone": 16.196400000000004,
+              "wood": 13.397120000000003
+            },
+            "defense": [
+              2606,
+              2784,
+              1307
+            ],
+            "kills": 239,
+            "econ_ranks": {
+              "wood": [
+                5
+              ],
+              "stone": [
+                5
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              8294.57,
+              9948.82,
+              4665.01
+            ],
+            "guns": 15,
+            "bows": 4,
+            "walls": 15,
+            "hall": 8,
+            "hp": 7435,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 21.87280335974401,
+              "wood": 17.93824268779521
+            },
+            "defense": [
+              6971,
+              6672,
+              3477
+            ],
+            "kills": 855,
+            "econ_ranks": {
+              "wood": [
+                9
+              ],
+              "stone": [
+                9
+              ]
+            }
+          }
+        }
+      },
+      {
+        "seed": 3,
+        "elapsed": 1000.0500000000001,
+        "bosses": {
+          "1": 384.0,
+          "2": 707.0,
+          "3": null
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              3406.72,
+              4033.82,
+              1386.9
+            ],
+            "guns": 7,
+            "bows": 2,
+            "walls": 12,
+            "hall": 3,
+            "hp": 4944,
+            "income": {
+              "gold": 2.1,
+              "stone": 16.196400000000004,
+              "wood": 13.397120000000003
+            },
+            "defense": [
+              2606,
+              2784,
+              1307
+            ],
+            "kills": 231,
+            "econ_ranks": {
+              "wood": [
+                5
+              ],
+              "stone": [
+                5
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              8294.43,
+              9946.38,
+              4680.37
+            ],
+            "guns": 15,
+            "bows": 4,
+            "walls": 16,
+            "hall": 8,
+            "hp": 7435,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 21.87280335974401,
+              "wood": 17.93824268779521
+            },
+            "defense": [
+              6971,
+              6672,
+              3477
+            ],
+            "kills": 872,
+            "econ_ranks": {
+              "wood": [
+                9
+              ],
+              "stone": [
+                9
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "staged-crew": [
+      {
+        "seed": 1,
+        "elapsed": 993.65,
+        "bosses": {
+          "1": 386.0,
+          "2": 687.0,
+          "3": null
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              2763.15,
+              3234.81,
+              1397.9
+            ],
+            "guns": 6,
+            "bows": 2,
+            "walls": 12,
+            "hall": 3,
+            "hp": 4944,
+            "income": {
+              "gold": 2.1,
+              "stone": 13.95,
+              "wood": 11.600000000000001
+            },
+            "defense": [
+              2386,
+              2584,
+              1187
+            ],
+            "kills": 237,
+            "econ_ranks": {
+              "wood": [
+                5
+              ],
+              "stone": [
+                5
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              6736.8,
+              8005.35,
+              4642.24
+            ],
+            "guns": 12,
+            "bows": 4,
+            "walls": 16,
+            "hall": 8,
+            "hp": 7435,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 17.456112000000005,
+              "wood": 15.493280768000005
+            },
+            "defense": [
+              5471,
+              5441,
+              2697
+            ],
+            "kills": 868,
+            "econ_ranks": {
+              "wood": [
+                9
+              ],
+              "stone": [
+                8
+              ]
+            }
+          }
+        }
+      },
+      {
+        "seed": 2,
+        "elapsed": 994.75,
+        "bosses": {
+          "1": 384.0,
+          "2": 752.0,
+          "3": null
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              2763.15,
+              3236.69,
+              1391.9
+            ],
+            "guns": 6,
+            "bows": 2,
+            "walls": 12,
+            "hall": 3,
+            "hp": 4944,
+            "income": {
+              "gold": 2.1,
+              "stone": 13.95,
+              "wood": 11.600000000000001
+            },
+            "defense": [
+              2386,
+              2584,
+              1187
+            ],
+            "kills": 239,
+            "econ_ranks": {
+              "wood": [
+                5
+              ],
+              "stone": [
+                5
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              6736.8,
+              8007.22,
+              4645.24
+            ],
+            "guns": 12,
+            "bows": 4,
+            "walls": 15,
+            "hall": 8,
+            "hp": 7435,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 17.456112000000005,
+              "wood": 15.493280768000005
+            },
+            "defense": [
+              5471,
+              5441,
+              2697
+            ],
+            "kills": 855,
+            "econ_ranks": {
+              "wood": [
+                9
+              ],
+              "stone": [
+                8
+              ]
+            }
+          }
+        }
+      },
+      {
+        "seed": 3,
+        "elapsed": 985.8000000000001,
+        "bosses": {
+          "1": 387.0,
+          "2": 691.0,
+          "3": null
+        },
+        "victory": false,
+        "checkpoints": {
+          "300": {
+            "earned": [
+              2763.15,
+              3234.81,
+              1386.9
+            ],
+            "guns": 6,
+            "bows": 2,
+            "walls": 12,
+            "hall": 3,
+            "hp": 4944,
+            "income": {
+              "gold": 2.1,
+              "stone": 13.95,
+              "wood": 11.600000000000001
+            },
+            "defense": [
+              2386,
+              2584,
+              1187
+            ],
+            "kills": 231,
+            "econ_ranks": {
+              "wood": [
+                5
+              ],
+              "stone": [
+                5
+              ]
+            }
+          },
+          "600": {
+            "earned": [
+              6734.62,
+              8005.35,
+              4646.24
+            ],
+            "guns": 12,
+            "bows": 4,
+            "walls": 16,
+            "hall": 8,
+            "hp": 7435,
+            "income": {
+              "gold": 2.6194240000000004,
+              "stone": 17.456112000000005,
+              "wood": 15.493280768000005
+            },
+            "defense": [
+              5496,
+              5496,
+              2707
+            ],
+            "kills": 869,
+            "econ_ranks": {
+              "wood": [
+                9
+              ],
+              "stone": [
+                8
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}
