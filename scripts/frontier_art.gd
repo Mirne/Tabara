@@ -3,8 +3,6 @@ class_name FrontierArt
 extends RefCounted
 const MINIBOSS=preload("res://assets/frontier/miniboss.png")
 const ELITES=preload("res://assets/frontier/elites.png")
-const WORKSHOP=preload("res://assets/art/workshop.png")
-const BUILDINGS=preload("res://assets/art/buildings.png")
 const PROPS=preload("res://assets/frontier/props.png")
 const UNITS=preload("res://assets/frontier/units.png")
 const ATTACKS=preload("res://assets/frontier/attacks.png")
@@ -22,26 +20,99 @@ const DIRT_SIZES=[Vector2(275,112),Vector2(195,84),Vector2(200,86),Vector2(120,5
 const PROP_RECTS=[Rect2(0,0,360,405),Rect2(365,65,345,337),Rect2(712,0,390,403),Rect2(1104,0,344,408),Rect2(0,410,359,337),Rect2(366,416,345,331),Rect2(716,419,364,331),Rect2(1088,420,360,330),Rect2(0,758,360,328),Rect2(365,758,345,328),Rect2(715,758,365,328),Rect2(1088,758,360,328)]
 const PROP_SIZES=[Vector2(145,220),Vector2(145,168),Vector2(220,215),Vector2(150,160),Vector2(150,108),Vector2(135,110),Vector2(125,100),Vector2(170,115),Vector2(90,65),Vector2(72,65),Vector2(120,105),Vector2(80,53)]
 const UNIT_SIZES=[Vector2(67,80),Vector2(67,80),Vector2(83.75,100),Vector2(118,114),Vector2(50,64),Vector2(84,100),Vector2(126,150)]
+const AGE_NAMES = ["wood", "stone", "iron", "steel", "keep", "castle", "citadel", "crown"]
+const BUILDING_NAMES = ["hall", "wood", "stone", "arrow", "wall", "cannon", "market", "workshop"]
+const RESEARCH_ICONS = ["arrow_damage", "arrow_range", "arrow_cadence", "cannon_damage", "cannon_splash", "cannon_cadence"]
+static var age_bounds: Dictionary = {}
+static var active_age: int = 0
+static var age_sheet: Texture2D
+static var age_regions: Array[Rect2] = []
+static var loaded_ages: Dictionary = {}
+static var research_sheet: Texture2D
+static var original_workshop: Texture2D
+static var original_buildings: Texture2D
 static var unit_regions:Array[Rect2]=[]
 static var style_cache:Dictionary={}
-static var wall_icon:Texture2D
 
 static func _static_init()->void:
- if ResourceLoader.exists("res://assets/world/wall-icon.png"):wall_icon=load("res://assets/world/wall-icon.png")
+ if FileAccess.file_exists("res://assets/ages/bounds.json"):
+  age_bounds = JSON.parse_string(FileAccess.get_file_as_string("res://assets/ages/bounds.json"))
  var cell:=Vector2(UNITS.get_size())/Vector2(4,5)
  for row in 5:
   for frame in 4: unit_regions.append(Rect2(Vector2(frame,row)*cell,cell))
 
-static func building_rect(index:int,base:Vector2,scale_value:float=1.0)->Rect2:
+static func load_age(age: int) -> void:
+ if active_age == age:
+  return
+ active_age = age
+ if loaded_ages.has(age):
+  age_sheet = loaded_ages[age].sheet
+  age_regions = loaded_ages[age].regions
+  return
+ var key: String = AGE_NAMES[age - 1]
+ var path := "res://assets/ages/%s.webp" % key
+ age_sheet = load(path) if ResourceLoader.exists(path) else null
+ age_regions = []
+ var bounds: Dictionary = age_bounds.get(key, {})
+ for kind in BUILDING_NAMES:
+  var region: Array = bounds.get(kind, [])
+  age_regions.append(Rect2(region[0], region[1], region[2], region[3]) if region.size() == 4 else Rect2())
+ # The Hall screen displays the current and next paintings in the same frame.
+ if loaded_ages.size() >= 2:
+  loaded_ages.erase(loaded_ages.keys()[0])
+ loaded_ages[age] = {"sheet": age_sheet, "regions": age_regions}
+
+static func building_rect(index:int,base:Vector2,scale_value:float=1.0,age:int=0)->Rect2:
  var size:Vector2=BUILD_SIZES[index]*scale_value
+ if age >= 1 and age <= AGE_NAMES.size():
+  load_age(age)
+  var source_size := age_regions[index].size
+  if age_sheet and source_size.x > 0 and source_size.y > 0:
+   size = source_size * minf(size.x / source_size.x, size.y / source_size.y)
  return Rect2(base-size*BUILD_PIVOTS[index],size)
 
 static func dirt_rect(index:int,base:Vector2)->Rect2:
  return Rect2(base-DIRT_SIZES[index]*0.5,DIRT_SIZES[index])
 
-static func building(canvas:CanvasItem,index:int,base:Vector2,scale_value:float=1.0,tint:Color=Color.WHITE)->void:
- if index==7: canvas.draw_texture_rect(WORKSHOP,building_rect(index,base,scale_value),false,tint)
- else: canvas.draw_texture_rect_region(BUILDINGS,building_rect(index,base,scale_value),BUILD_RECTS[index],tint)
+static func building(canvas:CanvasItem,index:int,base:Vector2,scale_value:float=1.0,tint:Color=Color.WHITE,age:int=0)->void:
+ if age >= 1 and age <= AGE_NAMES.size():
+  var rect := building_rect(index, base, scale_value, age)
+  if age_sheet and age_regions[index].has_area():
+   canvas.draw_texture_rect_region(age_sheet, rect, age_regions[index], tint)
+   return
+ if index == 7:
+  if original_workshop == null and ResourceLoader.exists("res://assets/art/workshop.png"):
+   original_workshop = load("res://assets/art/workshop.png")
+  if original_workshop:
+   canvas.draw_texture_rect(original_workshop, building_rect(index,base,scale_value), false, tint)
+ else:
+  if original_buildings == null and ResourceLoader.exists("res://assets/art/buildings.png"):
+   original_buildings = load("res://assets/art/buildings.png")
+  if original_buildings:
+   canvas.draw_texture_rect_region(original_buildings, building_rect(index,base,scale_value), BUILD_RECTS[index], tint)
+
+static func building_icon(canvas: CanvasItem, index: int, rect: Rect2, age: int, tint: Color = Color.WHITE) -> void:
+ load_age(clampi(age, 1, AGE_NAMES.size()))
+ var region := age_regions[index]
+ if age_sheet and region.has_area():
+  var size := region.size * minf(rect.size.x / region.size.x, rect.size.y / region.size.y)
+  canvas.draw_texture_rect_region(age_sheet, Rect2(rect.get_center() - size * 0.5, size), region, tint)
+  return
+ var ratio := minf(rect.size.x / BUILD_SIZES[index].x, rect.size.y / BUILD_SIZES[index].y)
+ building(canvas, index, rect.get_center() + (BUILD_PIVOTS[index] - Vector2(0.5,0.5)) * BUILD_SIZES[index] * ratio, ratio, tint)
+
+static func research_icon(canvas: CanvasItem, track: String, rect: Rect2, age: int, tint: Color = Color.WHITE) -> void:
+ var index := RESEARCH_ICONS.find(track)
+ if index == -1:
+  return
+ if research_sheet == null and ResourceLoader.exists("res://assets/ages/research.webp"):
+  research_sheet = load("res://assets/ages/research.webp")
+ if research_sheet:
+  var cell := Vector2(research_sheet.get_size()) / Vector2(RESEARCH_ICONS.size(), AGE_NAMES.size())
+  var row := clampi(age, 1, AGE_NAMES.size()) - 1
+  canvas.draw_texture_rect_region(research_sheet, rect, Rect2(Vector2(index, row) * cell, cell), tint)
+ else:
+  building_icon(canvas, 3 if index < 3 else 5, rect, age, tint)
 
 static func prop(canvas:CanvasItem,index:int,base:Vector2,scale_value:float=1.0,flip:bool=false,tint:Color=Color.WHITE)->void:
  var size:Vector2=PROP_SIZES[index]*scale_value

@@ -9,3 +9,9 @@ The simulation tests restore this legacy snapshot to verify old-save compatibili
 including free building positions. Keep the fixture even though its obsolete video
 recorder has been removed. Tests and fixtures are excluded from game exports; a
 new installed game begins with only the hall and starting supplies.
+
+`v012-paid-settlement.json` was exported by the released v0.12 simulation
+at commit `2e1264c` before the age rework. The fixture starts with a supply
+grant and pays for four woodcutters, four quarries, two tower types, their old
+shared upgrades, two producer upgrades, and Regeneration. This exercises actual
+format-eleven migration with several already occupied resource sites.

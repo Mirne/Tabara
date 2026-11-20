@@ -3,6 +3,7 @@ extends Control
 const Sim=preload("res://scripts/simulation.gd")
 const Map=preload("res://scripts/world_data.gd")
 const Art=preload("res://scripts/frontier_art.gd")
+const Ramparts=preload("res://scripts/wall_art.gd")
 const Body=preload("res://assets/fonts/Body.ttf")
 const Title=preload("res://assets/fonts/Title.ttf")
 const MENU=preload("res://assets/frontier/menu.png")
@@ -14,7 +15,8 @@ const RED=Color("df9573")
 const VIEW=Rect2(0,84,1104,726)
 const MINIMAP=Rect2(22,648,226,140)
 const ORDER=["wood","stone","arrow","wall","cannon","market","workshop"]
-const RESEARCH_ORDER=Sim.GLOBAL_UPGRADES
+const RESEARCH_ORDER=["arrow","wall","cannon","regeneration"]
+const RESOURCE_BUILDINGS=["wood","stone","market"]
 const SAVE_PATH="user://frontier-settlement.json"
 const SETTINGS_PATH="user://settings.json"
 var sim
@@ -23,6 +25,8 @@ var return_screen:="menu"
 var selected:=-1
 var research_kind:="arrow"
 var workshop_tab:="research"
+var hall_tab:="age"
+var research_track_id:="arrow_damage"
 var build_kind:=""
 var ability_mode:=false
 var ability_placed:=false
@@ -315,15 +319,16 @@ func click_world(point:Vector2)->void:
   if b==null: continue
   var size:Vector2=Art.BUILD_SIZES[Sim.DEFINITIONS[b.kind].art]
   if b.hp<=0: size=Vector2(140,100)
-  var rect:Rect2=Art.building_rect(Sim.DEFINITIONS[b.kind].art,b.pos).grow(8)
+  var rect:Rect2=Art.building_rect(Sim.DEFINITIONS[b.kind].art,b.pos,1.0,sim.settlement_age).grow(8)
   if b.kind=="wall":
    var foundation:Rect2=sim.building_foundation(b)
-   rect=foundation.merge(Rect2(foundation.position-Vector2(10,78),foundation.size)).grow(3)
+   rect=Ramparts.visual_bounds(foundation,sim.settlement_age).grow(3)
   if b.hp<=0: rect=Rect2(b.pos-Vector2(size.x/2,size.y),size+Vector2(0,20))
   if rect.has_point(at): candidates.append(i)
  if not candidates.is_empty():
   candidates.sort_custom(func(a,b):return sim.buildings[a].pos.y>sim.buildings[b].pos.y)
   selected=candidates[0]
+  hall_tab="age"
   workshop_tab="research"
   return
  selected=-1
@@ -356,6 +361,7 @@ func confirm_placement()->void:
   notify(error)
   return
  selected=-1
+ if build_kind in RESOURCE_BUILDINGS: build_kind=""
  placement_ready=false
  wall_points.clear()
  play_sound("build")
@@ -364,12 +370,33 @@ func confirm_placement()->void:
 func act(action:String)->void:
  if action.begins_with("research:"):
   var kind:=action.trim_prefix("research:")
-  if kind in RESEARCH_ORDER or kind=="regeneration": research_kind=kind
+  if kind in RESEARCH_ORDER:
+   research_kind=kind
+   if kind in ["arrow","cannon"] and Sim.TRACKS[research_track_id].kind!=kind:
+    research_track_id=kind+"_damage"
+  return
+ if action.begins_with("track:"):
+  var id:=action.trim_prefix("track:")
+  if Sim.TRACKS.has(id) and Sim.TRACKS[id].kind==research_kind:
+   research_track_id=id
+  return
+ if action.begins_with("select:"):
+  if screen!="mission" or sim==null: return
+  var kind:=action.trim_prefix("select:")
+  var index:int=sim.singleton_index(kind)
+  if index>=0:
+   act("construction")
+   selected=index
+   camera_center=sim.buildings[index].pos
+   apply_camera()
   return
  if action.begins_with("build:"):
   if screen!="mission" or sim==null: return
   var kind:String=action.trim_prefix("build:")
   if kind not in ORDER: return
+  if kind in RESOURCE_BUILDINGS and sim.singleton_index(kind)>=0:
+   act("select:"+kind)
+   return
   ability_mode=false
   ability_placed=false
   build_kind="" if build_kind==kind else kind
@@ -433,6 +460,7 @@ func act(action:String)->void:
    build_kind=""
    placement_ready=false
    wall_points.clear()
+   wall_drawing=false
   "upgrade_local":
    var error:String=sim.upgrade_at(selected)
    if error!="": notify(error)
@@ -440,7 +468,9 @@ func act(action:String)->void:
     consume_events()
     play_sound("build")
   "workshop","upgrade":
-   if selected>=0 and selected<sim.buildings.size() and sim.buildings[selected]!=null and sim.buildings[selected].kind in RESEARCH_ORDER: research_kind=sim.buildings[selected].kind
+   if selected>=0 and selected<sim.buildings.size() and sim.buildings[selected]!=null and sim.buildings[selected].kind in RESEARCH_ORDER:
+    act("research:"+sim.buildings[selected].kind)
+   act("construction")
    var found:=-1
    for i in sim.buildings.size():
     if sim.buildings[i]!=null and sim.buildings[i].kind=="workshop": found=i
@@ -465,7 +495,7 @@ func act(action:String)->void:
     consume_events()
     play_sound("build")
   "start_research":
-   var error:String=sim.start_research(research_kind)
+   var error:String=sim.research_track(research_track_id) if research_kind in ["arrow","cannon"] else sim.start_research(research_kind)
    if error!="": notify(error)
    else:
     consume_events()
@@ -489,7 +519,22 @@ func act(action:String)->void:
    placement_ready=false
   "endless":
    screen="mission"
+  "hall_age": hall_tab="age"
+  "hall_building": hall_tab="building"
+  "advance_age":
+   if screen!="mission" or selected!=0: return
+   var error:String=sim.advance_age()
+   if error!="": notify(error)
+   else:
+    # The next age has a different quote. Accept its tap once that quote is drawn.
+    buttons.clear()
+    queue_redraw()
+    consume_events()
+    play_sound("build")
+    save_game()
   "hall":
+   act("construction")
+   hall_tab="age"
    camera_center=Map.HALL
    selected=0
    apply_camera()
@@ -653,8 +698,13 @@ func cost_row(cost:Array,pos:Vector2,size_px:int=13)->void:
  for i in 3:
   if cost[i]<=0: continue
   var color:=IVORY if sim==null or sim.resources[Sim.RESOURCE_NAMES[i]]>=cost[i] else RED
-  Art.icon(self,i,Rect2(pos+Vector2(i*81,-17),Vector2(20,20)))
-  label(pretty(cost[i]),pos+Vector2(i*81+23,0),size_px,color)
+  var slot:=pos+Vector2(i*101,0)
+  var amount:=str(int(cost[i]))
+  var font_size:=size_px
+  while font_size>11 and Body.get_string_size(amount,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x>76:
+   font_size-=1
+  Art.icon(self,i,Rect2(slot-Vector2(0,17),Vector2(20,20)))
+  label(amount,slot+Vector2(23,0),font_size,color)
 
 func _draw()->void:
  buttons.clear()
@@ -745,12 +795,15 @@ func draw_construction()->void:
   var rect:=Rect2(1120+(i%2)*158,145+(i/2)*158,148,146)
   if wide: rect.size.x=306
   Art.skin(self,rect,Color(0.82,0.88,0.82),9)
-  if kind=="wall" and Art.wall_icon!=null:
-   draw_texture_rect(Art.wall_icon,Rect2(rect.position+Vector2(38,8),Vector2(74,60)),false)
-  else:
-   var scale_value:float=0.29 if kind not in ["arrow","cannon"] else 0.25
-   Art.building(self,d.art,Vector2(rect.get_center().x,rect.position.y+75),scale_value)
+  Art.building_icon(self,d.art,Rect2(rect.get_center().x-45,rect.position.y+5,90,69),sim.settlement_age)
   centered(d.name,Rect2(rect.position.x,rect.position.y+78,rect.size.x,25),17,IVORY)
+  var producer:int=sim.singleton_index(kind) if kind in RESOURCE_BUILDINGS else -1
+  if producer>=0:
+   var b:Dictionary=sim.buildings[producer]
+   var rate:float=sim.stat(b,"income")*sim.production_bonus(b) if b.age>=sim.build_time(kind) else 0.0
+   centered("Lv %d · %.1f/sec"%[b.level,rate],Rect2(rect.position+Vector2(2,105),Vector2(rect.size.x-4,31)),14,GREEN)
+   buttons.append({"rect":rect,"action":"select:"+kind,"enabled":true,"caption":d.name})
+   continue
   var left:float=rect.get_center().x-66
   for r in 3:
    Art.icon(self,r,Rect2(left+r*46,rect.position.y+115,16,16))
@@ -786,28 +839,73 @@ func draw_inspector()->void:
  if b.kind=="workshop" and workshop_tab=="research":
   draw_research_panel(b)
   return
+ if b.kind=="hall" and hall_tab=="age":
+  draw_age_panel()
+  return
  label(d.name,Vector2(1120,133),25,IVORY,true)
- var offset:=0
- if b.kind=="workshop":
-  draw_workshop_tabs()
-  offset=76
- label("LEVEL %d / 100"%b.level,Vector2(1120,166+offset),16,GOLD)
- label("%s / %s HP"%[pretty(b.hp),pretty(sim.stat(b,"hp"))],Vector2(1120,211+offset),20,IVORY)
- draw_rect(Rect2(1120,229+offset,306,10),Color("252a20"))
- draw_rect(Rect2(1120,229+offset,306*clampf(b.hp/sim.stat(b,"hp"),0,1),10),GREEN)
- var rows:Array=current_stat_rows(b)
- for i in rows.size(): label(rows[i],Vector2(1120,272+offset+i*25),16,IVORY)
- if b.age<sim.build_time(b.kind): label("Construction · %.1fs"%(sim.build_time(b.kind)-b.age),Vector2(1120,369),16,GOLD)
- var effects:Array=upgrade_effect_rows(b)
- for i in effects.size(): label(effects[i],Vector2(1120,423+i*24),15,GOLD)
- cost_row(sim.upgrade_cost(b),Vector2(1122,538),15)
+ if b.kind=="workshop": draw_workshop_tabs()
+ elif b.kind=="hall": draw_hall_tabs()
+ var tab_offset:=65 if b.kind in ["workshop","hall"] else 0
  var local:bool=b.kind in Sim.LOCAL_UPGRADES
- var caption:="Upgrade" if local else "Workshop"
- if b.level>=100: caption="Maximum level"
- var available:bool=b.level<100 and b.age>=sim.build_time(b.kind)
- if local:available=available and sim.can_afford(sim.upgrade_cost(b))
+ if b.kind in ["arrow","cannon"]:
+  label(Sim.AGE_NAMES[sim.settlement_age-1]+" age",Vector2(1120,166),16,GOLD)
+ else:
+  label("Level %d / 100"%b.level,Vector2(1120,166+tab_offset),16,GOLD)
+ label("%s / %s HP"%[pretty(b.hp),pretty(sim.stat(b,"hp"))],Vector2(1120,199+tab_offset),20,IVORY)
+ draw_rect(Rect2(1120,211+tab_offset,306,8),Color("252a20"))
+ draw_rect(Rect2(1120,211+tab_offset,306*clampf(b.hp/sim.stat(b,"hp"),0,1),8),GREEN)
+ var rows:Array=current_stat_rows(b)
+ for i in rows.size(): label(rows[i],Vector2(1120,249+tab_offset+i*23),16,IVORY)
+ if b.age<sim.build_time(b.kind): label("Construction · %.1fs"%(sim.build_time(b.kind)-b.age),Vector2(1120,379),16,GOLD)
+ if local and b.level<Sim.MAX_LEVEL:
+  var effects:Array=upgrade_effect_rows(b)
+  for i in effects.size(): label(effects[i],Vector2(1120,408+i*24),15,GOLD)
+  cost_row(sim.upgrade_cost(b),Vector2(1122,538),15)
+ var caption:="Workshop"
+ var available:=true
+ if local:
+  caption="Upgrade" if b.level<Sim.MAX_LEVEL else "Maximum level"
+  available=b.level<Sim.MAX_LEVEL and b.age>=sim.build_time(b.kind) and sim.can_afford(sim.upgrade_cost(b))
  button(Rect2(1120,554,306,60),caption,"upgrade_local" if local else "workshop",true,available,20)
- button(Rect2(1120,643,306,58),"Dismantle","clear",false,selected>0,19)
+ if selected>0: button(Rect2(1120,643,306,58),"Dismantle","clear",false,true,19)
+ button(Rect2(1120,734,306,58),"Build structures","construction",false,true,20)
+
+func draw_hall_tabs()->void:
+ button(Rect2(1120,149,148,48),"Age","hall_age",hall_tab=="age",true,17)
+ button(Rect2(1278,149,148,48),"Building","hall_building",hall_tab=="building",true,17)
+
+func draw_age_panel()->void:
+ var age:int=sim.settlement_age
+ var final_age:=age==Sim.AGE_NAMES.size()
+ label("Main hall",Vector2(1120,133),25,IVORY,true)
+ draw_hall_tabs()
+ if final_age:
+  Art.building_icon(self,0,Rect2(1140,213,268,210),age)
+  centered(Sim.AGE_NAMES[age-1]+" age",Rect2(1120,428,306,52),30,GOLD,true)
+  centered("Research rank limit  %d"%sim.track_limit(),Rect2(1120,494,306,34),18,IVORY)
+ else:
+  var next_age:=age+1
+  # Share the baseline so the architectural change reads at thumbnail size.
+  Art.building_icon(self,0,Rect2(1124,277,98,84),age)
+  Art.building_icon(self,0,Rect2(1254,216,166,145),next_age)
+  centered("→",Rect2(1220,299,32,42),21,GOLD)
+  centered(Sim.AGE_NAMES[age-1],Rect2(1120,369,108,31),18,MUTED)
+  centered(Sim.AGE_NAMES[next_age-1],Rect2(1252,367,172,33),21,GOLD,true)
+  label("Research rank limit",Vector2(1124,449),16,MUTED)
+  label("%d → %d"%[sim.track_limit(age),sim.track_limit(next_age)],Vector2(1336,449),19,IVORY)
+  var unlocks:Dictionary={}
+  for id in Sim.TRACKS:
+   var track:Dictionary=Sim.TRACKS[id]
+   if track.unlock_age==next_age: unlocks[track.kind]=track.name
+  for i in 2:
+   var kind:String=["arrow","cannon"][i]
+   var x:float=1120+158*i
+   Art.building_icon(self,Sim.DEFINITIONS[kind].art,Rect2(x+32,467,84,78),next_age)
+   var caption:String=Sim.DEFINITIONS[kind].name
+   if unlocks.has(kind): caption="Unlocks "+unlocks[kind]
+   centered(caption,Rect2(x,550,148,32),14,IVORY)
+  cost_row(sim.age_cost(),Vector2(1122,619),15)
+  button(Rect2(1120,646,306,64),"Advance to "+Sim.AGE_NAMES[next_age-1],"advance_age",true,sim.age_error()=="",20)
  button(Rect2(1120,734,306,58),"Build structures","construction",false,true,20)
 
 func current_stat_rows(b:Dictionary)->Array:
@@ -815,8 +913,9 @@ func current_stat_rows(b:Dictionary)->Array:
  var d:Dictionary=Sim.DEFINITIONS[b.kind]
  if d.has("income"): rows.append("%.2f %s / sec"%[sim.stat(b,"income")*sim.production_bonus(b),d.resource])
  if d.has("damage"):
-  rows.append("%s damage · %.2fs"%[pretty(sim.stat(b,"damage")),sim.stat(b,"period")])
-  rows.append("Range %d"%sim.stat(b,"range"))
+  rows.append("%.1f damage · %.2fs"%[sim.stat(b,"damage"),sim.stat(b,"period")])
+  rows.append("Range %.1f"%sim.stat(b,"range"))
+  if d.has("splash"): rows.append("Blast radius %.1f"%sim.stat(b,"splash"))
  if sim.regeneration_level>0 and b.age>=sim.build_time(b.kind): rows.append("+%.1f HP / sec"%(sim.stat(b,"hp")*sim.regeneration_rate()))
  return rows
 
@@ -828,44 +927,89 @@ func upgrade_effect_rows(b:Dictionary)->Array:
  if d.has("income"):
   rows.append("%s/sec  %.2f → %.2f"%[d.resource.capitalize(),sim.stat(b,"income")*sim.production_bonus(b),sim.stat(next,"income")*sim.production_bonus(next)])
  if d.has("damage"):
-  rows.append("Damage  %s → %s"%[pretty(sim.stat(b,"damage")),pretty(sim.stat(next,"damage"))])
-  rows.append("Range  %d → %d"%[sim.stat(b,"range"),sim.stat(next,"range")])
-  rows.append("Attack/sec  %.2f → %.2f"%[1.0/sim.stat(b,"period"),1.0/sim.stat(next,"period")])
+  rows.append("Damage  %.1f → %.1f"%[sim.stat(b,"damage"),sim.stat(next,"damage")])
+  rows.append("Range  %.1f → %.1f"%[sim.stat(b,"range"),sim.stat(next,"range")])
+  rows.append("Shot interval  %.3fs → %.3fs"%[sim.stat(b,"period"),sim.stat(next,"period")])
  return rows
 
 func draw_research_panel(_b:Dictionary)->void:
- label("WORKSHOP",Vector2(1120,128),25,IVORY,true)
+ label("Workshop",Vector2(1120,133),25,IVORY,true)
+ centered(Sim.AGE_NAMES[sim.settlement_age-1]+" age",Rect2(1280,102,145,40),16,GOLD)
  draw_workshop_tabs()
- var subjects:Array=Array(RESEARCH_ORDER)+["regeneration"]
- var stride:=79 if subjects.size()<=6 else 63
- for i in subjects.size():
-  var kind:String=subjects[i]
-  var rect:=Rect2(1120+(i%2)*158,216+(i/2)*stride,148,stride-9)
-  var active:bool=research_kind==kind
-  Art.skin(self,rect,Color(1.25,1.16,0.82) if active else Color(0.79,0.85,0.79),8)
-  var title:String="Regeneration" if kind=="regeneration" else Sim.DEFINITIONS[kind].name
-  var level:int=sim.regeneration_level if kind=="regeneration" else sim.research_levels[kind]
-  centered(title,Rect2(rect.position+Vector2(0,6),Vector2(148,25)),16,IVORY)
-  centered("Level %d"%level,Rect2(rect.position+Vector2(0,30),Vector2(148,20)),14,GOLD)
-  buttons.append({"rect":rect,"action":"research:"+kind,"enabled":true})
- if research_kind not in subjects: research_kind="arrow"
- var regen:bool=research_kind=="regeneration"
- var current:int=sim.regeneration_level if regen else sim.research_levels[research_kind]
- var heading:float=216+ceili(subjects.size()/2.0)*stride+26
- label("Level %d → %d"%[current,mini(current+1,100)],Vector2(1120,heading),18,IVORY)
- var rows:Array=[]
- if regen:
-  rows.append("HP/sec  %.2f%% → %.2f%%"%[sim.regeneration_rate()*100,sim.regeneration_rate(mini(100,current+1))*100])
+ for i in RESEARCH_ORDER.size():
+  var subject:String=RESEARCH_ORDER[i]
+  var rect:=Rect2(1120+(i%2)*158,213+(i/2)*73,148,65)
+  var active:bool=research_kind==subject
+  var title:String="Regeneration" if subject=="regeneration" else Sim.DEFINITIONS[subject].name
+  Art.skin(self,rect,Color(1.25,1.14,0.9) if active else Color(0.81,0.86,0.8),8)
+  var icon_rect:=Rect2(rect.position+Vector2(7,10),Vector2(39,43))
+  if subject=="regeneration": Art.icon(self,3,icon_rect)
+  else: Art.building_icon(self,Sim.DEFINITIONS[subject].art,icon_rect,sim.settlement_age)
+  var short_title:String="Cannon" if subject=="cannon" else ("Archery" if subject=="arrow" else title)
+  centered(short_title,Rect2(rect.position+Vector2(47,1),Vector2(96,62)),15,GOLD if active else IVORY)
+  buttons.append({"rect":rect,"action":"research:"+subject,"enabled":true,"caption":title})
+ if research_kind in ["arrow","cannon"]:
+  draw_tower_projects()
  else:
-  var example:Dictionary={"kind":research_kind,"level":current,"pos":Vector2.ZERO}
-  rows=upgrade_effect_rows(example)
- for i in rows.size(): label(rows[i],Vector2(1120,heading+27+i*23),15,GOLD)
- var cost:Array=sim.regeneration_cost() if regen else sim.research_cost(research_kind)
- cost_row(cost,Vector2(1122,619),15)
- var caption:="Upgrade" if current<100 else "Maximum level"
- var available:bool=sim.workshop_index()>=0 and current<100 and sim.can_afford(cost)
- button(Rect2(1120,646,306,64),caption,"upgrade_regeneration" if regen else "start_research",true,available,20)
+  draw_settlement_research()
  button(Rect2(1120,734,306,58),"Build structures","construction",false,true,20)
+
+func draw_tower_projects()->void:
+ var age:int=sim.settlement_age
+ Art.skin(self,Rect2(1120,357,306,195),Color(0.73,0.80,0.74),8)
+ var row_y:=360
+ for id in Sim.TRACKS:
+  var track:Dictionary=Sim.TRACKS[id]
+  if track.kind!=research_kind: continue
+  var rect:=Rect2(1120,row_y,306,60)
+  var active:bool=id==research_track_id
+  var locked:bool=age<track.unlock_age
+  if active: Art.skin(self,rect.grow(-2),Color(1.29,1.17,0.90),8)
+  Art.research_icon(self,id,Rect2(1127,row_y+4,52,52),age)
+  label(track.name,Vector2(1186,row_y+24),17,IVORY)
+  var rank:String="Rank %d"%sim.track_level(id)
+  if locked: rank=Sim.AGE_NAMES[track.unlock_age-1]+" age"
+  label(rank,Vector2(1186,row_y+47),15,GOLD if active else MUTED)
+  buttons.append({"rect":rect,"action":"track:"+id,"enabled":true,"caption":track.name})
+  row_y+=65
+ var project:Dictionary=Sim.TRACKS[research_track_id]
+ var level:int=sim.track_level(research_track_id)
+ var stat_labels:={"damage":"Damage","range":"Range","period":"Shot interval","splash":"Blast radius"}
+ var stat_label:String=stat_labels[project.stat]
+ var pattern:="%.3f s" if project.stat=="period" else "%.1f"
+ var current:=pattern%sim.track_value(research_track_id)
+ var can_grow:bool=level<Sim.MAX_LEVEL
+ var comparison:=current+" → "+(pattern%sim.track_value(research_track_id,true)) if can_grow else current
+ label(stat_label,Vector2(1122,581),16,MUTED)
+ label(comparison,Vector2(1220,581),17,IVORY)
+ if can_grow: cost_row(sim.track_cost(research_track_id),Vector2(1122,623),15)
+ var caption:="Upgrade"
+ if age<project.unlock_age: caption=Sim.AGE_NAMES[project.unlock_age-1]+" age required"
+ elif not can_grow: caption="Maximum rank"
+ elif level>=sim.track_limit() and age<Sim.AGE_NAMES.size():
+  caption=sim.track_error(research_track_id).trim_suffix(".")
+ button(Rect2(1120,646,306,64),caption,"start_research",true,sim.track_error(research_track_id)=="",20)
+
+func draw_settlement_research()->void:
+ var regen:bool=research_kind=="regeneration"
+ var level:int=sim.regeneration_level if regen else sim.research_levels.wall
+ var cap:int=Sim.MAX_LEVEL
+ var next_level:=mini(level+1,cap)
+ if regen:
+  Art.icon(self,3,Rect2(1124,371,56,56))
+ else:
+  Art.building_icon(self,Sim.DEFINITIONS.wall.art,Rect2(1124,371,56,56),sim.settlement_age)
+ label("Level %d / %d"%[level,cap],Vector2(1193,410),20,IVORY)
+ var value:String
+ if regen:
+  value="HP/sec   %.2f%% → %.2f%%"%[sim.regeneration_rate(level)*100,sim.regeneration_rate(next_level)*100]
+ else:
+  value="Wall HP   %s → %s"%[pretty(sim.stat({"kind":"wall","level":level},"hp")),pretty(sim.stat({"kind":"wall","level":next_level},"hp"))]
+ label(value,Vector2(1122,477),18,GOLD)
+ var cost:Array=sim.regeneration_cost() if regen else sim.research_cost("wall")
+ if level<cap: cost_row(cost,Vector2(1122,619),15)
+ var available:bool=sim.workshop_index()>=0 and level<cap and sim.can_afford(cost)
+ button(Rect2(1120,646,306,64),"Upgrade" if level<cap else "Maximum level","upgrade_regeneration" if regen else "start_research",true,available,20)
 
 func draw_workshop_tabs()->void:
  button(Rect2(1120,149,148,48),"Upgrades","workshop_research",workshop_tab=="research",true,17)
@@ -874,6 +1018,7 @@ func draw_workshop_tabs()->void:
 func draw_minimap()->void:
  Art.skin(self,Rect2(10,635,251,165),Color(0.9,0.93,0.86),10)
  var map_image:Texture2D=world.legacy_overview if sim.terrain_revision==3 else (world.legacy_stronghold_overview if sim.terrain_revision==4 else world.overview)
+ if sim.terrain_revision>=Map.WORKYARD_REVISION: map_image=world.workyard_overview
  if sim.terrain_revision>=3 and map_image!=null: draw_texture_rect(map_image,MINIMAP,false,Color(0.9,0.94,0.88))
  elif world.ground_view!=null: draw_texture_rect(world.ground_view.get_texture(),MINIMAP,false,Color(0.79,0.88,0.75))
  for b in sim.buildings:
@@ -895,7 +1040,7 @@ func overlay(rect:Rect2,tag:String,title:String,description:String="")->void:
 
 func draw_briefing()->void:
  overlay(Rect2(355,105,730,600),"MISSION 01  /  THE HEARTHVALE BASIN","Carve a foothold in the valley.","Defend the Main hall and defeat the final Warlord that arrives at 15:00. Victory unlocks endless survival.")
- var rows:=[["01","Secure limited supplies","Two timber sites and two quarries are inside the base. Two more of each lie outside. Green tiles mark valid sites when placing a producer."],["02","Build a defensive line","Drag joined walls and cover them with arrow towers and cannons. Great hordes bring stronger elite raiders. Enemies retaliate against firing defenses."],["03","Keep the settlement standing","Destroyed buildings disappear. Defenses and Regeneration upgrade at the Workshop. Other buildings upgrade individually."]]
+ var rows:=[["01","Secure limited supplies","Build one woodcutter at the timber clearing and one quarry at the rock face. Upgrade each to increase its output."],["02","Build a defensive line","Drag joined walls and cover them with arrow towers and cannons. Great hordes bring stronger elite raiders. Enemies retaliate against firing defenses."],["03","Advance the Hall","Each age raises the Workshop research limit. Choose arrow or cannon projects to strengthen your defenses."]]
  for i in 3:
   var y:float=343+i*88
   label(rows[i][0],Vector2(395,y),27,GOLD,true)
@@ -939,7 +1084,7 @@ func draw_settings()->void:
 
 func draw_guide()->void:
  overlay(Rect2(235,65,970,680),"FIELD MANUAL","Build a settlement worth defending.")
- var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Woodcutters and stonemasons require matching deposits; one producer per deposit."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a marked timber site or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","Upgrade walls, towers and Regeneration at the Workshop. Upgrade other buildings individually."],["Secure the foothold","Defeat the final Warlord arriving at 15:00 to win, then continue endlessly. Stronger minibosses enter every five minutes."]]
+ var entries:=[["Explore the frontier","Drag the landscape to pan. While drawing walls, use two fingers to pan. Pinch to zoom. Tap the minimap to travel; Hall returns to your main building."],["Place buildings freely","Choose a right-hand card, tap a grid location to preview, then confirm Build. Place the woodcutter and stonemason on their marked sites."],["Gather and produce","Resource sites are scenery. Build a woodcutter on a marked timber site or a stonemason on a quarry for automatic supplies. Defeated raiders award gold."],["Hold the western approach","Raiders take a direct land route to the main hall and destroy buildings blocking them. Drag connected wall lines to defend the approach."],["Upgrade, repair or clear","Upgrade walls, towers and Regeneration at the Workshop. Upgrade other buildings individually."],["Secure the foothold","Defeat the final Warlord arriving at 15:00 to win, then continue endlessly. Stronger minibosses enter every five minutes."]]
  for i in entries.size():
   var p:=Vector2(274+(i%2)*462,245+(i/2)*141)
   label("0%d  %s"%[i+1,entries[i][0]],p,19,IVORY,true)

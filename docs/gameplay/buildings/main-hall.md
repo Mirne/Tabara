@@ -8,3 +8,9 @@ Local upgrades on its own panel. Preserve purchased levels on migration.
 
 Level-one upgrade price: 65 wood / 45 stone / 25 gold. Later upgrade
 prices scale by 1.15^(current level - 1), rounded up per resource.
+
+The Main hall advances the settlement through eight pre-modern ages. Age
+advancement is a separate purchase on the Hall. The current age determines how
+buildings look and which tower improvements the Workshop can research. Starting
+a new settlement begins in Wood. Existing Hall upgrade levels, earned damage
+and HP carry forward when loading an earlier settlement.

@@ -6,6 +6,7 @@ const MOUNTAINS=preload("res://assets/frontier/mountains.png")
 const Ramparts=preload("res://scripts/wall_art.gd")
 const AUTHORED_FLOOR=preload("res://assets/world/ground.png")
 const RESOURCE_ATLASES=[preload("res://assets/woodland/sites.png")]
+const WORKYARD_ART = preload("res://assets/world/workyards.webp")
 const LANDMARKS=preload("res://assets/world/landmarks.png")
 const CLIFF_ART=preload("res://assets/world/cliffs.png")
 const UNIQUE_RIDGES={"north_crown":preload("res://assets/world/north_crown.png"),"north_gate":preload("res://assets/world/north_gate.png"),"south_gate":preload("res://assets/world/south_gate.png"),"south_buttress":preload("res://assets/world/south_buttress.png")}
@@ -37,12 +38,16 @@ var legacy_overview:Texture2D
 var legacy_stronghold_overview:Texture2D
 var environment_layer:Node2D
 var woodland_surface:ImageTexture
+var workyard_surface:ImageTexture
+var workyard_overview:Texture2D
 
 func _ready()->void:
  scenery=Map.scenery()
  mountain_sprites=Map.mountain_sprites()
  legacy_ridges=Map.legacy_mountain_sprites()
  landmarks=Map.authored_landmarks()
+ if ResourceLoader.exists("res://assets/world/workyards-overview.webp"):
+  workyard_overview=load("res://assets/world/workyards-overview.webp")
  if ResourceLoader.exists("res://assets/world/overview.png"): overview=load("res://assets/world/overview.png")
  if ResourceLoader.exists("res://assets/world/overview-v08.png"): legacy_stronghold_overview=load("res://assets/world/overview-v08.png")
  if ResourceLoader.exists("res://assets/world/overview-v07.png"): legacy_overview=load("res://assets/world/overview-v07.png")
@@ -141,7 +146,7 @@ func _draw()->void:
   if visible_world.has_point(prop.pos): entities.append({"y":prop.pos.y,"prop":prop})
  for i in sim.resource_nodes.size():
   var d:Dictionary=sim.resource_nodes[i]
-  if sim.terrain_revision>=3 and d.kind=="wood": continue
+  if sim.terrain_revision >= 3 and sim.terrain_revision < Map.WORKYARD_REVISION and d.kind == "wood": continue
   # An occupied deposit is drawn with its producer, below the building sprite.
   if sim.deposit_owner(i)>=0: continue
   if visible_world.has_point(d.pos): entities.append({"y":d.pos.y,"deposit":i})
@@ -156,6 +161,7 @@ func _draw()->void:
  drawn_entities=entities.size()
  for b in sim.buildings:
   if b==null or not visible_world.has_point(b.pos): continue
+  if sim.terrain_revision >= Map.WORKYARD_REVISION and b.kind in ["wood", "stone"]: continue
   var dirt:Rect2=sim.building_foundation(b).grow(8) if b.kind=="wall" else Art.dirt_rect(sim.DEFINITIONS[b.kind].art,b.pos)
   draw_texture_rect(preload("res://assets/frontier/earth.png"),dirt,false,Color(0.83,0.85,0.75,0.85))
  # Keep ground shadows together so a horde does not switch textures per soldier.
@@ -190,7 +196,7 @@ func _draw()->void:
   elif entity.has("building"):
    var b:Dictionary=sim.buildings[entity.building]
    var deposit:int=sim.producer_deposit(b)
-   if deposit>=0 and (b.kind=="stone" or sim.terrain_revision<3): draw_deposit(deposit)
+   if deposit >= 0 and (b.kind == "stone" or sim.terrain_revision < 3 or sim.terrain_revision >= Map.WORKYARD_REVISION): draw_deposit(deposit)
    draw_building(entity.building)
   elif entity.has("deposit"): draw_deposit(entity.deposit)
   else: draw_enemy(entity.enemy,entity.pos)
@@ -198,7 +204,7 @@ func _draw()->void:
  draw_arrow_barrages()
  preview_range=0.0
  if game.build_kind!="" and game.placement_ready and sim.DEFINITIONS[game.build_kind].has("range"):
-  preview_range=float(sim.DEFINITIONS[game.build_kind].range)
+  preview_range=sim.stat(sim.make_building(game.build_kind,game.ghost),"range")
   draw_circle(game.ghost,preview_range,Color(0.85,0.73,0.35,0.07))
   draw_arc(game.ghost,preview_range,0,TAU,128,Color(0.96,0.82,0.4,0.85),2/game.zoom,true)
   draw_string(Body,game.ghost+Vector2(14,preview_range-12),"Range %d"%preview_range,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("f3e6c2"))
@@ -217,7 +223,7 @@ func _draw()->void:
   var foundation:Rect2=sim.foundation_rect(game.ghost,game.build_kind)
   draw_rect(foundation,Color(tint,0.17))
   draw_rect(foundation,tint,false,2/game.zoom)
-  Art.building(self,sim.DEFINITIONS[game.build_kind].art,game.ghost,1,tint)
+  Art.building(self,sim.DEFINITIONS[game.build_kind].art,game.ghost,1,tint,sim.settlement_age)
  last_draw_us=Time.get_ticks_usec()-draw_started
 
 func scenery_visible(prop:Dictionary)->bool:
@@ -277,25 +283,38 @@ func draw_building(index:int)->void:
   var tint:=Color(0.94,0.96,0.89)
   if b.age<sim.build_time(b.kind): tint=Color(0.75,0.7,0.56,0.55+b.age/sim.build_time(b.kind)*0.45)
   if b.kind=="wall": draw_joined_wall(index,tint)
-  else: Art.building(self,sim.DEFINITIONS[b.kind].art,p,1,tint)
+  else: Art.building(self,sim.DEFINITIONS[b.kind].art,p,1,tint,sim.settlement_age)
   if not game.reduced_motion:
-   if b.kind in ["hall","wood","stone","market","workshop"]: smoke(p-Vector2(15,Art.BUILD_SIZES[sim.DEFINITIONS[b.kind].art].y*0.75),0.5)
-   if b.kind in ["wood","stone","market"]:
+   if b.kind in ["hall","wood","stone","market","workshop"]:
+    var painted: Rect2 = Art.building_rect(sim.DEFINITIONS[b.kind].art,p,1,sim.settlement_age)
+    smoke(painted.position + painted.size * Vector2(0.44,0.22),0.5)
+   if b.kind in ["wood","stone","market"] and b.age >= sim.build_time(b.kind):
     var phase:float=game.animation_clock*0.55+index
     var worker:Vector2=p+Vector2(sin(phase)*65,24+cos(phase)*22)
-    Art.unit(self,4,int(game.animation_clock*5+index)%4,worker,0.8,cos(phase)<0)
+    var facing_left := cos(phase) < 0
+    if sim.terrain_revision >= Map.WORKYARD_REVISION and b.kind in ["wood","stone"]:
+     var end := Vector2(78, 0) if b.kind == "wood" else Vector2(-82, -3)
+     var start := Vector2(-12, 32) if b.kind == "wood" else Vector2(22, 28)
+     worker = p + start.lerp(end, 0.5 + 0.5 * sin(phase))
+     facing_left = (end.x - start.x) * cos(phase) < 0
+    Art.unit(self,4,int(game.animation_clock*5+index)%4,worker,0.8,facing_left)
   if b.hp<sim.stat(b,"hp")*0.4 and not game.reduced_motion: smoke(p-Vector2(0,55),1.2)
  var selected:bool=index==game.selected
  if selected:
   ground_ring(p,radius+7,Color("d9bc71"))
  if selected or b.hp<sim.stat(b,"hp")*0.95:
   var bar_width:float=sim.building_foundation(b).size.x-8 if b.kind=="wall" else 84.0
-  var top:Vector2=Vector2(p.x-42,Art.building_rect(sim.DEFINITIONS[b.kind].art,p).position.y-13)
-  if b.kind=="wall": top=p-Vector2(bar_width*0.5,106)
+  var top:Vector2=Vector2(p.x-42,Art.building_rect(sim.DEFINITIONS[b.kind].art,p,1,sim.settlement_age).position.y-13)
+  if b.kind=="wall":
+   top=Vector2(p.x-bar_width*0.5,Ramparts.visual_bounds(sim.building_foundation(b),sim.settlement_age).position.y-10)
   if b.hp<=0: top=p-Vector2(42,105)
   draw_rect(Rect2(top,Vector2(bar_width,6)),Color("242b20"))
   draw_rect(Rect2(top,Vector2(bar_width*clampf(b.hp/sim.stat(b,"hp"),0,1),6)),Color("9bac68") if b.hp>0 else Color("a45839"))
-  if selected: draw_string(Body,top-Vector2(0,7),"%s · %d"%[sim.DEFINITIONS[b.kind].name,b.level],HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("f3e6c2"))
+  if selected:
+   var caption:String=sim.DEFINITIONS[b.kind].name
+   if b.kind in ["arrow","cannon","hall"]: caption+=" · "+sim.AGE_NAMES[sim.settlement_age-1]
+   else: caption+=" · %d"%b.level
+   draw_string(Body,top-Vector2(0,7),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("f3e6c2"))
 
 func draw_enemy(e:Dictionary,p:Vector2)->void:
  if bool(e.get("rallied",false)):
@@ -322,13 +341,19 @@ func atlas_object(texture:Texture2D,index:int,grid:Vector2i,position:Vector2,siz
 
 func draw_deposit(index:int)->void:
  var node:Dictionary=game.sim.resource_nodes[index]
+ if game.sim.terrain_revision >= Map.WORKYARD_REVISION:
+  # Stage the stockpiles against the back edge, leaving a clear building apron.
+  var wood: bool = node.kind == "wood"
+  var pivot := Vector2(0.40, 0.68) if wood else Vector2(0.61, 0.63)
+  atlas_object(WORKYARD_ART, 0 if wood else 1, Vector2i(2,1), node.pos, Vector2(280,200), pivot)
+  return
  var art:Dictionary=Map.unique_resource(index,game.sim.terrain_revision)
  atlas_object(RESOURCE_ATLASES[int(art.atlas)],int(art.frame),Vector2i(3,2) if int(art.atlas)==4 else Vector2i(2,3),node.pos,art.size)
 
 func draw_joined_wall(index:int,tint:Color)->void:
  var b:Dictionary=game.sim.buildings[index]
  for point in game.sim.wall_tiles(b):
-  Ramparts.piece(self,point,game.sim.wall_tile_neighbors(point),tint)
+  Ramparts.piece(self,point,game.sim.wall_tile_neighbors(point),tint,game.sim.settlement_age)
 
 func draw_boss_telegraphs()->void:
  var abilities=game.sim.Abilities
@@ -391,6 +416,39 @@ func mask_texture(revision:int)->ImageTexture:
  water_masks[revision]=texture
  return texture
 
+# Blend short delivery tracks into the terrain material. Keep the forest, rock
+# and wetness channels intact so a track looks like part of its surroundings.
+func make_workyard_surface() -> ImageTexture:
+ var pixels := Marshalls.base64_to_raw(Map.woodland.surface_pixels)
+ for track in Map.workyards.cart_tracks:
+  for i in range(1, track.size()):
+   var a := Vector2(track[i-1][0], track[i-1][1])
+   var b := Vector2(track[i][0], track[i][1])
+   var first := Map.cell_of(a.min(b)-Vector2.ONE*64)
+   var last := Map.cell_of(a.max(b)+Vector2.ONE*64)
+   for y in range(first.y, last.y+1):
+    for x in range(first.x, last.x+1):
+     var p := Map.cell_center(Vector2i(x,y))
+     var distance := p.distance_to(Geometry2D.get_closest_point_to_segment(p,a,b))
+     var ink := roundi(240.0 * (1.0-smoothstep(18.0,64.0,distance)))
+     var offset: int = (y * Map.GRID_WIDTH + x) * 4
+     pixels[offset] = maxi(pixels[offset], ink)
+ # Dust and chips soften the transition from each painted apron to the meadow.
+ for site in Map.workyards.nodes:
+  var center := Vector2(site.pos[0], site.pos[1])
+  var first := Map.cell_of(center-Vector2(200,150))
+  var last := Map.cell_of(center+Vector2(200,150))
+  var quarry: bool = site.kind == "stone"
+  var channel := 1 if quarry else 0
+  for y in range(first.y,last.y+1):
+   for x in range(first.x,last.x+1):
+    var distance := ((Map.cell_center(Vector2i(x,y))-center) / Vector2(200,150)).length()
+    var dust := roundi((155.0 if quarry else 205.0)*(1.0-smoothstep(0.38,1.0,distance)))
+    var offset: int = (y*Map.GRID_WIDTH+x)*4+channel
+    pixels[offset] = maxi(pixels[offset],dust)
+ var surface := Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_RGBA8,pixels)
+ return ImageTexture.create_from_image(surface)
+
 func configure_ground(revision:int)->void:
  ground_revision=revision
  var material:=ShaderMaterial.new()
@@ -408,7 +466,12 @@ func configure_ground(revision:int)->void:
    var bytes:PackedByteArray=Marshalls.base64_to_raw(Map.woodland.get("surface_pixels",""))
    if bytes.size()==Map.GRID_WIDTH*Map.GRID_HEIGHT*4:
     woodland_surface=ImageTexture.create_from_image(Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_RGBA8,bytes))
-  material.set_shader_parameter("surface_mask",woodland_surface if revision>=3 else surface_mask)
+  if revision >= Map.WORKYARD_REVISION:
+   if workyard_surface == null:
+    workyard_surface = make_workyard_surface()
+   material.set_shader_parameter("surface_mask", workyard_surface)
+  else:
+   material.set_shader_parameter("surface_mask",woodland_surface if revision>=3 else surface_mask)
   water.texture=AUTHORED_FLOOR
   var bounds:Array=Map.authored.water_bounds
   var region:=Rect2(bounds[0],bounds[1],bounds[2],bounds[3])
@@ -527,7 +590,7 @@ func draw_effects()->void:
    var collapse:float=clampf((e.duration-e.time)/0.4,0,1)
    if collapse<1 and e.has("kind"):
     draw_set_transform(e.pos+Vector2(sin(game.clock*55)*2,0),0,Vector2(1,1-collapse*0.4))
-    Art.building(self,game.sim.DEFINITIONS[e.kind].art,Vector2.ZERO,1,Color(0.9,0.85,0.72,1-collapse))
+    Art.building(self,game.sim.DEFINITIONS[e.kind].art,Vector2.ZERO,1,Color(0.9,0.85,0.72,1-collapse),game.sim.settlement_age)
     draw_set_transform(Vector2.ZERO)
    var size:float=60+t*200
    draw_texture_rect(cloud,Rect2(e.pos-Vector2.ONE*size/2-Vector2(0,t*30),Vector2.ONE*size),false,Color(0.7,0.6,0.45,1-t))

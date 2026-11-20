@@ -53,9 +53,30 @@ def objects(source, columns, rows):
         yield Image.fromarray(cut)
 
 
-def paste_fitted(sheet, sprite, column, row, cell, align_bottom):
-    margin = 5
+def mobile_bow(sprite):
+    # Preserve small painted limbs and strings through the second downsample
+    # from the 96px atlas to the 52px mobile control. Extend the existing
+    # edge pigment by a fraction of a pixel, leaving the open silhouette intact.
+    pixels = np.asarray(sprite, dtype=np.float32)
+    alpha = pixels[:, :, 3]
+    outer = ndimage.maximum_filter(alpha, size=3)
+    added = (outer - alpha) * 0.7
+    nearest = ndimage.distance_transform_edt(alpha < 128, return_distances=False,
+                                            return_indices=True)
+    edge_color = pixels[tuple(nearest)][:, :, :3]
+    color = pixels[:, :, :3] * alpha[:, :, None] + edge_color * added[:, :, None]
+    final_alpha = alpha + added
+    result = np.empty_like(pixels)
+    result[:, :, :3] = color / np.maximum(final_alpha, 1)[:, :, None]
+    result[:, :, 3] = final_alpha
+    return Image.fromarray(np.uint8(np.clip(result, 0, 255)))
+
+
+def paste_fitted(sheet, sprite, column, row, cell, align_bottom, bow=False):
+    margin = 2 if bow else 5
     sprite.thumbnail((cell - margin * 2, cell - margin * 2), Image.Resampling.LANCZOS)
+    if bow:
+        sprite = mobile_bow(sprite)
     left = column * cell + (cell - sprite.width) // 2
     top = row * cell + (cell - sprite.height - margin if align_bottom
                         else (cell - sprite.height) // 2)
@@ -81,12 +102,17 @@ def pack(source, destination):
         write_webp(sheet, destination / f"{age}.webp", 87)
 
     (destination / "bounds.json").write_text(json.dumps(bounds, indent=2) + "\n")
+    pack_research(source, destination)
+
+
+def pack_research(source, destination):
     sheet = Image.new("RGBA", (576, 768))
     for weapon, column in (("arrow", 0), ("cannon", 3)):
         for suffix, row in (("a", 0), ("b", 4)):
             original = source / f"icons-{weapon}-{suffix}.png"
             for i, sprite in enumerate(objects(original, 3, 4)):
-                paste_fitted(sheet, sprite, column + i % 3, row + i // 3, 96, False)
+                paste_fitted(sheet, sprite, column + i % 3, row + i // 3, 96, False,
+                            bow=weapon == "arrow" and i % 3 == 1)
     write_webp(sheet, destination / "research.webp", 91)
 
 

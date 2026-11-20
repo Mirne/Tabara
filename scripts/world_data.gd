@@ -17,12 +17,14 @@ const GRID_WIDTH := 205
 const GRID_HEIGHT := 128
 # Two continuous spines meet the map edges, leaving a 480-unit mountain pass.
 const MOUNTAIN_RECTS := [Rect2(3600,0,320,1440),Rect2(3680,1280,480,320),Rect2(4000,1440,240,1120),Rect2(4000,3040,240,2080)]
-const AUTHORED_REVISION:=5
+const WORKYARD_REVISION := 6
+const AUTHORED_REVISION := WORKYARD_REVISION
 static var terrain_fields:Dictionary={}
 static var authored:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/hearthvale.json"))
 static var woodland:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/woodland.json"))
 static var stronghold:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/stronghold.json"))
 static var open_approach:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/open-approach.json"))
+static var workyards:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/workyards.json"))
 static var forest_shapes:Array=[]
 static var forest_pockets:Array=[]
 static var city_shape:=PackedVector2Array()
@@ -266,7 +268,10 @@ static func road_distance(p: Vector2) -> float:
 static func resource_nodes(layout:int=AUTHORED_REVISION) -> Array:
  var out: Array=[]
  if layout>=4:
-  for item in (open_approach if layout>=5 else stronghold).nodes:
+  var sites := stronghold
+  if layout == 5: sites = open_approach
+  elif layout >= WORKYARD_REVISION: sites = workyards
+  for item in sites.nodes:
    out.append({"pos":Vector2(item.pos[0],item.pos[1]),"kind":item.kind,"zone":item.zone,"amount":float(item.amount)})
   return out
  for group in [[GROVES,"wood",36.0],[QUARRIES,"stone",30.0],[ORES,"gold",24.0]]:

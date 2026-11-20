@@ -25,15 +25,12 @@ func quiet_step(s,seconds:float)->void:
  s.spawn_remaining=0
 func run()->void:
  var s=Sim.new(7)
- check(s.terrain_revision==5 and s.resource_nodes.size()==8,"New mission uses eight deliberate resource sites")
+ check(s.terrain_revision==6 and s.resource_nodes.size()==2,"New mission has a single timber site and quarry")
  check(s.buildings.size()==1 and s.enemies.size()==1 and s.enemies[0].progress==0,"Only the hall is prebuilt; enemies start at the western entrance")
- var zones:Dictionary={}
- for node in s.resource_nodes:
-  var key:String=node.kind+":"+node.zone
-  zones[key]=zones.get(key,0)+1
- check(zones=={"wood:base":2,"wood:outpost":2,"stone:base":2,"stone:outpost":2},"Two wood and two stone sites in base; two of each outside")
- for node in s.resource_nodes:
-  if node.zone=="outpost":check(node.pos.x<Map.HALL.x,"Outpost resources lie on the exposed western side")
+ var resource_kinds:Array=[]
+ for node in s.resource_nodes:resource_kinds.append(node.kind)
+ resource_kinds.sort()
+ check(resource_kinds==["stone","wood"],"One site supplies each producer type")
  check(not s.collect(0),"Resource sites remain noninteractive scenery")
  var gold:float=s.resources.gold
  s.enemies[0].hp=0
@@ -44,9 +41,9 @@ func run()->void:
   check(s.build_at(node.pos,node.kind)=="","Every resource site accepts its producer: "+str(node.pos))
   var paid:Dictionary=s.resources.duplicate()
   check(s.build_at(node.pos,node.kind)!="" and s.resources==paid,"Each resource site permits one producer without double spending")
- check(s.buildings.size()==9,"All eight sites and the hall coexist")
+ check(s.buildings.size()==3,"The Hall and both producers coexist")
  check(s.build_at(Vector2(6100,2800),"stone")!="","Quarries cannot be placed on empty ground")
- check(s.build_at(s.resource_nodes[4].pos,"wood")!="","Producers require the matching resource")
+ check(s.build_at(s.buildings[2].pos,"wood")!="","Producers require the matching resource")
  s=rich()
  check(s.build_at(Vector2(6101,2802),"arrow")=="" and s.buildings[1].pos==Vector2(6120,2800),"Foundations snap to the visible grid")
  var stock:Dictionary=s.resources.duplicate()
@@ -61,8 +58,8 @@ func run()->void:
    check(s.build_at(point,"arrow")!="" and not s.navigation.passable(point),"Former forest hole blocks both construction and enemies")
  check(hidden>=8,"Former inaccessible resource hollows are closed")
  var safe:=true
- for i in Map.terrain_field(5).size():
-  if Map.terrain_field(5)[i]==0 and not is_finite(s.navigation.costs[i]):safe=false
+ for i in Map.terrain_field(s.terrain_revision).size():
+  if Map.terrain_field(s.terrain_revision)[i]==0 and not is_finite(s.navigation.costs[i]):safe=false
  check(safe,"Every open cell belongs to the connected attackable landscape")
  s=rich()
  var stroke:Array=s.wall_line(Vector2(6100,2800),Vector2(6340,2960))
@@ -92,34 +89,36 @@ func run()->void:
  check(edges==12 and Wall.exposed_sides(s.wall_neighbors(5)).is_empty(),"A 3x3 wall mass has only twelve perimeter rails and no internal parapets")
  # Instant global upgrades spend once, preserve damage and affect future builds.
  s=rich()
- check(s.start_research("arrow")!="","Upgrades require an operational Workshop")
+ check(s.research_track("arrow_damage")!="","Upgrades require an operational Workshop")
  check(s.build_at(Vector2(5200,2800),"workshop")=="","Workshop footprint is buildable")
- check(s.start_research("arrow")!="","Workshop construction must finish before upgrading")
+ check(s.research_track("arrow_damage")!="","Workshop construction must finish before upgrading")
  quiet_step(s,7)
  check(s.build_at(Vector2(6100,2800),"arrow")=="" and s.build_at(Vector2(6300,2800),"arrow")=="","Two standing towers share upgrades")
  var first:Dictionary=s.buildings[2]
  var second:Dictionary=s.buildings[3]
  first.hp=s.stat(first,"hp")*0.5
- var cost:Array=s.research_cost("arrow")
+ var cost:Array=s.track_cost("arrow_damage")
+ var damage_before:float=s.stat(first,"damage")
  var wood:float=s.resources.wood
- check(s.start_research("arrow")=="" and s.resources.wood==wood-cost[0],"A global upgrade spends its displayed price once")
- check(first.level==2 and second.level==2 and s.research_levels.arrow==2,"All existing towers upgrade immediately without a timer")
+ check(s.research_track("arrow_damage")=="" and s.resources.wood==wood-cost[0],"A global upgrade spends its displayed price once")
+ check(s.stat(first,"damage")>damage_before and s.stat(first,"damage")==s.stat(second,"damage") and s.track_level("arrow_damage")==2,"All existing towers upgrade immediately without a timer")
  check(is_equal_approx(first.hp/s.stat(first,"hp"),0.5),"Instant upgrades preserve damage instead of granting free healing")
  check(s.start_research("wall")=="" and s.research_levels.wall==2,"Another type can upgrade immediately without a queue")
- check(s.build_at(Vector2(6500,2800),"arrow")=="" and s.buildings[-1].level==2,"Future towers inherit completed global upgrades")
+ check(s.build_at(Vector2(6500,2800),"arrow")=="" and s.stat(s.buildings[-1],"damage")==s.stat(first,"damage"),"Future towers inherit completed global upgrades")
  check(s.upgrade_at(2)!="","Defense upgrades stay in the Workshop")
  var saved=roundtrip(s)
- check(saved!=null and saved.research_levels==s.research_levels,"Instant global levels survive JSON saves")
+ check(saved!=null and saved.tower_tracks==s.tower_tracks and saved.research_levels==s.research_levels,"Instant global levels survive JSON saves")
  var destroyer:Dictionary=s.spawn_enemy()
  destroyer.damage=1e9
  destroyer.cooldown=0
  s.attack_building(destroyer,1)
- check(s.start_research("arrow")!="" and s.research_levels.arrow==2,"Destroyed Workshop stops new purchases without losing completed upgrades")
+ check(s.research_track("arrow_damage")!="" and s.track_level("arrow_damage")==2,"Destroyed Workshop stops new purchases without losing completed upgrades")
  # Global defenses and independently upgraded buildings both retain the level cap.
  var progression=rich()
  progression.build_at(Vector2(5200,2800),"workshop")
  progression.buildings[1].age=10
  for kind in Sim.DEFINITIONS:
+  if kind in ["arrow","cannon"]:continue # Specialization rank caps are tested separately.
   var local:bool=kind in Sim.LOCAL_UPGRADES
   var index:int=progression.buildings.size()
   if local:
@@ -136,8 +135,8 @@ func run()->void:
   if local:check(progression.make_building(kind).level==1,kind+" replacement starts at level one")
  # Producer purchases affect one building, preserve damage, and survive mixed-level saves.
  s=rich()
- s.build_at(s.resource_nodes[4].pos,"stone")
- s.build_at(s.resource_nodes[5].pos,"stone")
+ s.build_at(s.resource_nodes[1].pos,"stone")
+ s.build_at(s.resource_nodes[0].pos,"wood")
  quiet_step(s,3)
  first=s.buildings[1]
  second=s.buildings[2]
@@ -154,7 +153,7 @@ func run()->void:
  hammer.cooldown=0
  s.attack_building(hammer,1)
  s.rebuild_building_grid()
- check(s.build_at(s.resource_nodes[4].pos,"stone")=="" and s.buildings[1].level==1,"A destroyed quarry is rebuilt on its site at level one")
+ check(s.build_at(s.resource_nodes[1].pos,"stone")=="" and s.buildings[1].level==1,"A destroyed quarry is rebuilt on its site at level one")
  s=rich()
  s.build_at(s.resource_nodes[0].pos,"wood")
  s.apply_global_level("wood",4)
@@ -250,8 +249,8 @@ func run()->void:
  enemy.damage=0.01
  s.step(5)
  check(enemy.pos.x<6400 and enemy.target>=2,"Retaliating enemies attack blocking walls before reaching the tower")
- # Producers remain vulnerable beside their resource cores.
- s=rich()
+ # Producers in legacy outposts remain vulnerable beside their resource cores.
+ s=rich(5)
  s.build_at(s.resource_nodes[2].pos,"wood")
  enemy=s.spawn_enemy()
  enemy.pos=s.buildings[1].pos+Vector2(-110,0)
@@ -263,7 +262,7 @@ func run()->void:
  # All four exposed sites attract enemies from a distance and remain reachable.
  for node in Map.resource_nodes(5):
   if node.zone!="outpost": continue
-  s=rich()
+  s=rich(5)
   s.build_at(node.pos,node.kind)
   var producer:Dictionary=s.buildings[1]
   enemy=s.spawn_enemy()
@@ -280,7 +279,7 @@ func run()->void:
    if producer.hp<initial_hp:break
   check(producer.hp<initial_hp,"Long-range aggro reaches exposed "+node.kind+" at "+str(node.pos))
   check(passable,"Producer approach never crosses blocked terrain")
- s=rich()
+ s=rich(5)
  s.build_at(s.resource_nodes[2].pos,"wood")
  s.build_at(s.resource_nodes[6].pos,"stone")
  enemy=s.spawn_enemy()

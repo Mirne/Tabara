@@ -11,15 +11,18 @@ var process_peak:=0.0
 var finished:=false
 var seconds_requested:=90.0
 var freeze:=false
+var crown_fixture:=false
 var draw_total:=0.0
 var simulation_total:=0.0
 var report_name:="frontier-stress"
 func _init()->void:
  for arg in OS.get_cmdline_user_args():
   if arg.begins_with("--seconds="): seconds_requested=float(arg.trim_prefix("--seconds="))
+  if arg=="--crown": crown_fixture=true
   if arg=="--freeze":
    freeze=true
    report_name="frontier-stress-render-only"
+ if crown_fixture: report_name+="-crown"
  call_deferred("run")
 func run()->void:
  root.size=Vector2i(1280,720)
@@ -31,6 +34,23 @@ func run()->void:
  game.music_player.stop()
  game.sim.resources={"wood":1e12,"stone":1e12,"gold":1e12}
  var kinds:=["arrow","wall"]
+ if crown_fixture:
+  assert(game.sim.build_at(Vector2(5200,2800),"workshop") == "")
+  game.sim.buildings[1].age = game.sim.build_time("workshop")
+  while game.sim.settlement_age < Sim.AGE_NAMES.size():
+   var error: String = game.sim.advance_age()
+   if error != "":
+    printerr(error)
+    quit(1)
+    return
+  for track in Sim.TRACKS:
+   while game.sim.track_level(track) < Sim.MAX_LEVEL:
+    var error: String = game.sim.research_track(track)
+    if error != "":
+     printerr(error)
+     quit(1)
+     return
+  kinds.append("cannon")
  for y in range(160,5000,80):
   for x in range(160,8100,80):
    if game.sim.active_building_count()>=512: break
@@ -72,6 +92,8 @@ func tick()->void:
  if seconds>=seconds_requested:
   finished=true
   var data:={"fixture":"512 structures and 1000 high-health, low-damage enemies; unlimited supplies, not campaign balance","real_seconds":seconds,"structures":game.sim.active_building_count(),"enemies":game.sim.enemies.size(),"fps_cap":30,"minimum_fps_after_warmup":fps_min,"mean_sampled_fps_after_warmup":fps_total/maxi(1,count),"max_static_memory_bytes":peak_static,"max_process_ms":process_peak,"rendered_entities":game.world.drawn_entities}
+  data.age=game.sim.settlement_age
+  data.tower_tracks=game.sim.tower_tracks.duplicate()
   data.mean_world_draw_cpu_ms=draw_total/maxi(1,count)
   data.mean_simulation_cpu_ms=simulation_total/maxi(1,count)
   data.simulation_frozen=freeze

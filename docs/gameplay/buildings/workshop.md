@@ -1,17 +1,16 @@
 # Workshop
 
-One per settlement. Cost 140 wood/100 stone/70 gold, base HP 750; construction
-takes six game seconds. Preserve construction time; upgrade purchases have no timer.
-Upgrades lists Wall, Arrow tower, Cannon tower, and Regeneration. Woodcutter and
-Quarry upgrades move to those individual buildings. Regeneration is an upgrade
-subject here, not a separate Regen tab. Purchase buttons read Upgrade.
-Show concrete current/next effects, exact price, and only actionable unavailable
-states. Remove generic "instant/all current and future" copy.
-Regeneration level 0 is locked; level 100 heals 20% maximum HP/sec, with stronger
-growth than v0.9. It heals completed standing buildings, never resurrects them.
-Completed defense levels and Regeneration persist if Workshop is destroyed.
-Workshop health upgrades are local under Building; Hall and Marketplace upgrades
-are on their respective panels. Only defense levels and Regeneration are global.
+One per settlement. Construction costs 140 wood, 100 stone and 70 gold and
+takes six game seconds. The Workshop starts with 750 HP. Upgrade its health
+under Building. The first local upgrade costs 70 wood, 60 stone and 40 gold.
+Each following price scales by 1.15, rounded up per resource.
 
-Level-one upgrade price: 70 wood / 60 stone / 40 gold. Later upgrade
-prices scale by 1.15^(current level - 1), rounded up per resource.
+Under Upgrades, choose Arrow tower or Cannon tower to inspect three weapon
+branches with age-specific icons. Show the selected stat, current and next
+value, price and any age requirement. The purchase caption is **Upgrade**.
+A completed Workshop also offers wall health and Regeneration. Research
+is instant and persists when the Workshop is destroyed.
+
+The current Hall age determines branch access and maximum rank. See
+[age and research rules](../upgrades.md). Producer upgrades are at the
+respective buildings.

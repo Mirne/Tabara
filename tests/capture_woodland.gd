@@ -27,13 +27,13 @@ func run()->void:
  game.camera_center=Vector2(4840,2800)
  await capture("catalogue")
  game.act("build:wood")
- game.ghost=game.sim.snap_position(Vector2(4760,2440),"wood")
+ game.ghost=game.sim.snap_position(game.sim.resource_nodes[0].pos,"wood")
  game.placement_ready=true
  await capture("green-sites")
  # This visual fixture grants resources; normal-cost balance runs are separate.
  game.sim.resources={"wood":10000.0,"stone":10000.0,"gold":10000.0}
  game.build_kind=""
- for entry in [[Vector2(4760,2440),"wood"],[Vector2(5480,3240),"stone"],[Vector2(4480,2760),"arrow"],[Vector2(5200,2800),"workshop"],[Vector2(4800,3280),"market"]]:
+ for entry in [[game.sim.resource_nodes[0].pos,"wood"],[game.sim.resource_nodes[1].pos,"stone"],[Vector2(4480,2760),"arrow"],[Vector2(5200,2800),"workshop"],[Vector2(4800,3280),"market"]]:
   var error:String=game.sim.build_at(entry[0],entry[1])
   if error!="":printerr("VISUAL PLACEMENT ",entry," ",error)
  game.sim.build_wall(game.sim.wall_line(Vector2(4200,2640),Vector2(4200,2960)))
@@ -44,10 +44,10 @@ func run()->void:
  game.act("workshop")
  game.research_kind="arrow"
  await capture("workshop")
- game.sim.start_research("arrow")
+ game.sim.research_track("arrow_damage")
  game.sim.upgrade_regeneration()
  await capture("instant-upgrade")
- game.workshop_tab="regeneration"
+ game.act("research:regeneration")
  await capture("regeneration")
  game.act("construction")
  game.sim.elapsed=300

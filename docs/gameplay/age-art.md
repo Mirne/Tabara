@@ -28,3 +28,7 @@ six columns and eight rows of 96 × 96 pixels. Source sheets have uneven spacing
 The [packing script](../../tools/pack_age_art.py) follows each object's alpha
 contour, includes detached details such as blocks suspended from cranes, and
 records its source rectangle in the [bounds file](../../assets/ages/bounds.json).
+
+At mobile Workshop sizes, the bow keeps a broad limb, a visible grip and a
+nocked arrow. These painted details make the range project identifiable on the
+dark research panel.

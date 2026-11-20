@@ -32,3 +32,24 @@ Single-cell walls keep the existing textured stone/wood materials and height.
 Their dirt footprint, picking bounds and health bars match the smaller cell.
 Legacy saved ramparts retain their old physical footprint and share the same
 40-unit visual tiles, so new cells join their perimeter without internal rails.
+
+## Settlement ages and Workshop presentation
+
+The Hall opens its Age panel from the top bar or a tap on the building. Show the
+current Hall and next Hall artwork, the next rank limit and newly available tower
+research, and the three-resource price before advancing. Its Building tab keeps
+local statistics and local upgrades available. At the final age, show the fully
+advanced Hall and its current research limit.
+
+Workshop Upgrades groups projects by tower, Wall and Regeneration. For a tower,
+show its three individually selectable projects with painted icons from the
+current age. Show the selected project's exact combat stat change, rank, price,
+and next age requirement when applicable. Use one purchase action per project.
+Building cards and placement previews match the age of the world sprites. Tower
+range rings use the actual researched range. Keep panel controls touch-sized.
+
+Confirming a Woodcutter, Stonemason or Marketplace returns directly to the
+catalogue with no building selected. Walls and towers keep repeat placement.
+Occupied Woodcutter and Stonemason catalogue cards open
+the existing building and display its current level and resource yield. The
+single Marketplace uses the same shortcut. Destruction of the last instance restores its build card.

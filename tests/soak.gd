@@ -12,12 +12,15 @@ var act_at := 0
 var sessions := 0
 var wins := 0
 var resumes := 0
+var campaign_results: Array = []
+const APPROACHES = ["balanced","fortify","age_rush"]
 var steps := 0
 var max_memory := 0
 var errors: Array = []
 var session_seconds := 0
 var report_path := "res://test-results/frontier-soak.json"
 var resume_requested := false
+var fresh_session := false
 var prior_seconds := 0.0
 var segments := 1
 var camera_tours := 0
@@ -32,6 +35,7 @@ func _init() -> void:
   if arg.begins_with("--seconds="): duration = maxi(1,int(arg.trim_prefix("--seconds=")))
   if arg.begins_with("--report-name="): report_path = "res://test-results/"+arg.trim_prefix("--report-name=").get_file()+".json"
   if arg == "--resume": resume_requested = true
+  if arg == "--fresh-session": fresh_session = true
  call_deferred("run")
 
 func run() -> void:
@@ -51,18 +55,19 @@ func run() -> void:
    segments = int(previous.get("segments",1))+1
    sessions = int(previous.get("sessions",0))
    wins = int(previous.get("victories",0))
+   campaign_results = previous.get("campaign_results",[])
    resumes = int(previous.get("disk_resumes",0))
    steps = int(previous.get("action_cycles",0))
    max_memory = int(previous.get("max_static_memory_bytes",0))
    excluded_stall_seconds=float(previous.get("excluded_stall_seconds",0))
- if prior_seconds > 0 and game.sim != null and not game.sim.defeated:
+ if prior_seconds > 0 and not fresh_session and game.sim != null and not game.sim.defeated:
   # A fresh attempt may have started after the last report but before shutdown.
   if game.sim.seed_value == 1000+sessions+1: sessions += 1
   game.screen = "mission"
   game.selected = 0
   game.accumulator = 0
   game.speed = 1
-  bot = Bot.new(game.sim)
+  bot = Bot.new(game.sim,APPROACHES[(sessions-1)%APPROACHES.size()])
   session_seconds = int(game.sim.elapsed)
   resumes += 1
   print("RESUMED SOAK: ",prior_seconds," confirmed seconds; segment ",segments)
@@ -83,7 +88,7 @@ func start_session() -> void:
  game.camera_center=Sim.World.HALL
  game.zoom=0.85
  game.apply_camera()
- bot = Bot.new(game.sim)
+ bot = Bot.new(game.sim,APPROACHES[(sessions-1)%APPROACHES.size()])
  session_seconds = 0
 
 func tick() -> void:
@@ -98,6 +103,9 @@ func tick() -> void:
    wins += 1
    game.act("endless")
   if game.screen == "defeat":
+   campaign_results.append({"seed":game.sim.seed_value,"approach":bot.approach,"mission_seconds":game.sim.elapsed,
+     "wave":game.sim.wave,"victory":game.sim.victory,"age":game.sim.settlement_age,"age_seconds":bot.age_seconds,
+     "specializations":game.sim.tower_tracks.duplicate(),"rain_casts":bot.rain_casts,"paid_orders":bot.paid_orders})
    start_session()
   bot.act()
   steps += 1
@@ -115,6 +123,7 @@ func tick() -> void:
     bot.sim = game.sim
     resumes += 1
     if not is_equal_approx(game.sim.elapsed,float(original.elapsed)): errors.append("Resume clock mismatch")
+    if game.sim.tower_tracks!=original.tower_tracks or game.sim.settlement_age!=original.settlement_age: errors.append("Resume age/research mismatch")
     if game.sim.enemies.size()!=original.enemies.size(): errors.append("Resume enemy mismatch")
     if game.sim.buildings.size()!=original.buildings.size(): errors.append("Resume structure count mismatch")
     for i in original.buildings.size():
@@ -167,6 +176,12 @@ func report(finished: bool = false) -> void:
  if finished: game.save_game()
  var segment_seconds := active_seconds
  var data := {"complete":finished,"requested_real_seconds":duration,"actual_real_seconds":prior_seconds+segment_seconds,"current_segment_real_seconds":segment_seconds,"prior_confirmed_real_seconds":prior_seconds,"segments":segments,"sessions":sessions,"current_session_seed":game.sim.seed_value if game.sim!=null else -1,"victories":wins,"disk_resumes":resumes,"action_cycles":steps,"max_static_memory_bytes":max_memory,"current_static_memory_bytes":int(Performance.get_monitor(Performance.MEMORY_STATIC)),"fps":Performance.get_monitor(Performance.TIME_FPS),"current_mission_seconds":game.sim.elapsed if game.sim!=null else -1,"errors":errors,"camera_tours":camera_tours,"min_fps_after_warmup":min_fps,"max_process_ms_after_warmup":max_process_ms,"camera":[game.camera_center.x,game.camera_center.y,game.zoom]}
+ data.campaign_results=campaign_results
+ data.approach=bot.approach
+ data.current_age=game.sim.settlement_age
+ data.current_tower_tracks=game.sim.tower_tracks.duplicate()
+ data.current_mission_age_seconds=bot.age_seconds.duplicate()
+ data.current_mission_rain_casts=bot.rain_casts
  data.current_segment_wall_seconds=(Time.get_ticks_msec()-started)/1000.0
  data.excluded_stall_seconds=excluded_stall_seconds
  data.source_commit=OS.get_environment("TABARA_SOURCE_COMMIT")

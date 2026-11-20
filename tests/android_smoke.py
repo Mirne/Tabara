@@ -20,7 +20,12 @@ from PIL import Image, ImageChops, ImageStat
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "com.tabara.lasthearth"
-APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.12.apk"))
+# Production templates disable Android run-as. Rooted test emulators can inspect
+# the very same release APK using its private data directory.
+ROOTED_EMULATOR = os.environ.get("ANDROID_TEST_ROOT") == "1"
+SAVE_DIRECTORY = f"/data/data/{PACKAGE}/files"
+SAVE_FILE = SAVE_DIRECTORY + "/frontier-settlement.json"
+APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.13.apk"))
 OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android-frontier")).name
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
@@ -66,9 +71,14 @@ def menu_matches(image):
     return sum(diff.mean) / 3 < 20
 
 def wait_menu():
-    end = time.monotonic() + 300
+    end = time.monotonic() + float(os.environ.get("ANDROID_MENU_TIMEOUT", "300"))
     while time.monotonic() < end:
-        if menu_matches(screen()):
+        try:
+            frame = screen()
+        except subprocess.TimeoutExpired:
+            # GPU startup on a software emulator can stall its first screencap.
+            continue
+        if menu_matches(frame):
             check(True, "Native menu renders the new illustrated landscape")
             return
         time.sleep(4)
@@ -94,6 +104,8 @@ def launch():
     time.sleep(10)
 
 def save():
+    if ROOTED_EMULATOR:
+        return json.loads(adb("shell", "cat", SAVE_FILE))
     return json.loads(adb("shell", "run-as", PACKAGE, "cat", "files/frontier-settlement.json"))
 
 def wait_saved_structure(index, kind):
@@ -117,8 +129,15 @@ def wait_saved_kind(kind):
 def write_save(data):
     # Normal shell protocol works on API 24 as well as modern adbd.
     payload = base64.b64encode(json.dumps(data).encode()).decode("ascii")
-    inner = "printf '%s' " + shlex.quote(payload) + " | base64 -d > files/frontier-settlement.json"
-    adb("shell", "run-as " + shlex.quote(PACKAGE) + " sh -c " + shlex.quote(inner), timeout=120)
+    destination = SAVE_FILE if ROOTED_EMULATOR else "files/frontier-settlement.json"
+    inner = "printf '%s' " + shlex.quote(payload) + " | base64 -d > " + shlex.quote(destination)
+    if ROOTED_EMULATOR:
+        owner = adb("shell", "stat", "-c", "%u:%g", SAVE_DIRECTORY)
+        adb("shell", inner, timeout=120)
+        adb("shell", "chown", owner, destination)
+        adb("shell", "restorecon", destination)
+    else:
+        adb("shell", "run-as " + shlex.quote(PACKAGE) + " sh -c " + shlex.quote(inner), timeout=120)
     if save() != data:
         raise RuntimeError("Test fixture transfer did not preserve the complete save")
 
@@ -213,9 +232,9 @@ def native_checks(back_only=False):
                 screen("03-initial-mission")
                 # Full-height catalogue; selecting and placing hides it until Build structures.
                 tap(1194, 218)
-                tap(*world_point(4760, 2440))
+                tap(*world_point(4800, 2480))
                 image = screen("03a-green-grid-preview")
-                wx, wy = world_point(4760, 2440)
+                wx, wy = world_point(4800, 2480)
                 patch = image.crop((wx-60, wy-60, wx+60, wy+60))
                 green = sum(g > r*1.2 and g > b*1.15 and g > 75 for r, g, b in patch.getdata())
                 check(green > 400, "Native producer preview renders green buildable tiles")
@@ -225,13 +244,11 @@ def native_checks(back_only=False):
                 adb("shell", "input", "keyevent", "4")
                 time.sleep(4)
                 tap(1194, 218)
-                tap(*world_point(4760, 2440))
+                tap(*world_point(4800, 2480))
                 tap(1273, 685)
-                tap(1273, 763)  # Selected-building panel: Build structures.
-                tap(1352, 218)
-                tap(*world_point(5480, 3240))
+                tap(1352, 218)  # Single timber yard returns to the catalogue.
+                tap(*world_point(4680, 3120))
                 tap(1273, 685)
-                tap(1273, 763)
                 tap(1194, 376)
                 tap(*world_point(4480, 2760))
                 tap(1273, 685)
@@ -262,18 +279,18 @@ def native_checks(back_only=False):
             tap(1338, 43)  # Explicit known pause.
             screen("04-built-and-paused")
             data = wait_saved_structure(16, "wall")
-            check(data["version"] == 11 and data["terrain_revision"] == 5, "Native app writes ability state and retains the eight-site terrain format")
+            check(data["version"] == 12 and data["terrain_revision"] == 6 and data["settlement_age"] == 1, "Native mission starts in Wood age on the two-yard terrain")
             for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow"), (4, "arrow")]:
                 check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
                 check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")
-            expected = [(4760,2440),(5480,3240),(4480,2760),(4640,2760)]
+            expected = [(4800,2480),(4680,3120),(4480,2760),(4640,2760)]
             for index, position in enumerate(expected, 1):
                 check(tuple(data["buildings"][index]["pos"]) == position, "Native confirmed building follows the grid at " + str(position))
             for index, y in enumerate(range(2580,3021,40),5):
                 building=data["buildings"][index]
                 check(building["kind"] == "wall" and tuple(building["pos"]) == (4180,y) and building["wall_size"]==40,
                       "Native wall stroke creates a single-cell joined piece at " + str((4180,y)))
-            check(len(data["deposits"]) == 8, "Native mission contains only eight producer sites")
+            check(len(data["deposits"]) == 2, "Native mission contains exactly one timber yard and one quarry")
             check(data["elapsed"] > 0 and data["wave"] >= 1, "Native mission advances")
             before = data["elapsed"]
             time.sleep(12)
@@ -283,7 +300,7 @@ def native_checks(back_only=False):
                 wait_supplies(save(), {"wood": 50, "stone": 25, "gold": 15})
                 adb("shell", "input", "keyevent", "4")
                 time.sleep(max(4, TAP_DELAY))
-                tap(*world_point(4760, 2380))
+                tap(*world_point(4800, 2420))
                 tap(1273, 584)
                 screen("04a-local-producer")
                 tap(1273, 763)
@@ -298,9 +315,9 @@ def native_checks(back_only=False):
             tap(*world_point(5200, 2800))
             tap(1338, 43)
             checkpoint = save()
-            check(checkpoint["version"] == 11 and checkpoint["terrain_revision"] == 5,
+            check(checkpoint["version"] == 12 and checkpoint["terrain_revision"] == 6,
                   "Resumed checkpoint retains the current save format and map")
-            check(checkpoint["research_levels"]["arrow"] == 1 and checkpoint["regeneration_level"] == 0,
+            check(checkpoint["tower_tracks"]["arrow_damage"] == 1 and checkpoint["regeneration_level"] == 0,
                   "Resumed checkpoint starts before the remaining paid upgrade tests")
             check(any(b and b["kind"] == "workshop" and b["age"] >= 6 for b in checkpoint["buildings"]),
                   "Resumed checkpoint retains the operational Workshop")
@@ -335,8 +352,9 @@ def native_checks(back_only=False):
             tap(1273, 678)
             tap(1338, 43)
             research_save = save()
-            check(research_save["research_levels"]["arrow"] == 2 and any(b and b["kind"] == "arrow" for b in research_save["buildings"]) and all(b["level"] == 2 for b in research_save["buildings"] if b and b["kind"] == "arrow") and "research_job" not in research_save,
-                  "Native Workshop upgrades all surviving towers instantly without a queue")
+            check(research_save["tower_tracks"]["arrow_damage"] == 2 and
+                  all(rank == 1 for track, rank in research_save["tower_tracks"].items() if track != "arrow_damage"),
+                  "Workshop Arrow damage purchase advances only its damage line")
             screen("04b-workshop-research")
             # Regeneration is a paid global upgrade, with no local repair buttons.
             wait_supplies(save(), {"wood": 120, "stone": 90, "gold": 60})
@@ -347,7 +365,17 @@ def native_checks(back_only=False):
             tap(1338, 43)
             check(save()["regeneration_level"] == 1, "Native Workshop purchases global automatic Regeneration")
             screen("04c-regeneration")
+            wait_supplies(save(), {"wood": 130, "stone": 90, "gold": 50})
+            adb("shell", "input", "keyevent", "4")
+            time.sleep(max(4, TAP_DELAY))
+            tap(1194, 43)  # Main hall
+            screen("04d-wood-to-stone-preview")
+            tap(1273, 678)
+            tap(1338, 43)
             retained = save()
+            check(retained["settlement_age"] == 2 and retained["tower_tracks"]["arrow_damage"] == 2,
+                  "Paid Hall advancement reaches Stone while keeping Arrow damage research")
+
             adb("shell", "am", "force-stop", PACKAGE)
             # Isolate restore/lifecycle from legitimate destruction during the
             # subsequent UI waits. Economy, buildings, upgrades and time stay.
@@ -365,7 +393,7 @@ def native_checks(back_only=False):
             check(restored["elapsed"] >= retained["elapsed"], "Cold restart retains elapsed time")
             signature = lambda rows: [(b["kind"], b["pos"]) if b else None for b in rows]
             check(signature(restored["buildings"]) == signature(retained["buildings"]), "Cold restart retains all confirmed structures and coordinates")
-            check(restored["research_levels"]["arrow"] == 2 and restored["regeneration_level"] == 1,
+            check(restored["tower_tracks"]["arrow_damage"] == 2 and restored["settlement_age"] == 2 and restored["regeneration_level"] == 1,
                   "Cold restart retains instant upgrades and automatic Regeneration")
             screen("06-restored-and-paused")
             # Test camera movement with a real drag; this must not construct anything.
@@ -473,10 +501,18 @@ def native_checks(back_only=False):
                 rain_fixture=copy.deepcopy(normal)
                 rain_fixture.update(enemies=[],spawn_remaining=0,spawn_clock=30.0,rain_cooldown=0.0,arrow_rains=[])
                 rain_fixture["camera"]=[4840.0,2800.0,.72]
+                # Use a real western wall and isolate the Rain hit from friendly tower fire.
+                wall_index, target_wall = min(
+                    ((i, b) for i, b in enumerate(rain_fixture["buildings"]) if b and b["kind"] == "wall"),
+                    key=lambda row: abs(row[1]["pos"][1] - 2780),
+                )
+                for i, building in enumerate(rain_fixture["buildings"]):
+                    if building and building["kind"] in ("arrow", "cannon"):
+                        rain_fixture["buildings"][i] = None
                 victim=copy.deepcopy(final_bosses[0])
                 victim.update(id=rain_fixture["next_id"],kind="elite",mission_boss=False,boss_rank=0,
-                              hp=5000.0,max_hp=5000.0,damage=1.0,speed=86.0,pos=[5480.0,3100.0],
-                              target=-1,aim=0.0,anger=-1,anger_left=0.0,attacking=False,attack_left=0.0,
+                              hp=5000.0,max_hp=5000.0,damage=1.0,speed=86.0,pos=[target_wall["pos"][0]-44, target_wall["pos"][1]],
+                              target=wall_index,aim=0.2,anger=wall_index,anger_left=7.0,attacking=False,attack_left=0.0,
                               smash_clock=0.0,smash_left=0.0,smash_center=[0.0,0.0])
                 rain_fixture["next_id"]+=1
                 rain_fixture["enemies"]=[victim]

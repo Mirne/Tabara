@@ -156,3 +156,14 @@ legacy foundations render as joined tiles. Rain arrows, impact dust, warning
 circles and war-cry glows use engine projectile/particle geometry and existing
 textures. No new source paintings or vector interface icons were added. The
 new screenshots are actual game-engine and Android captures, not generated art.
+
+## Resource workyards
+
+`assets/world/workyards.webp` contains two original ImageGen paintings on a
+transparent sheet. The north timber apron has a sawyer's bench, crosscut logs
+and a chopping stump. The south limestone shelf has a stepped face, dressed
+blocks and a low sled. Both use the basin's warm daylight and olive foliage.
+The occupied foundation shares the same yard painting; the Stonemason draws in
+front of the rock. Revision 6 has its own engine-rendered 640×400 minimap,
+`workyards-overview.webp`. Regenerate that image with
+`godot --path . --script tools/capture_authored.gd -- --workyards`.

@@ -32,12 +32,15 @@ for directory in ["scripts", "tests"]:
     for script in sorted((ROOT / directory).glob("*.gd")):
         run(["--headless", "--script", "res://" + script.relative_to(ROOT).as_posix(), "--check-only"])
 run(["--headless", "--script", "res://tests/test_simulation.gd"], "0 failures")
+run(["--headless", "--script", "res://tests/test_settlement_ages.gd"], "AGE RESULT:")
 run(["--headless", "--script", "res://tests/test_battlefield.gd"], "BATTLEFIELD RESULT:")
 run(["--headless", "--script", "res://tests/test_authored_world.gd"], "AUTHORED RESULT:")
 run(["--headless", "--script", "res://tests/test_authored_walks.gd"], "AUTHORED WALKS RESULT:")
 if args.ui:
     (ROOT / "test-results").mkdir(exist_ok=True)
     run(["--audio-driver", "Dummy", "--script", "res://tests/test_ui.gd"], "UI RESULT:")
+    run(["--audio-driver", "Dummy", "--script", "res://tests/test_age_art.gd"], "AGE ART RESULT:")
+    run(["--audio-driver", "Dummy", "--script", "res://tests/test_age_ui.gd"], "AGE UI RESULT:")
     run(["--audio-driver", "Dummy", "--script", "res://tests/test_combat_art.gd"], "COMBAT ART RESULT:")
     run(["--audio-driver", "Dummy", "--script", "res://tests/test_battlefield_ui.gd"], "BATTLEFIELD UI RESULT:")
 print("All requested checks passed.")

@@ -1,4 +1,4 @@
-# Hearthvale Basin: walls and battlefield abilities
+# Hearthvale Basin settlement ages
 
 ## Direction and geography
 
@@ -7,25 +7,32 @@ One western entry pressures a freely built settlement. The gameplay reference is
 game. Raster buildings, animated characters, connected woodland and limestone,
 and a textured command deck establish the visual style.
 
-The world is 8,192 × 5,120 units, with the hall at (4,800, 2,800). Two mountain
-spines leave a 480-unit pass at y=2,560–3,040. Twelve single-cell wall sections
-at x=4,180 can seal it. Existing saved 80-unit wall lines keep their original span. The continuous forest belts, low escarpments and eastern lake remain
-from v0.7. Layout five has eight off-path resource sites, defined in
-`assets/world/open-approach.json`: two wood and two stone inside the base, with two
-of each exposed west of the pass. Legacy layouts 0–3 retain their 28 sites; layout four retains its original eight.
+The world measures 8,192 × 5,120 units. The Hall stands at (4,800, 2,800).
+Two mountain spines enclose a 480-unit pass at y=2,560–3,040. Twelve single-cell
+wall sections at x=4,180 can seal the pass. Existing saved 80-unit walls keep
+their original span.
 
-A shared 40-unit terrain grid governs placement, red cell overlays and enemy
-navigation. Forests, resource cores, water and mountains are impassable. A matching
-producer is the sole exception for construction on a resource core. Producer
-foundations are at accessible forest margins. Canopy infill closes the previous
-isolated working pockets; a flood fill seals remaining disconnected grass cells.
-Every ordinary open cell in layout five can be reached from the hall.
+Layout six defines two working sites in `assets/world/workyards.json`. The
+timber yard at (4,800, 2,480) sits below the north canopy. The stone yard at
+(4,680, 3,120) faces the southern limestone from the meadow's edge. Both
+foundations sit off the traffic roads. Narrow cart tracks branch from the town
+road to each apron. The timber stack, saw bench, cut blocks and stone sled belong
+to their respective yard paintings. The opening camera frames both working sites
+and the intervening Hall.
 
-Foundations occupy whole grid cells. Defense buildings may meet without overlap;
-producers require their matching site, one per site. There is one main hall and
-at most one Marketplace and Workshop. Up to 512 standing structures are supported.
-Destroyed non-hall structures become null slots immediately and release their
-foundation/site. New construction reuses free slots. No repairable ruins remain.
+Layouts four and five keep their eight original sites and layouts zero through
+three keep their 28 sites. A shared 40-unit terrain grid governs placement, red
+cell overlays and navigation. Forest, rock, resources, water and mountain cells
+block passage. A matching producer can occupy a resource foundation. Canopy
+infill and a flood fill keep construction in the connected clearing.
+
+A new settlement can build one Woodcutter, one Stonemason, one Marketplace and
+one Workshop. Legacy settlements retain all paid producers, including several
+of one type. Their positions, income and purchased levels survive loading. A
+new producer of a given type can be built when its last standing instance falls.
+It uses a matching site on that settlement's own map. All foundations occupy
+whole cells. Defense buildings may meet at their edges. Destruction frees the
+foundation and building slot. A settlement can support 512 standing structures.
 
 ## Economy and upgrades
 
@@ -37,18 +44,24 @@ restores its earlier base output of two gold per game second, increased by its
 own income upgrades. Buying/selling and trade cooldowns are removed. Kills also
 provide gold.
 
-The Workshop buys instant global levels for walls, arrow towers and cannon towers.
-These apply to standing and future defenses. Woodcutters, quarries, the Hall,
-Marketplace and Workshop upgrade individually on their own panels; their
-replacements start at one. Levels cap at 100. Local prices use the existing base
-upgrade price, scaled by `1.15^(current level - 1)` and rounded up. Global defense
-prices remain twice the base price with that same scaling. Completed defense
-levels and Regeneration survive Workshop destruction. Workshop health upgrades
-are local under its Building tab.
+The Main hall's Age panel advances the settlement through Wood, Stone, Iron,
+Steel, Keep, Castle, Citadel and Crown. Every standing building, wall, build
+preview and tower project icon follows that age. The Hall's Building panel
+keeps its local health and weapon upgrade. The Age panel shows the next Hall
+and the research ranks the purchase unlocks.
 
-Health scales by `1.085^(level − 1)`, damage by `1.10^(level − 1)`, and producer
-output by `1.08^(level − 1)`. Range and attack-period improvements are bounded.
-Upgrades preserve health percentages rather than granting free healing.
+The Workshop sells separate arrow and cannon projects. Arrowheads improve arrow
+damage, Bow limbs extend range and Quick nocking increases the firing rate.
+Round shot improves shell damage, Burst shells enlarge the blast and Loading
+crew shortens the reload. A purchased rank applies to standing and future towers
+of its family. The purchase panel shows the exact projected stat and price.
+Wall reinforcement and Regeneration remain settlement-wide Workshop purchases.
+The [upgrade specification](gameplay/upgrades.md) defines rank gates and prices.
+
+Woodcutters, quarries, the Hall, Marketplace and Workshop upgrade individually.
+Replacements start at level one. Health scales by `1.085^(level − 1)` and
+producer output by `1.08^(level − 1)`. Local prices scale by `1.15^(level − 1)`.
+Upgrades preserve the building's health percentage.
 
 Regeneration is a separate global Workshop upgrade, initially level zero. Unlocking
 costs 120 wood, 90 stone and 60 gold, scaling by `1.15^current level` and rounded
@@ -167,8 +180,9 @@ from their actual attack state and existing 1.15-second damage cadence. Sprites
 mirror from movement or target direction, retain that direction on death, and
 keep their foot anchor between walk and attack sheets. Reduced motion uses a
 stationary strike pose. The launcher and startup use a painted Hall emblem.
-The minimap is rendered from actual terrain. Layout three
-retains its original overview, while layout four retains its v0.8 overview; layout five uses the current overview.
+The minimap is an engine render of each layout. Layouts three through five keep
+their previous overviews. Layout six uses the two-yard overview. A completed
+producer's worker shuttles across its apron toward its stockpile or stone sled.
 
 With nothing selected, the right rail shows seven large construction cards.
 Selecting a tool or building replaces the catalogue. A tap previews, and a
@@ -197,7 +211,7 @@ same logical canvas. No Guide or mobile zoom buttons are shown.
 
 ## Saves and reproducibility
 
-Format eleven records per-building local levels and global defense levels, Regeneration, the miniboss interval
+Format twelve records settlement age, the six independent tower ranks, per-building local levels and global defense levels, Regeneration, the miniboss interval
 counter, final-boss identity/defeat, earned victory, attack/facing state, smash warning/cooldown/center, Rain recharge and active
 barrage pulse state, per-wall footprint, terrain revision, structures, enemies, retaliation,
 economy, mission time, random state, camera and zoom. No trade cooldowns, active research or manual repair jobs are stored. Transient A* paths are rebuilt after load. JSON uses full
@@ -207,9 +221,9 @@ clocks use game time and retain partial progress through reloads. Completed
 barrage timers clamp floating-point residue before saving, including the exact
 final-pulse frame; resuming never duplicates a damage pulse.
 
-Versions 2–10 preserve terrain, positions and sites (layouts 0–5).
+Versions 2–11 preserve terrain, positions and sites (layouts 0–5).
 Standing non-defense buildings retain their old purchased levels as individual
-levels; new replacements begin at one. Defenses keep shared type-wide levels. A paid
+levels; new replacements begin at one. Buildings keep their old defense grades. Arrow and cannon damage research inherits its old grade. Existing tower health, range and fire rate retain their purchased benefits. A paid
 version-seven research order completes once on migration without another charge,
 including if its Workshop is gone. Remaining paid local repair finishes once;
 then its job is removed. Versions 2–7 initialize Regeneration locked; version-eight saves retain their
@@ -222,9 +236,8 @@ counter already reached three. Existing living old bosses retain their stats and
 are not reclassified as the final encounter. The off-path sites originally added in
 v0.9 remain specific to layout five; legacy maps remain unchanged.
 
-`tools/bake_world.gd` reproducibly stores six terrain/navigation fields. The five
-legacy fields remain byte-for-byte equal to v0.8; its original minimap remains
-available separately. Tests compare all caches to fresh geography and shortest
+`tools/bake_world.gd` reproducibly stores seven terrain/navigation fields. The six
+legacy terrain and route fields match v0.12 exactly. Tests compare all caches to fresh geography and shortest
 paths, exercise movement, all local/global levels through 100, miniboss boundaries,
 Regeneration, destruction, migration, repeated construction and mobile/native
 Android lifecycle handling. Balance uses paid player orders; explicitly labeled

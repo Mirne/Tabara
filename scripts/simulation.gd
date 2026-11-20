@@ -6,7 +6,7 @@ extends RefCounted
 const FINAL_BOSS_TIME := 900.0
 const MAX_LEVEL := 100
 const WAVE_SECONDS := 30.0
-const SAVE_VERSION := 11
+const SAVE_VERSION := 12
 const LOCAL_UPGRADES := ["hall","wood","stone","market","workshop"]
 const GLOBAL_UPGRADES := ["arrow","wall","cannon"]
 const BOSS_INTERVAL := 300.0
@@ -18,6 +18,9 @@ static var shared_navigation:Dictionary={}
 static var shared_retaliation:Dictionary={}
 var retaliation_grid:AStarGrid2D
 var research_levels:Dictionary={}
+var settlement_age := 1
+var tower_tracks: Dictionary = {}
+var tracks_by_stat: Dictionary = {"arrow":{}, "cannon":{}}
 var regeneration_level:=0
 var boss_intervals:=0
 var final_boss_id:=0
@@ -49,10 +52,25 @@ const FOUNDATION_WIDTHS := {"hall":240.0,"wood":160.0,"stone":160.0,"arrow":80.0
 const FOOTPRINTS := {"hall":100.0,"wood":65.0,"stone":68.0,"arrow":45.0,"wall":16.0,"cannon":52.0,"market":76.0,"workshop":84.0}
 const WALL_DIRECTIONS := [Vector2i(0,-1),Vector2i(1,0),Vector2i(0,1),Vector2i(-1,0)]
 const BODY_GAPS := {"raider":30.0,"runner":28.0,"brute":43.0,"siege":60.0,"elite":43.0,"boss":62.0}
+const AGE_NAMES := ["Wood", "Stone", "Iron", "Steel", "Keep", "Castle", "Citadel", "Crown"]
+const AGE_TRACK_LIMITS := [3, 5, 8, 9, 10, 11, 12, MAX_LEVEL]
+const AGE_PRICE_GROWTH := 1.5
+const ARROW_RANGE_PER_RANK := 20.0
+const CANNON_SPLASH_PER_RANK := 12.0
+const RADIUS_DIMINISHING_RETURN := 0.035
+const FIRING_RATE_PER_RANK := 0.05
+const TRACKS := {
+ "arrow_damage": {"kind":"arrow", "stat":"damage", "name":"Arrowheads", "unlock_age":1},
+ "arrow_range": {"kind":"arrow", "stat":"range", "name":"Bow limbs", "unlock_age":2},
+ "arrow_cadence": {"kind":"arrow", "stat":"period", "name":"Quick nocking", "unlock_age":3},
+ "cannon_damage": {"kind":"cannon", "stat":"damage", "name":"Round shot", "unlock_age":1},
+ "cannon_splash": {"kind":"cannon", "stat":"splash", "name":"Burst shells", "unlock_age":2},
+ "cannon_cadence": {"kind":"cannon", "stat":"period", "name":"Loading crew", "unlock_age":3},
+}
 const DEFINITIONS := {
  "hall": {"name":"Main hall", "tag":"THE HEART OF TABARA", "desc":"Your last line of defense. Fires arrows and provides a small steady income.", "cost":[0,0,0], "upgrade":[65,45,25], "hp":4200.0, "damage":42.0, "range":500.0, "period":1.1, "art":0},
- "wood": {"name":"Woodcutter", "tag":"WOOD PRODUCTION", "desc":"Harvests timber automatically. Build in a marked timber working pocket. One woodcutter per site.", "cost":[60,20,10], "upgrade":[50,25,15], "hp":300.0, "income":4.0, "resource":"wood", "art":1},
- "stone": {"name":"Stonemason", "tag":"STONE PRODUCTION", "desc":"Quarries stone automatically. Must be built on a stone deposit. One stonemason per quarry.", "cost":[70,15,15], "upgrade":[45,40,15], "hp":380.0, "income":5.0, "resource":"stone", "art":2},
+ "wood": {"name":"Woodcutter", "tag":"WOOD PRODUCTION", "desc":"Harvests timber automatically. Build in a marked timber working pocket. One woodcutter per settlement.", "cost":[60,20,10], "upgrade":[50,25,15], "hp":300.0, "income":4.0, "resource":"wood", "art":1},
+ "stone": {"name":"Stonemason", "tag":"STONE PRODUCTION", "desc":"Quarries stone automatically. Must be built on a stone deposit. One stonemason per settlement.", "cost":[70,15,15], "upgrade":[45,40,15], "hp":380.0, "income":5.0, "resource":"stone", "art":2},
  "arrow": {"name":"Arrow tower", "tag":"FAST SINGLE TARGET", "desc":"Accurate, rapid arrows. Best against scouts and lone raiders.", "cost":[140,100,60], "upgrade":[55,35,20], "hp":650.0, "damage":30.0, "range":460.0, "period":1.0, "art":3},
  "wall": {"name":"Wall", "tag":"HOLD THE LINE", "desc":"Build freely to form a defensive line. Enemies attack walls in their way.", "cost":[25,55,10], "upgrade":[20,55,10], "hp":2000.0, "art":4},
  "cannon": {"name":"Cannon tower", "tag":"AREA DAMAGE", "desc":"Explosive shells damage every enemy in a wide blast. Strong against groups.", "cost":[220,200,120], "upgrade":[65,75,35], "hp":650.0, "damage":110.0, "range":560.0, "period":3.0, "splash":140.0, "art":5},
@@ -87,6 +105,10 @@ func _init(seed_number:int=2026,layout:int=World.AUTHORED_REVISION)->void:
  terrain_revision=layout
  resource_nodes=World.resource_nodes(layout)
  for kind in DEFINITIONS: research_levels[kind]=1
+ for id in TRACKS:
+  tower_tracks[id] = 1
+  var track: Dictionary = TRACKS[id]
+  tracks_by_stat[track.kind][track.stat] = id
  mountains_enabled=layout!=0
  reset_navigation()
  seed_value = seed_number
@@ -172,12 +194,17 @@ func deposit_owner(index: int) -> int:
   if buildings[i]!=null and producer_deposit(buildings[i])==index: return i
  return -1
 
+func singleton_index(kind: String) -> int:
+ for i in buildings.size():
+  var building = buildings[i]
+  if building != null and building.kind == kind and building.hp > 0: return i
+ return -1
+
 func placement_error(position: Vector2, kind: String) -> String:
  if defeated: return "The main hall has fallen. Start a new settlement."
  if not DEFINITIONS.has(kind) or kind=="hall": return "Choose a construction tool."
- if kind in ["market","workshop"]:
-  for b in buildings:
-   if b!=null and b.kind==kind: return "Only one %s may stand at a time."%DEFINITIONS[kind].name
+ if kind in ["wood","stone","market","workshop"] and singleton_index(kind) >= 0:
+  return "Only one %s may stand at a time." % DEFINITIONS[kind].name
  var foundation:=foundation_rect(position,kind)
  var radius:float=foundation.size.x/2
  var own_deposit:=-1
@@ -294,13 +321,29 @@ func production_bonus(b: Dictionary) -> float:
  return 1.0
 
 func stat(building: Dictionary, key: String) -> float:
- var base: float = DEFINITIONS[building.kind].get(key,0.0)
- var growth := 1.10
- if key == "hp": growth = 1.085
- if key == "income": growth = 1.08
- if key == "range": return base + minf(55.0, (building.level-1)*0.8)
- if key == "period": return base / (1.0+minf(0.5,(building.level-1)*0.007))
- return base * pow(growth,building.level-1)
+ var rank := 1
+ if tracks_by_stat.has(building.kind) and tracks_by_stat[building.kind].has(key):
+  rank = track_level(tracks_by_stat[building.kind][key])
+ return _scaled_stat(building.kind, key, building.level, rank)
+
+func track_value(id: String, next: bool = false) -> float:
+ if not TRACKS.has(id): return 0.0
+ var track: Dictionary = TRACKS[id]
+ var rank := mini(track_level(id) + int(next), MAX_LEVEL)
+ return _scaled_stat(track.kind, track.stat, int(research_levels[track.kind]), rank)
+
+func _scaled_stat(kind: String, key: String, building_level: int, track_rank: int) -> float:
+ var base: float = DEFINITIONS[kind].get(key, 0.0)
+ var grades := building_level - 1
+ var ranks := track_rank - 1
+ match key:
+  "hp": return base * pow(1.085, grades)
+  "income": return base * pow(1.08, grades)
+  "range": return base + minf(55.0, grades * 0.8) + ARROW_RANGE_PER_RANK * ranks / (1.0 + RADIUS_DIMINISHING_RETURN * ranks)
+  "period": return base / ((1.0 + minf(0.5, grades * 0.007)) * (1.0 + ranks * FIRING_RATE_PER_RANK))
+  "splash": return base + CANNON_SPLASH_PER_RANK * ranks / (1.0 + RADIUS_DIMINISHING_RETURN * ranks)
+  "damage": return base * pow(1.1, maxi(grades, ranks))
+  _: return base
 
 func build_time(kind:String)->float:
  return float(DEFINITIONS[kind].get("build_time",BUILD_TIME))
@@ -311,7 +354,65 @@ func workshop_index()->int:
   if b!=null and b.kind=="workshop" and b.hp>0 and b.age>=build_time("workshop"): return i
  return -1
 
+func track_limit(age: int = -1) -> int:
+ var selected_age := settlement_age if age < 0 else age
+ return AGE_TRACK_LIMITS[clampi(selected_age, 1, AGE_NAMES.size()) - 1]
+
+func track_level(id: String) -> int:
+ return int(tower_tracks.get(id, 0))
+
+func age_cost() -> Array:
+ if settlement_age >= AGE_NAMES.size(): return []
+ var price := []
+ for amount in DEFINITIONS.hall.upgrade:
+  price.append(ceili(amount * 2.0 * pow(AGE_PRICE_GROWTH, settlement_age - 1)))
+ return price
+
+func track_cost(id: String) -> Array:
+ if not TRACKS.has(id) or track_level(id) >= MAX_LEVEL: return []
+ var price := []
+ for amount in DEFINITIONS[TRACKS[id].kind].upgrade:
+  price.append(ceili(amount * pow(1.15, track_level(id) - 1)))
+ return price
+
+func age_error() -> String:
+ if defeated: return "The main hall has fallen."
+ if settlement_age >= AGE_NAMES.size(): return "Final age reached."
+ if not can_afford(age_cost()): return "Not enough supplies to advance."
+ return ""
+
+func advance_age() -> String:
+ var error := age_error()
+ if error != "": return error
+ spend(age_cost())
+ settlement_age += 1
+ events.append({"type":"build", "pos":buildings[0].pos, "text":AGE_NAMES[settlement_age - 1]})
+ return ""
+
+func track_error(id: String) -> String:
+ if defeated: return "The main hall has fallen."
+ if not TRACKS.has(id): return "Select a tower upgrade."
+ if workshop_index() < 0: return "Complete a Workshop."
+ var unlock_age: int = TRACKS[id].unlock_age
+ if settlement_age < unlock_age: return "Requires %s age." % AGE_NAMES[unlock_age - 1]
+ var rank := track_level(id)
+ if rank >= MAX_LEVEL: return "Maximum rank reached."
+ if rank >= track_limit():
+  for age in range(settlement_age + 1, AGE_NAMES.size() + 1):
+   if track_limit(age) > rank: return "Requires %s age." % AGE_NAMES[age - 1]
+ if not can_afford(track_cost(id)): return "Not enough supplies."
+ return ""
+
+func research_track(id: String) -> String:
+ var error := track_error(id)
+ if error != "": return error
+ spend(track_cost(id))
+ tower_tracks[id] = track_level(id) + 1
+ events.append({"type":"build", "pos":buildings[workshop_index()].pos, "text":TRACKS[id].name})
+ return ""
+
 func research_cost(kind:String)->Array:
+ if kind != "wall": return []
  var result:Array=[]
  for value in DEFINITIONS[kind].upgrade: result.append(ceilf(value*2.0*pow(1.15,int(research_levels[kind])-1)))
  return result
@@ -329,9 +430,13 @@ func apply_global_level(kind:String,level:int)->void:
   b.level=level
   b.hp=stat(b,"hp")*fraction
  research_levels[kind]=level
+ if kind in ["arrow", "cannon"]:
+  var damage_track := kind + "_damage"
+  tower_tracks[damage_track] = maxi(track_level(damage_track), level)
 
 func start_research(kind:String)->String:
  if defeated: return "The main hall has fallen."
+ if kind in ["arrow", "cannon"]: return "Select a tower upgrade."
  if kind not in GLOBAL_UPGRADES: return "Select this building to upgrade it."
  var index:=workshop_index()
  if index<0: return "Build a Workshop and wait for construction to finish."
@@ -361,12 +466,14 @@ func upgrade_regeneration()->String:
  return ""
 
 func can_afford(cost: Array) -> bool:
+ if cost.size() != RESOURCE_NAMES.size(): return false
  for i in 3:
   if resources[RESOURCE_NAMES[i]]+0.001 < cost[i]: return false
  return true
 
 func rain_damage()->float:
- return Abilities.RAIN_PULSE_DAMAGE*Abilities.RAIN_PULSES*pow(1.1,int(research_levels.arrow)-1)
+ var multiplier := track_value("arrow_damage") / float(DEFINITIONS.arrow.damage)
+ return Abilities.RAIN_PULSE_DAMAGE * Abilities.RAIN_PULSES * multiplier
 
 func rain_ready()->bool:
  return not defeated and Abilities.rain_recharge_seconds>=0 and rain_cooldown<=0 and arrow_rains.is_empty()
@@ -577,8 +684,9 @@ func step(delta: float) -> void:
   var impact:Vector2=enemy_positions[target.id]
   var damage := stat(b,"damage")
   if b.kind == "cannon":
-   for e in nearby_enemies(impact,DEFINITIONS.cannon.splash):
-    if enemy_positions[e.id].distance_to(impact) <= DEFINITIONS.cannon.splash:
+   var blast_radius := stat(b, "splash")
+   for e in nearby_enemies(impact, blast_radius):
+    if enemy_positions[e.id].distance_to(impact) <= blast_radius:
      e.hp -= damage
      provoke(e,i)
   else:
@@ -848,11 +956,11 @@ func snapshot() -> Dictionary:
   var push:Vector2=e.get("push",Vector2.ZERO)
   copy.push=[push.x,push.y]
   saved_enemies.append(copy)
- return {"rain_cooldown":rain_cooldown,"arrow_rains":saved_rains,"research_levels":research_levels.duplicate(),"regeneration_level":regeneration_level,"boss_intervals":boss_intervals,"final_boss_id":final_boss_id,"final_boss_defeated":final_boss_defeated,"legacy_completion":legacy_completion,"victory":victory,"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
+ return {"settlement_age":settlement_age,"tower_tracks":tower_tracks.duplicate(),
+ "rain_cooldown":rain_cooldown,"arrow_rains":saved_rains,"research_levels":research_levels.duplicate(),"regeneration_level":regeneration_level,"boss_intervals":boss_intervals,"final_boss_id":final_boss_id,"final_boss_defeated":final_boss_defeated,"legacy_completion":legacy_completion,"victory":victory,"version":SAVE_VERSION,"mountains_enabled":mountains_enabled,"terrain_revision":terrain_revision,"resources":resources.duplicate(true),"buildings":saved_buildings,"enemies":saved_enemies,"deposits":deposits.duplicate(),"elapsed":elapsed,"wave":wave,"kills":kills,"victory_seen":victory_seen,"spawn_remaining":spawn_remaining,"spawn_clock":spawn_clock,"next_id":next_id,"seed":seed_value,"rng_state":str(rng.state),"cleared_ground":cleared_ground.keys()}
 
 static func restore(data: Dictionary):
  if not _number(data.get("version"),2,SAVE_VERSION) or float(data.version)!=floorf(data.version): return null
- if int(data.version) not in [2,3,4,5,6,7,8,9,10,SAVE_VERSION]: return null
  if not data.get("buildings") is Array or data.buildings.is_empty() or data.buildings.size()>MAX_BUILDINGS: return null
  if not data.get("enemies") is Array or data.enemies.size()>MAX_ENEMIES: return null
  if not data.get("resources") is Dictionary: return null
@@ -1061,9 +1169,33 @@ static func restore(data: Dictionary):
   var job:Dictionary=sim.get_meta("legacy_paid_upgrade")
   sim.apply_global_level(job.kind,int(job.level))
   sim.remove_meta("legacy_paid_upgrade")
+ if data.version < 12:
+  for kind in ["arrow", "cannon"]:
+   sim.tower_tracks[kind + "_damage"] = int(sim.research_levels[kind])
+ elif not sim.restore_age_research(data):
+  return null
  sim.events.clear()
  sim.rebuild_building_grid()
  return sim
+
+func restore_age_research(data: Dictionary) -> bool:
+ var age_value = data.get("settlement_age")
+ if not _number(age_value, 1, AGE_NAMES.size()) or float(age_value) != floorf(age_value):
+  return false
+ var ranks = data.get("tower_tracks")
+ if not ranks is Dictionary or ranks.size() != TRACKS.size():
+  return false
+ for id in TRACKS:
+  var track: Dictionary = TRACKS[id]
+  var inherited := int(research_levels[track.kind]) if track.stat == "damage" else 1
+  var limit := track_limit(int(age_value)) if int(age_value) >= track.unlock_age else 1
+  var value = ranks.get(id)
+  if not _number(value, inherited, maxi(inherited, limit)) or float(value) != floorf(value):
+   return false
+ settlement_age = int(age_value)
+ for id in TRACKS:
+  tower_tracks[id] = int(ranks[id])
+ return true
 
 static func _number(value, minimum: float, maximum: float) -> bool:
  return (value is float or value is int) and is_finite(float(value)) and value>=minimum and value<=maximum

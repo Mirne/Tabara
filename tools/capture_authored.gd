@@ -12,7 +12,8 @@ func run()->void:
  game.set_process(false)
  game.music_player.stop()
  game.sound_on=false
- var sim=load("res://scripts/simulation.gd").new(17)
+ var workyards := "--workyards" in OS.get_cmdline_user_args()
+ var sim=load("res://scripts/simulation.gd").new(17, 6 if workyards else 5)
  sim.buildings.clear()
  sim.enemies.clear()
  game.sim=sim
@@ -38,6 +39,12 @@ func run()->void:
  await settle()
  world.queue_redraw()
  await settle()
+ if workyards:
+  var overview := view.get_texture().get_image()
+  overview.resize(640,400,Image.INTERPOLATE_LANCZOS)
+  var result := overview.save_webp("res://assets/world/workyards-overview.webp",true,0.9)
+  quit(0 if result == OK else 1)
+  return
  view.get_texture().get_image().save_png("res://assets/world/overview.png")
  var icon_view:=SubViewport.new()
  icon_view.size=Vector2i(192,160)

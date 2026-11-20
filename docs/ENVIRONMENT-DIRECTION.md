@@ -31,3 +31,10 @@ Reference sources:
 
 - https://numantiangames.com/TheyAreBillions/
 - https://www.moddb.com/games/they-are-billions/images/they-are-billions-full-map-screen
+
+Revision 6 places the settlement's sawyer below the northern canopy and the
+Stonemason at the edge of the southern limestone meadow. Each has one 160×160
+foundation on open ground, visible from the opening camera. Short cart tracks
+branch from the town's existing roads to the yard entrances. The main attack
+line and the pass remain open for the player's defenses. The wood and stone
+yards have distinct stockpiles and front aprons for their workers.

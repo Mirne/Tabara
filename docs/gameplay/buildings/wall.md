@@ -20,3 +20,9 @@ Preserve old saved foundations: legacy 80x80 walls keep their collision, levels
 and HP, and render as four joined 40x40 tiles. New single-cell walls join their
 outer edges correctly. Save the footprint; do not split old logical buildings or
 spend resources during migration. Destruction opens the actual occupied cells.
+
+The Main hall's selected age determines the appearance of the standing rampart,
+wall placement preview and catalogue icon. Its exposed face progresses from
+timber stakes to carved medieval masonry. All cells in a connected stretch
+share the same materials, deck elevation and exterior parapet profile. The
+appearance also applies to the visual tiles of older 80×80 foundations.
