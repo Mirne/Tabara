@@ -12,6 +12,10 @@ on:
           - '24'
           - '35'
           - '36'
+      navigation_only:
+        description: Verify system navigation on the selected image
+        type: boolean
+        default: false
       attach_to_v013_draft:
         description: Attach the verified APK and checksum to the v0.13.0 release draft
         type: boolean
@@ -51,6 +55,8 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           ANDROID_EXPECTED_RASTER: ${{ matrix.api == 36 && '1544x720' || '' }}
+          TABARA_ANDROID_API: ${{ matrix.api }}
+          TABARA_BACK_PROBE: ${{ inputs.navigation_only }}
         with:
           api-level: ${{ matrix.api }}
           target: default
@@ -58,13 +64,7 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swangle -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none
-          script: |
-            adb root
-            adb wait-for-device
-            if [ "${{ matrix.api }}" = 36 ]; then adb shell wm size 720x1544; fi
-            adb shell settings put secure immersive_mode_confirmations confirmed
-            ANDROID_TEST_ROOT=1 ANDROID_SERIAL=emulator-5554 ANDROID_PREVIOUS_APK="$RUNNER_TEMP/tabara-v012.apk" ANDROID_REPORT_NAME=android-upgrade "$RUNNER_TEMP/tabara-test-python/bin/python" tests/android_upgrade.py
-            ANDROID_TEST_ROOT=1 ANDROID_SERIAL=emulator-5554 "$RUNNER_TEMP/tabara-test-python/bin/python" tests/android_smoke.py
+          script: bash tests/run_android_checks.sh
       - name: Show native check evidence
         if: always()
         run: |
@@ -83,7 +83,7 @@ jobs:
 
   attach-tested-build:
     needs: android
-    if: github.ref == 'refs/heads/main' && inputs.android_api == 'all' && inputs.attach_to_v013_draft
+    if: github.ref == 'refs/heads/main' && inputs.android_api == 'all' && !inputs.navigation_only && inputs.attach_to_v013_draft
     runs-on: ubuntu-latest
     permissions:
       contents: write

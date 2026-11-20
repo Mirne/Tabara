@@ -16,6 +16,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from PIL import Image, ImageChops, ImageStat
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -165,6 +166,34 @@ def wait_supplies(data, required):
     return data
 
 
+def enable_gesture_navigation():
+    adb("shell", "cmd", "overlay", "enable-exclusive", "--category",
+        "com.android.internal.systemui.navbar.gestural")
+    deadline = time.monotonic() + 20
+    while time.monotonic() < deadline:
+        if adb("shell", "settings", "get", "secure", "navigation_mode") == "2":
+            return
+        time.sleep(1)
+    raise RuntimeError("Android emulator did not enable system gesture navigation")
+
+
+def navigation_diagnostics(label):
+    # Only preserve evidence about the emulator's focused window and Back routing.
+    window = adb("shell", "dumpsys", "window", "displays")
+    system_ui = adb("shell", "dumpsys", "activity", "service", "com.android.systemui/.SystemUIService")
+    lines = window.splitlines() + system_ui.splitlines()
+    markers = ("mCurrentFocus", "navigationBars", "mIsNavBarShownTransiently",
+               "mIsBackGestureAllowed", "mExcludeRegion", "mUnrestrictedExcludeRegion",
+               "mIsNavBarGestureButtonAllowed", "mIsEnabled", "mGestureLog", "mPredictionLog")
+    selected = []
+    for i, line in enumerate(lines):
+        if any(marker in line for marker in markers):
+            selected.append(line)
+            if "mGestureLog" in line or "mPredictionLog" in line:
+                selected.extend(lines[i + 1:i + 8])
+    (OUT / (label + ".txt")).write_text("\n".join(selected) + "\n")
+
+
 def back_sequence():
     # Target-36 apps receive predictive Back through the Android navigation
     # dispatcher. Inject a gesture from the physical display edge, outside the
@@ -172,20 +201,35 @@ def back_sequence():
     gesture = int(adb("shell", "getprop", "ro.build.version.sdk")) >= 36
     action = "System Back gesture" if gesture else "Hardware Back"
 
-    def navigate_back():
+    def navigate_back(label):
         if gesture:
-            adb("shell", "input", "swipe", 1, size[1] // 2, size[0] // 5, size[1] // 2, "260")
+            # Android's immersive game excludes the hidden system edges. Reveal
+            # the system navigation handle, then swipe Back while it is visible.
+            width, height = size
+            adb("shell", "input", "touchscreen", "swipe", width // 2, height - 1,
+                width // 2, height * 2 // 3, "175")
+            with ThreadPoolExecutor(max_workers=1) as observer:
+                insets = observer.submit(adb, "shell", "dumpsys", "window", "displays")
+                time.sleep(.25)
+                adb("shell", "input", "touchscreen", "swipe", 1, height // 2,
+                    width // 4, height // 2, "190")
+            transient = [line for line in insets.result().splitlines() if "navigationBars" in line]
+            (OUT / (label + "-transient-insets.txt")).write_text("\n".join(transient) + "\n")
         else:
             adb("shell", "input", "keyevent", "4")
 
     before = save()["elapsed"]
-    navigate_back()
+    if gesture:
+        navigation_diagnostics("system-back-before")
+    navigate_back("system-back-first")
     time.sleep(12)
     if gesture:
         screen("system-back-first")
-    navigate_back()
+    navigate_back("system-back-second")
     time.sleep(5)
     after = save()["elapsed"]
+    if gesture:
+        navigation_diagnostics("system-back-after")
     print(f"BACK CLOCKS: {before} -> {after}", flush=True)
     check(after > before + 0.01, f"{action} resumes the clock before pausing again")
     time.sleep(12)  # Longer than the real-time autosave interval.
@@ -214,15 +258,7 @@ def native_checks(back_only=False):
             raise TimeoutError("Disposable emulator did not finish booting")
         check(True, "Android boot and package service are ready")
         if int(adb("shell", "getprop", "ro.build.version.sdk")) >= 36:
-            adb("shell", "cmd", "overlay", "enable-exclusive", "--category",
-                "com.android.internal.systemui.navbar.gestural")
-            deadline = time.monotonic() + 20
-            while time.monotonic() < deadline:
-                if adb("shell", "settings", "get", "secure", "navigation_mode") == "2":
-                    break
-                time.sleep(1)
-            else:
-                raise RuntimeError("Android emulator did not enable system gesture navigation")
+            enable_gesture_navigation()
         if not back_only and not resume_log:
             installed = adb("install", "--no-incremental", "-r", APK, timeout=300)
             check("Success" in installed, "Frontier APK installs")
@@ -624,5 +660,35 @@ def native_checks(back_only=False):
         print(json.dumps(report), flush=True)
     return 0 if report["passed"] else 1
 
+def navigation_probe():
+    OUT.mkdir(parents=True, exist_ok=True)
+    started_at = time.monotonic()
+    error = None
+    try:
+        check("Success" in adb("install", "--no-incremental", "-r", APK, timeout=300),
+              "The signed game installs for the Android 16 navigation check")
+        adb("shell", "pm", "clear", PACKAGE)
+        enable_gesture_navigation()
+        adb("shell", "settings", "put", "secure", "immersive_mode_confirmations", "confirmed")
+        launch()
+        wait_menu()
+        tap(260, 462)
+        tap(805, 650)
+        time.sleep(5)
+        tap(1338, 43)
+        screen("system-back-paused-baseline")
+        back_sequence()
+    except Exception as problem:
+        error = str(problem) or type(problem).__name__
+        print("NAVIGATION ERROR:", error, flush=True)
+        screen("failed-state")
+    report = {"passed": error is None, "error": error, "checks": checks,
+              "actual_seconds": time.monotonic() - started_at, "apk_sha256": APK_SHA256,
+              "mode": "Android system navigation"}
+    (OUT / "report.json").write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps(report), flush=True)
+    return int(not report["passed"])
+
+
 if __name__ == "__main__":
-    sys.exit(native_checks())
+    sys.exit(navigation_probe() if "--back-probe" in sys.argv else native_checks())
