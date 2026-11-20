@@ -90,9 +90,12 @@ def wait_menu():
     screen("menu-timeout")
     raise TimeoutError("Native menu did not match the rendered frontier art")
 
-def world_point(x, y):
-    # Default mission camera and logical game viewport, before any drag/pinch.
-    return round((x - 4840) * .72 + 552), round((y - 2800) * .72 + 447)
+def world_point(x, y, camera):
+    center_x, center_y, zoom = camera
+    px, py = round((x - center_x) * zoom + 552), round((y - center_y) * zoom + 447)
+    if not (0 <= px < 1104 and 84 <= py < 810):
+        raise ValueError(f"World point {(x, y)} projects outside the battlefield at {(px, py)} from {camera}")
+    return px, py
 
 def physical(x, y):
     width, height = size
@@ -206,8 +209,11 @@ def back_sequence():
             # Android's immersive game excludes the hidden system edges. Reveal
             # the system navigation handle, then swipe Back while it is visible.
             width, height = size
-            adb("shell", "input", "touchscreen", "swipe", width // 2, height - 1,
-                width // 2, height * 2 // 3, "175")
+            # Start below the right-hand panel; revealing through the playable
+            # battlefield can also pan the map while the system bar slides in.
+            panel_x = physical(1300, 800)[0]
+            adb("shell", "input", "touchscreen", "swipe", panel_x, height - 1,
+                panel_x, height * 2 // 3, "175")
             with ThreadPoolExecutor(max_workers=1) as observer:
                 insets = observer.submit(adb, "shell", "dumpsys", "window", "displays")
                 time.sleep(.25)
@@ -299,11 +305,12 @@ def native_checks(back_only=False):
                 tap(805, 650)
                 time.sleep(5)
                 screen("03-initial-mission")
+                opening_camera = save()["camera"]
                 # Full-height catalogue; selecting and placing hides it until Build structures.
                 tap(1194, 218)
-                tap(*world_point(4800, 2480))
+                tap(*world_point(4800, 2480, opening_camera))
                 image = screen("03a-green-grid-preview")
-                wx, wy = world_point(4800, 2480)
+                wx, wy = world_point(4800, 2480, opening_camera)
                 patch = image.crop((wx-60, wy-60, wx+60, wy+60))
                 green = sum(g > r*1.2 and g > b*1.15 and g > 75 for r, g, b in patch.getdata())
                 check(green > 400, "Native producer preview renders green buildable tiles")
@@ -313,16 +320,16 @@ def native_checks(back_only=False):
                 resume_with_touch()
                 time.sleep(4)
                 tap(1194, 218)
-                tap(*world_point(4800, 2480))
+                tap(*world_point(4800, 2480, preview_save["camera"]))
                 tap(1273, 685)
                 tap(1352, 218)  # Single timber yard returns to the catalogue.
-                tap(*world_point(4680, 3120))
+                tap(*world_point(4680, 3120, preview_save["camera"]))
                 tap(1273, 685)
                 tap(1194, 376)
-                tap(*world_point(4480, 2760))
+                tap(*world_point(4480, 2760, preview_save["camera"]))
                 tap(1273, 685)
                 # Place another tower directly: no catalogue or building selection.
-                tap(*world_point(4640, 2760))
+                tap(*world_point(4640, 2760, preview_save["camera"]))
                 tap(1273, 685)
                 tap(1338, 43)
                 before_wall = save()
@@ -331,8 +338,8 @@ def native_checks(back_only=False):
                 resume_with_touch()
                 time.sleep(4)
                 tap(1352, 376)
-                start = world_point(4180, 2400)
-                finish = world_point(4180, 3200)
+                start = world_point(4180, 2400, before_wall["camera"])
+                finish = world_point(4180, 3200, before_wall["camera"])
                 adb("shell", "input", "swipe", *physical(*start), *physical(*finish), "700")
                 time.sleep(4)
                 screen("03b-wall-preview")
@@ -370,7 +377,7 @@ def native_checks(back_only=False):
                 wait_supplies(save(), {"wood": 50, "stone": 25, "gold": 15})
                 resume_with_touch()
                 time.sleep(max(4, TAP_DELAY))
-                tap(*world_point(4800, 2420))
+                tap(1194, 218)  # The occupied Woodcutter card centers its real building.
                 tap(1273, 584)
                 screen("04a-local-producer")
                 tap(1273, 763)
@@ -379,10 +386,21 @@ def native_checks(back_only=False):
                 wood = next(b for b in local_save["buildings"] if b and b["kind"] == "wood")
                 stone = next(b for b in local_save["buildings"] if b and b["kind"] == "stone")
                 print("LOCAL UPGRADE STATE:", {"wood": wood["level"], "stone": stone["level"], "camera": local_save["camera"]}, flush=True)
+                check(local_save["camera"][:2] == wood["pos"],
+                      "The occupied Woodcutter card centers its standing producer")
                 check(wood["level"] == 2 and stone["level"] == 1,
                       "Native producer upgrade is local and needs no Workshop")
         else:
-            tap(*world_point(5200, 2800))
+            # A retained checkpoint can include arbitrary camera motion. The Hall
+            # button returns to the actual base before selecting its paid Workshop.
+            tap(1194, 43)
+            tap(1338, 43)
+            base = save()
+            workshop = next(b for b in base["buildings"] if b and b["kind"] == "workshop")
+            resume_with_touch()
+            time.sleep(4)
+            tap(1273, 763)
+            tap(*world_point(*workshop["pos"], base["camera"]))
             tap(1338, 43)
             checkpoint = save()
             paid_defenses = checkpoint
@@ -399,10 +417,10 @@ def native_checks(back_only=False):
                 resume_with_touch()
                 time.sleep(4)
                 tap(1273, 692)
-                tap(*world_point(5200, 2800))
+                tap(*world_point(5200, 2800, local_save["camera"]))
                 tap(1273, 685)
                 tap(1273, 763)  # Done building, then explicitly select the Workshop.
-                tap(*world_point(5200, 2800))
+                tap(*world_point(5200, 2800, local_save["camera"]))
                 end = time.monotonic() + 240
                 while True:
                     tap(1338, 43)
@@ -606,7 +624,7 @@ def native_checks(back_only=False):
                 print("RAIN TARGET SNAPSHOT:",rain_target["pos"],flush=True)
                 tap(720,505)
                 tap(391,756)
-                tap(*world_point(*rain_target["pos"]))
+                tap(*world_point(*rain_target["pos"], current["camera"]))
                 screen("12-rain-preview")
                 check(save()["rain_cooldown"]==0 and not save()["arrow_rains"],
                       "Native Rain selection and target tap only preview without casting")
