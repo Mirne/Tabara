@@ -36,6 +36,22 @@ def continue_and_pause(capture):
     return device.save()
 
 
+def purchase_age(expected):
+    # advance_age saves synchronously. Read the receipt as soon as Android handles
+    # the touch so waiting for seven separate pause/resume cycles cannot start a raid.
+    time.sleep(.5)  # Let the next price finish drawing before accepting its tap.
+    device.adb('shell', 'input', 'tap', *device.physical(1273, 678))
+    deadline = time.monotonic() + 12
+    while time.monotonic() < deadline:
+        receipt = device.save()
+        if receipt['settlement_age'] >= expected:
+            device.check(receipt['settlement_age'] == expected,
+                         f'Hall touch purchase advances exactly to tier {expected}')
+            return receipt
+        time.sleep(.2)
+    raise TimeoutError(f'No Hall purchase receipt for age {expected}')
+
+
 def install(apk, label):
     result = device.adb('install', '--no-incremental', '-r', '-d', apk, timeout=360)
     device.check('Success' in result, label)
@@ -59,7 +75,10 @@ def run():
             device.wait_menu()
             stop()
         source = json.loads(FIXTURE.read_text())
-        source['camera'] = [4840.0, 2800.0, .72]
+        # Keep all eight actual v0.12 producers and their paid levels alive while
+        # both apps render the scene. The far western woodcutter is already under
+        # attack in the archived save and can fall before the first screenshot.
+        source.update(camera=[4840.0, 2800.0, .72], enemies=[], spawn_remaining=0, spawn_clock=30.0)
         device.write_save(source)
         before = continue_and_pause('01-legacy-settlement')
         device.check(before['version'] == 11 and before['terrain_revision'] == 5,
@@ -79,22 +98,20 @@ def run():
                          for kind in ('arrow', 'cannon')), 'Purchased damage carries over into both tower lines')
         # The rest of the check uses a temporary late-game budget and an empty incoming wave.
         funded = dict(after, resources={'wood': 10000.0, 'stone': 10000.0, 'gold': 10000.0},
-                      enemies=[], spawn_clock=30.0, spawn_remaining=0)
+                      elapsed=0.0, wave=1, enemies=[], spawn_clock=30.0, spawn_remaining=0)
         stop()
         device.write_save(funded)
         continue_and_pause('03-funded-legacy-settlement')
         device.tap(720, 505)
         device.tap(1194, 43)
         for expected_age in range(2, 9):
-            device.tap(1273, 678)
-            device.tap(1338, 43)
-            purchased = device.save()
-            device.check(purchased['settlement_age'] == expected_age, f'Hall touch purchase advances exactly to tier {expected_age}')
-            device.tap(720, 505)
-            if expected_age in (2, 4, 8):
-                device.tap(1273, 763)
-                device.screen(f'04-settlement-age-{expected_age}')
-                device.tap(1194, 43)
+            purchased = purchase_age(expected_age)
+            device.check(foundations(purchased) == foundations(before),
+                         f'All paid legacy foundations and levels survive age {expected_age}')
+            if expected_age in (2, 4):
+                device.screen(f'04-hall-age-{expected_age}')
+        device.check(purchased['wave'] == 1 and not purchased['enemies'],
+                     'The seven paid age transitions completed inside the isolated opening wave')
         device.screen('05-crown-hall')
         device.tap(1338, 43)
         stop()
@@ -124,7 +141,7 @@ def run():
     report = {'passed': failure is None, 'error': failure, 'checks': device.checks,
               'seconds': time.monotonic() - started, 'apk_sha256': device.APK_SHA256,
               'previous_apk_sha256': hashlib.sha256(PREVIOUS.read_bytes()).hexdigest(),
-              'fixture': 'Actual v0.12 save with eight paid producers. A 10,000-resource budget and paused reinforcements were used for the seven age purchases after migration.'}
+              'fixture': 'Actual v0.12 save with eight paid producers. The incoming wave is cleared before both versions render the baseline. Migration retains the old economy, levels and progress. Then a separate fixture grants 10,000 of each resource, resets elapsed time to zero and suppresses the opening wave while checking all seven paid age changes and cold reload.'}
     (device.OUT / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report), flush=True)
     return int(not report['passed'])
