@@ -1,0 +1,82 @@
+{
+  "runtime_commit": "ed491e0accc2256287dddbc2d7971e9a936a77f5",
+  "runner": "Godot 4.6.3-stable (official) / llvmpipe (LLVM 19.1.7, 256 bits)",
+  "scope": "Desktop Linux software-rendered 1280x720 X11 viewport. Process shares the container with the Android emulator and normal-cost soak. Linux SCHED_IDLE, nice 19, one logical CPU (4), LP_NUM_THREADS=1, 30 FPS cap. Times include contention. They are not Android GPU timings or an isolated FPS ceiling.",
+  "method": "For settlement transitions a frozen gameplay scene with 19 completed buildings and granted supplies opens its Hall panel, which normally paints the next age in advance. The real Advance action pays, emits the building event and saves. Its first post-draw measures submission of the next frame, including quote and art changes; it does not include physical display or input delay. Readback for the art gallery was separate from these timings. The late battle is an independently restored, unmodified normal-cost 11:41 seed 1 settlement: Steel, 21 buildings, including nine cannon towers, 120 live enemies, Hall HP 4200. Four warm frames then 48 consecutively rendered frames at normal simulation speed, with the camera on the western rampart. No debug supplies were added to the paid save.",
+  "source_snapshot": {
+    "version": 12,
+    "elapsed": 700.9999999999102,
+    "wave": 24,
+    "camera": null,
+    "resources": {
+      "gold": 3334.0000000001523,
+      "stone": 402.4163694399417,
+      "wood": 435.4112138172453
+    },
+    "settlement_age": 4,
+    "victory": false,
+    "seed": 1,
+    "buildings": {
+      "hall": 1,
+      "wood": 1,
+      "stone": 1,
+      "market": 1,
+      "cannon": 9,
+      "workshop": 1,
+      "wall": 7
+    },
+    "enemies": 120,
+    "source": "/workspace/.runtime/v13/progression/paid-701.json",
+    "snapshot_sha256": "a8af2724bc95d497094760b92c201f92f40a398dcba2e6a99b18f01402a43fb6"
+  },
+  "transitions": 7,
+  "age_action_with_save_ms": {
+    "min": 1.446,
+    "median": 3.491,
+    "p95_nearest_rank": 52.244,
+    "max": 52.244
+  },
+  "age_action_to_submitted_frame_ms": {
+    "min": 339.326,
+    "median": 481.248,
+    "p95_nearest_rank": 972.087,
+    "max": 972.087
+  },
+  "late_frames": 48,
+  "steady_post_draw_spacing_ms": {
+    "min": 137.673,
+    "median": 219.125,
+    "p95_nearest_rank": 333.548,
+    "max": 414.879
+  },
+  "world_draw_submission_ms": {
+    "min": 2.183,
+    "median": 3.483,
+    "p95_nearest_rank": 33.549,
+    "max": 41.183
+  },
+  "model_update_ms": {
+    "min": 5.794,
+    "median": 12.305,
+    "p95_nearest_rank": 55.583,
+    "max": 83.93
+  },
+  "measured_window_fps": 4.43,
+  "game_seconds_sampled": [
+    701.49999999991,
+    707.899999999904
+  ],
+  "visible_enemy_count": [
+    6,
+    13
+  ],
+  "live_enemy_count": [
+    113,
+    130
+  ],
+  "rss_peak_mib_desktop_process": 460.3,
+  "godot_static_memory_mib": 62.63,
+  "renderer_texture_monitor_bytes": 233322875,
+  "max_building_atlases_held": 2,
+  "age_texture_pixel_storage_estimate": "Age-specific building atlases max two at 1024x512 RGBA8 = 4 MiB. Research atlas 576x768 RGBA8 = 1.69 MiB. Eight 240x320 wall surfaces with mipmaps, all visited, contribute ~2.34\u20133.13 MiB at RGB8/RGBA8. Approx. 8.0\u20138.8 MiB total age-specific texture pixels before platform alignment and driver/runtime overhead. This is an estimate, not measured Android VRAM."
+}

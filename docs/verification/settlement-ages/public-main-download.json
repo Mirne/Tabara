@@ -1,0 +1,8 @@
+{
+  "url": "https://raw.githubusercontent.com/Mirne/Tabara/31b5c005453f75b3859d3918c552ef93bab3d146/builds/tabara-frontier-v0.13.apk",
+  "http_status": 200,
+  "bytes": 104006410,
+  "sha256": "aa4fb07bdac02c3c328db720a32e5583e9da88c4a200a0c5639b61f0822ec8d5",
+  "verified_utc": "2026-11-20T16:46:22.055582+00:00",
+  "matches_signed_candidate": true
+}
