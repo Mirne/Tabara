@@ -1,0 +1,25 @@
+{
+  "age": 8,
+  "enemies": 1000,
+  "fixture": "512 structures and 1000 high-health, low-damage enemies; unlimited supplies, not campaign balance",
+  "fps_cap": 30,
+  "max_process_ms": 1595.713,
+  "max_static_memory_bytes": 68695327,
+  "mean_sampled_fps_after_warmup": 1.3,
+  "mean_simulation_cpu_ms": 330.0762,
+  "mean_world_draw_cpu_ms": 137.197857142857,
+  "minimum_fps_after_warmup": 1.0,
+  "real_seconds": 65.409,
+  "rendered_entities": 1180,
+  "simulation_frozen": false,
+  "structures": 512,
+  "tower_tracks": {
+    "arrow_cadence": 100,
+    "arrow_damage": 100,
+    "arrow_range": 100,
+    "cannon_cadence": 100,
+    "cannon_damage": 100,
+    "cannon_splash": 100
+  },
+  "environment": "Desktop Godot 4.6.3, llvmpipe software rendering, SCHED_IDLE / nice 19, shared CPU. The results establish state and rendering completion in this fixture. Handset frame rates require separate measurement."
+}
