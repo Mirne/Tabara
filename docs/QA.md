@@ -1,5 +1,10 @@
 # Android v0.13.1
 
+Version code 14 uses the same Android signing certificate as v0.13.0. The release APK is 103,797,728 bytes. Its SHA-256 is
+`7f1f4d7e3a58745f963a5d335cfbbf5f083eaa6a9270b39194371f1c15d5b3b0`.
+The Godot checks passed for simulation, seven map layouts, combat art, mobile
+gestures and all eight ages.
+
 The Hall comparison was played at 1544×720. In a live settlement the player
 browsed the Hall, Woodcutter and Stonemason, then spent 130 wood, 90 stone
 and 50 gold to enter Stone while keeping the selected Stonemason preview.
