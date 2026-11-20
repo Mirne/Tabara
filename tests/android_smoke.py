@@ -80,6 +80,10 @@ def wait_menu():
             continue
         if menu_matches(frame):
             check(True, "Native menu renders the new illustrated landscape")
+            expected = os.environ.get("ANDROID_EXPECTED_RASTER")
+            if expected:
+                check(f"{size[0]}x{size[1]}" == expected,
+                      f"Android landscape screenshot matches the requested {expected} raster")
             return
         time.sleep(4)
     screen("menu-timeout")

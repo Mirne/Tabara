@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api: [24, 35]
+        api: [24, 35, 36]
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -40,6 +40,8 @@ jobs:
           "$RUNNER_TEMP/tabara-test-python/bin/pip" install Pillow
       - name: Exercise actual Android app
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          ANDROID_EXPECTED_RASTER: ${{ matrix.api == 36 && '1544x720' || '' }}
         with:
           api-level: ${{ matrix.api }}
           target: default
@@ -50,6 +52,7 @@ jobs:
           script: |
             adb root
             adb wait-for-device
+            if [ "${{ matrix.api }}" = 36 ]; then adb shell wm size 720x1544; fi
             adb shell settings put secure immersive_mode_confirmations confirmed
             ANDROID_TEST_ROOT=1 ANDROID_SERIAL=emulator-5554 ANDROID_PREVIOUS_APK="$RUNNER_TEMP/tabara-v012.apk" ANDROID_REPORT_NAME=android-upgrade "$RUNNER_TEMP/tabara-test-python/bin/python" tests/android_upgrade.py
             ANDROID_TEST_ROOT=1 ANDROID_SERIAL=emulator-5554 "$RUNNER_TEMP/tabara-test-python/bin/python" tests/android_smoke.py
