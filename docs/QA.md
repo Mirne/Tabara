@@ -1,3 +1,28 @@
+# Android v0.13.1
+
+The Hall comparison was played at 1544×720. In a live settlement the player
+browsed the Hall, Woodcutter and Stonemason, then spent 130 wood, 90 stone
+and 50 gold to enter Stone while keeping the selected Stonemason preview.
+A second opening bought both workyards, built an arrow tower and raised the
+Woodcutter to 5.40 wood per second. The dedicated touch checks also cover lifting
+off a purchase, a canceled Android gesture and keeping a second finger on the
+panel outside a battlefield pinch.
+[Hall at phone scale](screenshots/hall-age-preview.webp).
+
+Both workyards passed paid construction, destruction and rebuilding checks at
+1280×720 and 1544×720. A restored v0.12 settlement kept its paid foundations
+and levels. Its older terrain matched the released rendering around both
+workyards. Separate local purchases raised wood from 5.00 to 5.40 per second,
+stone from 6.25 to 6.75 and market gold from 2.00 to 2.16.
+[Workyards](screenshots/workyard-placement.webp) · [Producer upgrades](screenshots/producer-upgrade-panel.webp).
+
+The Workshop comparison used normal opening funds to buy Arrowheads and Burst
+shells in separate tower families. Arrowheads showed 33 → 36.3 tower damage
+and 330 → 363 barrage damage at the pictured rank. The seven age transitions
+were rendered across all eight building types. Checks covered pause, reduced
+motion, rapid consecutive purchases and old-save reloads.
+[Workshop](screenshots/workshop-projects.webp) · [Age paintings](screenshots/producer-works.webp).
+
 # Settlement ages v0.13 verification
 
 The released v0.13 APK uses Godot 4.6.3, Android version code 13, save format 12

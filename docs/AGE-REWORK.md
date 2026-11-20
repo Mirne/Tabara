@@ -25,4 +25,11 @@ Each row in the [building sheet](screenshots/age-buildings.jpg) shows one age, f
 
 ## Results
 
+The follow-up polish pass focuses on three mobile interactions. At the Hall,
+compare how the buildings will change before paying for an age. At the
+Workshop, compare the actual effects of the three tower projects. At a
+workyard, see what the next local investment earns. Play these flows in a
+normal settlement, inspect them at phone size, refine the art and controls,
+then check the signed update over an existing paid settlement.
+
 Stone opens Bow limbs and Burst shells. Iron opens Quick nocking and Loading crew. Later ages raise the rank ceiling so a player can specialize further. Advancing to Crown and killing the final Warlord are separate goals. Two runs from the same paid opening reached Crown by prioritizing production, while a successful defense held the final Warlord in Iron with mixed tower fire and walls. [Paid Crown runs](verification/settlement-ages/paid-late-strategies.json) · [Verification record](QA.md)

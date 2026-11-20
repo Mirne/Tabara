@@ -27,7 +27,7 @@ PACKAGE = "com.tabara.lasthearth"
 ROOTED_EMULATOR = os.environ.get("ANDROID_TEST_ROOT") == "1"
 SAVE_DIRECTORY = f"/data/data/{PACKAGE}/files"
 SAVE_FILE = SAVE_DIRECTORY + "/frontier-settlement.json"
-APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.13.apk"))
+APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.13.1.apk"))
 OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android-frontier")).name
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
@@ -168,7 +168,7 @@ def wait_saved_kind(kind):
 
 def write_save(data):
     # Normal shell protocol works on API 24 as well as modern adbd.
-    payload = json.dumps(data).encode()
+    payload = data if isinstance(data, bytes) else json.dumps(data).encode()
     destination = SAVE_FILE if ROOTED_EMULATOR else "files/frontier-settlement.json"
     temporary = shlex.quote(destination + ".testing")
     inner = "cat > " + temporary + " && mv " + temporary + " " + shlex.quote(destination)
@@ -180,7 +180,7 @@ def write_save(data):
     else:
         adb("shell", "-T", "run-as " + shlex.quote(PACKAGE) + " sh -c " + shlex.quote(inner),
             input_data=payload, timeout=120)
-    if save() != data:
+    if save() != json.loads(payload):
         raise RuntimeError("Test fixture transfer did not preserve the complete save")
 
 

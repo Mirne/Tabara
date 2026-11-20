@@ -63,13 +63,59 @@ static func load_age(age: int) -> void:
  loaded_ages[age] = {"sheet": age_sheet, "regions": age_regions}
 
 static func building_rect(index:int,base:Vector2,scale_value:float=1.0,age:int=0)->Rect2:
- var size:Vector2=BUILD_SIZES[index]*scale_value
  if age >= 1 and age <= AGE_NAMES.size():
   load_age(age)
-  var source_size := age_regions[index].size
-  if age_sheet and source_size.x > 0 and source_size.y > 0:
-   size = source_size * minf(size.x / source_size.x, size.y / source_size.y)
+  if age_sheet and age_regions[index].has_area():
+   return fitted_building_rect(index,base,scale_value,age_regions[index].size)
+ var size:Vector2=BUILD_SIZES[index]*scale_value
  return Rect2(base-size*BUILD_PIVOTS[index],size)
+
+static func fitted_building_rect(index:int,base:Vector2,scale_value:float,source:Vector2)->Rect2:
+ var box:Vector2=BUILD_SIZES[index]*scale_value
+ var size:=source*minf(box.x/source.x,box.y/source.y)
+ return Rect2(base-size*BUILD_PIVOTS[index],size)
+
+static func reveal_building(canvas:CanvasItem,index:int,base:Vector2,tint:Color,age:int,previous:Dictionary,progress:float)->void:
+ var next_rect:=building_rect(index,base,1.0,age)
+ var old_region:Rect2=previous.regions[index]
+ if not previous.sheet or not old_region.has_area() or not age_sheet or not age_regions[index].has_area():
+  building(canvas,index,base,1.0,tint,age)
+  return
+ var old_rect:=fitted_building_rect(index,base,1.0,old_region.size)
+ var bounds:=old_rect.merge(next_rect)
+ # The dividing line rises through both paintings in common world space, so their
+ # feet stay planted and the terrain never shows through a solid wall or roof.
+ var rise:=Vector2(0.22,1.0)
+ var cut:=lerpf(bounds.end.dot(rise)+1.0,bounds.position.dot(rise)-1.0,smoothstep(0.0,1.0,progress))
+ paint_side(canvas,previous.sheet,old_region,old_rect,tint,rise,cut,true)
+ paint_side(canvas,age_sheet,age_regions[index],next_rect,tint,rise,cut,false)
+
+static func paint_side(canvas:CanvasItem,sheet:Texture2D,region:Rect2,rect:Rect2,tint:Color,normal:Vector2,cut:float,above:bool)->void:
+ # Skip subpixel corner slivers and use the original sprite draw whenever the
+ # entire painting is on one side. This also keeps both end frames pixel exact.
+ var near_corner:=rect.position.dot(normal)
+ var far_corner:=rect.end.dot(normal)
+ if (above and cut<=near_corner+0.1) or (not above and cut>=far_corner-0.1): return
+ if (above and cut>=far_corner-0.1) or (not above and cut<=near_corner+0.1):
+  canvas.draw_texture_rect_region(sheet,rect,region,tint)
+  return
+ var corners:=PackedVector2Array([rect.position,Vector2(rect.end.x,rect.position.y),rect.end,Vector2(rect.position.x,rect.end.y)])
+ var points:=PackedVector2Array()
+ var prior:Vector2=corners[-1]
+ var prior_distance:=prior.dot(normal)-cut
+ for point in corners:
+  var distance:=point.dot(normal)-cut
+  if prior_distance*distance<0.0:
+   points.append(prior.lerp(point,prior_distance/(prior_distance-distance)))
+  if (distance<=0.0 if above else distance>=0.0): points.append(point)
+  prior=point
+  prior_distance=distance
+ if points.size()<3: return
+ var uv:=PackedVector2Array()
+ var atlas_size:=sheet.get_size()
+ for point in points:
+  uv.append((region.position+(point-rect.position)/rect.size*region.size)/atlas_size)
+ canvas.draw_polygon(points,PackedColorArray([tint]),uv,sheet)
 
 static func dirt_rect(index:int,base:Vector2)->Rect2:
  return Rect2(base-DIRT_SIZES[index]*0.5,DIRT_SIZES[index])

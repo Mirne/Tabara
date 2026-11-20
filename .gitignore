@@ -16,3 +16,5 @@ test-results/
 # The age-rework APK is also attached to its GitHub release.
 !builds/tabara-frontier-v0.13.apk
 !builds/tabara-frontier-v0.13.apk.sha256
+!builds/tabara-frontier-v0.13.1.apk
+!builds/tabara-frontier-v0.13.1.apk.sha256

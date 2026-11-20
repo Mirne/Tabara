@@ -6,23 +6,25 @@ the **final Warlord arriving at 15:00** to unlock endless survival.
 
 ![Crown age at the Hearthvale pass](docs/screenshots/settlement-crown.webp)
 
-## Version 0.13
+## Version 0.13.1
 
-Every settlement starts in **Wood**. Tap **Hall → Age** to preview the next
-Hall, see which research it unlocks, and spend wood, stone and gold to advance. Stone, Iron, Steel,
+Every settlement starts in **Wood**. Tap **Hall → Age** and use the arrows to
+compare any building with its next-age painting. The same panel shows new
+research, its rank limit and the price to advance. Stone, Iron, Steel,
 Keep, Castle, Citadel and Crown each bring new paintings for buildings, walls
 and Workshop projects. The Hall's **Building** tab upgrades its health and weapon.
 
 In Wood, the Workshop offers **Arrowheads** for arrow damage and **Round shot**
 for cannon damage. Stone adds arrow range and cannon blast radius. Iron adds
 faster firing and reloading. Later ages raise the maximum research rank. Each
-project shows the current stat, the next stat and the price. Arrowheads also
-improves Rain of Arrows. [See the age progression and playtest plan](docs/AGE-REWORK.md).
+weapon's three project rows show their exact effects together. Arrowheads also
+shows the damage it adds to Rain of Arrows. [Workshop screenshot](docs/screenshots/workshop-projects.webp).
 
 A new settlement has one timber yard below the northern forest and one quarry
 at the southern limestone shelf. Build on the matching site, then use that
 producer's catalogue card to open its local upgrades. Increasing output makes
-the same yard more productive. A destroyed producer can be rebuilt at level one.
+the same yard more productive. Each local panel compares output per second
+and health before spending. A destroyed producer can be rebuilt at level one.
 Earlier saves keep their original geography, standing producers and paid levels.
 
 ## Play on Android
@@ -87,8 +89,8 @@ SDK and Java paths in Godot's Editor Settings.
 ```sh
 godot --headless --editor --single-threaded-scene --path . --import --quit
 mkdir -p builds
-godot --headless --path . --export-release Android builds/tabara-frontier-v0.13-unpacked.apk
-python3 tools/package_android.py builds/tabara-frontier-v0.13-unpacked.apk builds/tabara-frontier-v0.13.apk --sdk "$ANDROID_HOME"
+godot --headless --path . --export-release Android builds/tabara-frontier-v0.13.1-unpacked.apk
+python3 tools/package_android.py builds/tabara-frontier-v0.13.1-unpacked.apk builds/tabara-frontier-v0.13.1.apk --sdk "$ANDROID_HOME"
 ```
 
 Set the Godot Android release keystore environment variables before exporting.
@@ -119,13 +121,18 @@ Back, saves, restart, panning and app switching. Configure `ANDROID_ADB`,
 emulators can use an eight-second tap delay. It clears only this game's data on that
 emulator. For a release template, use a disposable rooted AOSP emulator with
 `adb root` and `ANDROID_TEST_ROOT=1` so the harness can verify the app's saved
-state. `tests/android_upgrade.py` installs published v0.12, updates it in place,
-checks the legacy producers and tower purchases, then exercises all seven age
-advancements with a controlled budget. Set `ANDROID_PREVIOUS_APK` to the old
-APK and `ANDROID_APK` to the new signed APK. The harness restores the original
-settlement after its controlled checks.
+state.
 
-The manually triggered Android GitHub workflow checks the APK's published
-checksum, then installs that file on API 24, 35 and 36 emulators. The Android 16 check uses a wide 1544×720 landscape display. See the
+`tests/android_patch_update.py` starts a fresh game in the public v0.13.0 APK.
+It buys both yards, a Workshop, Stone age, Arrowheads and a woodcutter upgrade
+at their regular prices. It installs v0.13.1 over that game and checks the save,
+camera, stockpiles, positions and paid levels after cold launch. The older
+`tests/android_upgrade.py` covers the v0.12-to-v0.13.0 migration and all seven
+age advancements with a controlled budget. Both upgrade checks preserve any
+settlement already on the disposable emulator.
+
+The manually triggered Android GitHub workflow verifies the APK checksum and
+runs the patch update on Android 16 at 1544×720 by default. Its options include
+API 24, 35 and 36, the full fresh-install smoke test and a system Back check. See the
 [verification record](docs/QA.md), [game design](docs/DESIGN.md) and
 [art credits](docs/ASSETS.md).

@@ -1,8 +1,10 @@
-"""Pack the eight building paintings and four research paintings for a settlement.
+"""Pack the age-specific building and research paintings for a settlement.
 
 Pass the directory holding the original transparent sheets as the first argument.
-The building originals are named after their ages. Research originals are named
-icons-arrow-a.png through icons-cannon-b.png. Requires Pillow, NumPy and SciPy.
+The original building sheets are named after their ages. Two producer sheets,
+producer-timber.png and producer-limestone.png, each show all eight ages in
+reading order. Research originals are named icons-arrow-a.png through
+icons-cannon-b.png. Requires Pillow, NumPy and SciPy.
 """
 from pathlib import Path
 import argparse
@@ -93,11 +95,17 @@ def write_webp(sheet, destination, quality):
 
 def pack(source, destination):
     destination.mkdir(parents=True, exist_ok=True)
+    producers = {
+        "wood": list(objects(source / "producer-timber.png", 4, 2)),
+        "stone": list(objects(source / "producer-limestone.png", 4, 2)),
+    }
     bounds = {}
-    for age in AGES:
+    for age_index, age in enumerate(AGES):
         sheet = Image.new("RGBA", (1024, 512))
         bounds[age] = {}
         for i, (name, sprite) in enumerate(zip(BUILDINGS, objects(source / f"{age}.png", 4, 2))):
+            if name in producers:
+                sprite = producers[name][age_index]
             bounds[age][name] = paste_fitted(sheet, sprite, i % 4, i // 4, 256, True)
         write_webp(sheet, destination / f"{age}.webp", 87)
 

@@ -14,3 +14,10 @@ advancement is a separate purchase on the Hall. The current age determines how
 buildings look and which tower improvements the Workshop can research. Starting
 a new settlement begins in Wood. Existing Hall upgrade levels, earned damage
 and HP carry forward when loading an earlier settlement.
+
+The Age tab lets the player compare a building's current and next paintings
+at the same scale before buying. The illustrated selection starts with the
+Hall and can be changed without spending supplies. On reaching Crown the
+player can inspect each fully advanced building. For new Workshop projects,
+show the actual next-age research painting beside the project name. The
+price and Advance action remain in a fixed position, separate from browsing.

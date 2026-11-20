@@ -1,5 +1,11 @@
 # Owner rules and change notes
 
+When the owner requests hours of work on a game rework, spend that time
+polishing what the player sees and does. Play on a phone-sized screen,
+change the rough spots and replay those interactions. Run focused regressions
+and Android installation checks as needed. A long automated stability run
+does not substitute for design and play.
+
 ## Persistent instructions
 
 The owner explicitly said: "STOP STOP STOP giving these absolutely useless tool

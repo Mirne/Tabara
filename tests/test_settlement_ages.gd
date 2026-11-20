@@ -112,6 +112,8 @@ func check_migration() -> void:
    "Veteran Wood settlement retains purchased research above its current age limit")
  if veteran != null:
   var funds: Dictionary = veteran.resources.duplicate()
+  check(veteran.required_track_age("arrow_damage") == Sim.AGE_NAMES.size(),
+    "The Workshop quotes Crown as the first age that can advance a migrated rank 78")
   check(not veteran.research_track("arrow_damage").is_empty() and veteran.resources == funds and
     is_equal_approx(veteran.track_value("arrow_damage"),30.0*pow(1.1,77)), "Legacy grade preserves effective damage while an age lock costs nothing")
   var persisted = Sim.restore(veteran.snapshot())
@@ -142,8 +144,10 @@ func check_weapons() -> void:
  var sim = funded()
  sim.advance_age()
  sim.advance_age()
+ var quoted_barrage:float = sim.rain_damage(true)
  for id in Sim.TRACKS:
   upgrade_and_check(sim,id)
+ check(is_equal_approx(quoted_barrage,sim.rain_damage()), "The Arrowheads quote matches the damage dealt by the next barrage")
  check(sim.build_at(Vector2(6200,2800),"arrow").is_empty(), "Construct replacement arrow tower with purchased traits")
  var tower: Dictionary = sim.buildings[-1]
  tower.age = 10

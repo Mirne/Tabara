@@ -16,6 +16,8 @@ if [[ "$TABARA_BACK_PROBE" == true ]]; then
   exec "$test_python" tests/android_smoke.py --back-probe
 fi
 
-ANDROID_PREVIOUS_APK="$RUNNER_TEMP/tabara-v012.apk" ANDROID_REPORT_NAME=android-upgrade \
-  "$test_python" tests/android_upgrade.py
-"$test_python" tests/android_smoke.py
+ANDROID_PREVIOUS_APK="$RUNNER_TEMP/tabara-v013.apk" ANDROID_REPORT_NAME=android-patch-upgrade \
+  "$test_python" tests/android_patch_update.py
+if [[ "$TABARA_FULL_SMOKE" == true ]]; then
+  "$test_python" tests/android_smoke.py
+fi

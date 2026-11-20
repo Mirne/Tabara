@@ -35,16 +35,27 @@ Legacy saved ramparts retain their old physical footprint and share the same
 
 ## Settlement ages and Workshop presentation
 
-The Hall opens its Age panel from the top bar or a tap on the building. Show the
-current Hall and next Hall artwork, the next rank limit and newly available tower
-research, and the three-resource price before advancing. Its Building tab keeps
-local statistics and local upgrades available. At the final age, show the fully
-advanced Hall and its current research limit.
+The Hall opens its Age panel from the top bar or a tap on the building. Its
+arrows browse all eight buildings with current and next age paintings on one
+baseline. Show the next rank limit, newly available projects and their own
+paintings, and the price before advancing. Its Building tab keeps local stats
+and upgrades. At Crown the arrows browse the fully advanced buildings.
+
+Touch controls activate when the player lifts their thumb over the original
+control. Sliding off, interrupting the touch, or losing focus cancels it.
+Only fingers that start on the battlefield can participate in a camera pinch.
+
+An age purchase briefly reveals the new architecture on the battlefield while
+the player keeps control of the settlement. The reveal pauses with the game,
+uses real display time at each simulation speed and finishes immediately with
+reduced motion. Reloaded settlements open in their saved age.
 
 Workshop Upgrades groups projects by tower, Wall and Regeneration. For a tower,
 show its three individually selectable projects with painted icons from the
-current age. Show the selected project's exact combat stat change, rank, price,
-and next age requirement when applicable. Use one purchase action per project.
+current age. Display the three combat-stat comparisons together so the player
+can choose a project directly. The selected row owns the price and purchase
+action below it. Show its next age requirement when a rank is capped.
+Use one purchase action per project.
 Building cards and placement previews match the age of the world sprites. Tower
 range rings use the actual researched range. Keep panel controls touch-sized.
 

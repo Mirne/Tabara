@@ -386,20 +386,25 @@ func advance_age() -> String:
  if error != "": return error
  spend(age_cost())
  settlement_age += 1
- events.append({"type":"build", "pos":buildings[0].pos, "text":AGE_NAMES[settlement_age - 1]})
+ events.append({"type":"age", "age":settlement_age})
  return ""
+
+func required_track_age(id: String) -> int:
+ var unlock_age: int = TRACKS[id].unlock_age
+ if settlement_age < unlock_age: return unlock_age
+ var rank := track_level(id)
+ if rank < MAX_LEVEL and rank >= track_limit():
+  for age in range(settlement_age + 1, AGE_NAMES.size() + 1):
+   if track_limit(age) > rank: return age
+ return 0
 
 func track_error(id: String) -> String:
  if defeated: return "The main hall has fallen."
  if not TRACKS.has(id): return "Select a tower upgrade."
  if workshop_index() < 0: return "Complete a Workshop."
- var unlock_age: int = TRACKS[id].unlock_age
- if settlement_age < unlock_age: return "Requires %s age." % AGE_NAMES[unlock_age - 1]
- var rank := track_level(id)
- if rank >= MAX_LEVEL: return "Maximum rank reached."
- if rank >= track_limit():
-  for age in range(settlement_age + 1, AGE_NAMES.size() + 1):
-   if track_limit(age) > rank: return "Requires %s age." % AGE_NAMES[age - 1]
+ var required_age := required_track_age(id)
+ if required_age > 0: return "Requires %s age." % AGE_NAMES[required_age - 1]
+ if track_level(id) >= MAX_LEVEL: return "Maximum rank reached."
  if not can_afford(track_cost(id)): return "Not enough supplies."
  return ""
 
@@ -471,8 +476,8 @@ func can_afford(cost: Array) -> bool:
   if resources[RESOURCE_NAMES[i]]+0.001 < cost[i]: return false
  return true
 
-func rain_damage()->float:
- var multiplier := track_value("arrow_damage") / float(DEFINITIONS.arrow.damage)
+func rain_damage(next_rank:bool=false)->float:
+ var multiplier := track_value("arrow_damage",next_rank) / float(DEFINITIONS.arrow.damage)
  return Abilities.RAIN_PULSE_DAMAGE * Abilities.RAIN_PULSES * multiplier
 
 func rain_ready()->bool:

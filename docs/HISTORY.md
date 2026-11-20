@@ -7,6 +7,7 @@ previous releases and chat messages.
 
 | Release | Source | Verification |
 | --- | --- | --- |
+| 0.13.1 workyards, age previews and touch controls | [v0.13.1](https://github.com/Mirne/Tabara/releases/tag/v0.13.1) | [Play and update checks](https://github.com/Mirne/Tabara/blob/v0.13.1/docs/QA.md) |
 | 0.13 settlement ages and tower research | [v0.13.0](https://github.com/Mirne/Tabara/tree/v0.13.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.13.0/docs/QA.md) |
 | 0.12 walls and battlefield abilities | [v0.12.0](https://github.com/Mirne/Tabara/tree/v0.12.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.12.0/docs/QA.md) |
 | 0.11 final Warlord | [v0.11.0](https://github.com/Mirne/Tabara/tree/v0.11.0) | [QA](https://github.com/Mirne/Tabara/blob/v0.11.0/docs/QA.md) |

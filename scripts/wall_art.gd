@@ -85,9 +85,10 @@ static func stake(canvas: CanvasItem, center: Vector2, tint: Color, origin: Vect
  canvas.draw_colored_polygon(PackedVector2Array([root+Vector2(-3,3),root+Vector2(3,3),peak]),tint*Color("c09965"))
  canvas.draw_colored_polygon(PackedVector2Array([root+Vector2(3,-3),root+Vector2(3,3),peak]),tint*Color("8b613d"))
 
-static func piece(canvas:CanvasItem,position:Vector2,neighbors:Dictionary,tint:Color=Color.WHITE,age:int=0)->void:
+static func piece(canvas:CanvasItem,position:Vector2,neighbors:Dictionary,tint:Color=Color.WHITE,age:int=0,height_override:float=-1.0)->void:
  var outline:=footprint(neighbors)
  var height:float=AGE_HEIGHTS[age-1] if age>0 else HEIGHT
+ if height_override>=0.0: height=height_override
  var lift:=Vector2(-height*0.18,-height)
  canvas.draw_set_transform(position)
  # Every wall fills its full foundation. Only the outside of a joined mass has

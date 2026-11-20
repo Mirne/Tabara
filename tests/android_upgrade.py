@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 import time
 
+# Keep this historical v0.12-to-v0.13 compatibility check reproducible.
+os.environ.setdefault('ANDROID_APK', str(Path(__file__).resolve().parents[1] / 'builds/tabara-frontier-v0.13.apk'))
 import android_smoke as device
 
 PREVIOUS = Path(os.environ.get('ANDROID_PREVIOUS_APK', device.ROOT / 'builds/tabara-frontier-v0.12.apk'))

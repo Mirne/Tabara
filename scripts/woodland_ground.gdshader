@@ -3,6 +3,8 @@ render_mode unshaded;
 uniform sampler2D micro_materials : source_color, filter_linear;
 uniform sampler2D water_mask : filter_linear;
 uniform sampler2D surface_mask : filter_linear;
+uniform sampler2D workyard_wear : hint_default_black, filter_linear, repeat_disable;
+uniform vec4 workyard_area=vec4(0.0);
 uniform vec2 world_size=vec2(8192.0,5120.0);
 vec2 hash2(vec2 p){return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);}
 vec3 sample_patch(vec2 p,vec2 tile,vec2 material){
@@ -17,6 +19,14 @@ void fragment(){
  vec2 p=UV*world_size;
  vec3 macro=texture(TEXTURE,UV).rgb;
  vec4 masks=texture(surface_mask,UV);
+ vec2 wear=vec2(0.0);
+ if(workyard_area.z>0.0){
+  vec2 yard_uv=(p-workyard_area.xy)/workyard_area.zw;
+  if(all(greaterThanEqual(yard_uv,vec2(0.0))) && all(lessThanEqual(yard_uv,vec2(1.0)))){
+   wear=texture(workyard_wear,yard_uv).rg;
+   masks.rg=max(masks.rg,wear);
+  }
+ }
  vec3 grass=material_at(p,vec2(0,0));
  vec3 soil=material_at(p,vec2(1,0));
  vec3 gravel=material_at(p,vec2(0,1));
@@ -30,6 +40,10 @@ void fragment(){
  vec3 trail=mix(soil,gravel,0.25)*vec3(1.03,1.01,0.87);
  vec3 color=mix(meadow,trail,road*0.86);
  color=mix(color,gravel*vec3(0.87,0.91,0.80),masks.g*0.68);
+ // Exposed work floors collect pale stone dust and warm sawdust. Keep the
+ // original earth and gravel grain visible beneath these local deposits.
+ color=mix(color,trail*vec3(1.20,1.13,1.07)+vec3(0.07,0.045,0.028),wear.r*0.68);
+ color=mix(color,gravel*vec3(1.13,1.13,1.10)+vec3(0.09,0.084,0.067),wear.g*0.87);
  color=mix(color,macro,0.06);
  color=mix(color,macro,smoothstep(0.08,0.85,texture(water_mask,UV).r));
  COLOR=vec4(color,1.0);

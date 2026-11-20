@@ -12,3 +12,5 @@ An exposed Marketplace attracts enemies using the same producer detection range.
 
 Level-one upgrade price: 55 wood / 40 stone / 25 gold. Later upgrade
 prices scale by 1.15^(current level - 1), rounded up per resource.
+
+Its local panel shows the current age’s market painting, current and next passive gold per second, maximum HP and the local purchase price. While the market is being built, show zero current production, the completed rate and remaining construction time.

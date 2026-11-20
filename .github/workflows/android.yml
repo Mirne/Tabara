@@ -6,7 +6,7 @@ on:
       android_api:
         description: Android API level to verify
         type: choice
-        default: all
+        default: '36'
         options:
           - all
           - '24'
@@ -16,8 +16,12 @@ on:
         description: Verify system navigation on the selected image
         type: boolean
         default: false
-      attach_to_v013_draft:
-        description: Attach the verified APK and checksum to the v0.13.0 release draft
+      full_smoke:
+        description: Also run the full fresh-install gameplay suite
+        type: boolean
+        default: false
+      attach_to_patch_draft:
+        description: Attach the verified APK and checksum to the v0.13.1 release draft
         type: boolean
         default: false
 
@@ -46,9 +50,9 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - name: Verify the downloadable APK and install test tools
         run: |
-          (cd builds && sha256sum --check tabara-frontier-v0.13.apk.sha256)
-          curl --fail --location --retry 3 https://raw.githubusercontent.com/Mirne/Tabara/a60fb83bd341a60aad0a56449dab730806d72e47/builds/tabara-frontier-v0.12.apk --output "$RUNNER_TEMP/tabara-v012.apk"
-          printf '%s  %s\n' 82e1915bb3bcb6873a3fb2fc4e9bee04e4ddb523fcf0835ea7f015b1067ad39e "$RUNNER_TEMP/tabara-v012.apk" | sha256sum --check
+          (cd builds && sha256sum --check tabara-frontier-v0.13.1.apk.sha256)
+          curl --fail --location --retry 3 https://github.com/Mirne/Tabara/releases/download/v0.13.0/tabara-frontier-v0.13.apk --output "$RUNNER_TEMP/tabara-v013.apk"
+          printf '%s  %s\n' aa4fb07bdac02c3c328db720a32e5583e9da88c4a200a0c5639b61f0822ec8d5 "$RUNNER_TEMP/tabara-v013.apk" | sha256sum --check
           python3 -m venv "$RUNNER_TEMP/tabara-test-python"
           "$RUNNER_TEMP/tabara-test-python/bin/pip" install Pillow
       - name: Exercise actual Android app
@@ -57,6 +61,7 @@ jobs:
           ANDROID_EXPECTED_RASTER: ${{ matrix.api == 36 && '1544x720' || '' }}
           TABARA_ANDROID_API: ${{ matrix.api }}
           TABARA_BACK_PROBE: ${{ inputs.navigation_only }}
+          TABARA_FULL_SMOKE: ${{ inputs.full_smoke }}
         with:
           api-level: ${{ matrix.api }}
           target: default
@@ -68,7 +73,7 @@ jobs:
       - name: Show native check evidence
         if: always()
         run: |
-          test ! -f test-results/android-upgrade/report.json || cat test-results/android-upgrade/report.json
+          test ! -f test-results/android-patch-upgrade/report.json || cat test-results/android-patch-upgrade/report.json
           test ! -f test-results/android-frontier/report.json || cat test-results/android-frontier/report.json
           test ! -f test-results/android-frontier/logcat.txt || tail -80 test-results/android-frontier/logcat.txt
       - name: Preserve native diagnostics
@@ -78,12 +83,12 @@ jobs:
           name: native-android-evidence-api-${{ matrix.api }}
           path: |
             test-results/android-frontier
-            test-results/android-upgrade
+            test-results/android-patch-upgrade
           retention-days: 7
 
   attach-tested-build:
     needs: android
-    if: github.ref == 'refs/heads/main' && inputs.android_api == 'all' && !inputs.navigation_only && inputs.attach_to_v013_draft
+    if: github.ref == 'refs/heads/main' && !inputs.navigation_only && inputs.attach_to_patch_draft
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -93,6 +98,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          (cd builds && sha256sum --check tabara-frontier-v0.13.apk.sha256)
-          test "$(gh release view v0.13.0 --json isDraft --jq .isDraft)" = true
-          gh release upload v0.13.0 builds/tabara-frontier-v0.13.apk builds/tabara-frontier-v0.13.apk.sha256 --clobber
+          (cd builds && sha256sum --check tabara-frontier-v0.13.1.apk.sha256)
+          test "$(gh release view v0.13.1 --json isDraft --jq .isDraft)" = true
+          gh release upload v0.13.1 builds/tabara-frontier-v0.13.1.apk builds/tabara-frontier-v0.13.1.apk.sha256 --clobber

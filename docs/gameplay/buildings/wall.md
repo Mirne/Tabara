@@ -26,3 +26,5 @@ wall placement preview and catalogue icon. Its exposed face progresses from
 timber stakes to carved medieval masonry. All cells in a connected stretch
 share the same materials, deck elevation and exterior parapet profile. The
 appearance also applies to the visual tiles of older 80×80 foundations.
+During a Hall advancement connected standing sections rise together to the
+next profile and take on its material. Their footprint stays fixed.

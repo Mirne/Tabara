@@ -38,7 +38,6 @@ var legacy_overview:Texture2D
 var legacy_stronghold_overview:Texture2D
 var environment_layer:Node2D
 var woodland_surface:ImageTexture
-var workyard_surface:ImageTexture
 var workyard_overview:Texture2D
 
 func _ready()->void:
@@ -282,22 +281,28 @@ func draw_building(index:int)->void:
  if b.hp>0:
   var tint:=Color(0.94,0.96,0.89)
   if b.age<sim.build_time(b.kind): tint=Color(0.75,0.7,0.56,0.55+b.age/sim.build_time(b.kind)*0.45)
-  if b.kind=="wall": draw_joined_wall(index,tint)
+  var reveal:float=game.age_reveal_progress(b)
+  if b.kind=="wall": draw_joined_wall(index,tint,reveal)
+  elif reveal<1.0: Art.reveal_building(self,sim.DEFINITIONS[b.kind].art,p,tint,sim.settlement_age,game.previous_architecture,reveal)
   else: Art.building(self,sim.DEFINITIONS[b.kind].art,p,1,tint,sim.settlement_age)
   if not game.reduced_motion:
-   if b.kind in ["hall","wood","stone","market","workshop"]:
+   var yard:bool=sim.terrain_revision>=Map.WORKYARD_REVISION and b.kind in ["wood","stone"]
+   if not yard and b.kind in ["hall","wood","stone","market","workshop"]:
     var painted: Rect2 = Art.building_rect(sim.DEFINITIONS[b.kind].art,p,1,sim.settlement_age)
     smoke(painted.position + painted.size * Vector2(0.44,0.22),0.5)
    if b.kind in ["wood","stone","market"] and b.age >= sim.build_time(b.kind):
     var phase:float=game.animation_clock*0.55+index
     var worker:Vector2=p+Vector2(sin(phase)*65,24+cos(phase)*22)
     var facing_left := cos(phase) < 0
-    if sim.terrain_revision >= Map.WORKYARD_REVISION and b.kind in ["wood","stone"]:
-     var end := Vector2(78, 0) if b.kind == "wood" else Vector2(-82, -3)
-     var start := Vector2(-12, 32) if b.kind == "wood" else Vector2(22, 28)
-     worker = p + start.lerp(end, 0.5 + 0.5 * sin(phase))
-     facing_left = (end.x - start.x) * cos(phase) < 0
-    Art.unit(self,4,int(game.animation_clock*5+index)%4,worker,0.8,facing_left)
+    var frame:=int(game.animation_clock*5+index)%4
+    if yard:
+     var stock := Vector2(109,14) if b.kind=="wood" else Vector2(-106,5)
+     var doorway := Vector2(-18,30) if b.kind=="wood" else Vector2(20,28)
+     var progress:=sin(phase)
+     worker = p + doorway.lerp(stock,smoothstep(-0.86,0.86,progress))
+     facing_left = (stock.x-doorway.x)*cos(phase)<0
+     if absf(progress)>=0.86: frame=0
+    Art.unit(self,4,frame,worker,0.8,facing_left)
   if b.hp<sim.stat(b,"hp")*0.4 and not game.reduced_motion: smoke(p-Vector2(0,55),1.2)
  var selected:bool=index==game.selected
  if selected:
@@ -342,18 +347,23 @@ func atlas_object(texture:Texture2D,index:int,grid:Vector2i,position:Vector2,siz
 func draw_deposit(index:int)->void:
  var node:Dictionary=game.sim.resource_nodes[index]
  if game.sim.terrain_revision >= Map.WORKYARD_REVISION:
-  # Stage the stockpiles against the back edge, leaving a clear building apron.
-  var wood: bool = node.kind == "wood"
-  var pivot := Vector2(0.40, 0.68) if wood else Vector2(0.61, 0.63)
-  atlas_object(WORKYARD_ART, 0 if wood else 1, Vector2i(2,1), node.pos, Vector2(280,200), pivot)
+  var wood:bool=node.kind=="wood"
+  var stock:Vector2=node.pos+(Vector2(101,-15) if wood else Vector2(-108,-6))
+  var size:=Vector2(99,66) if wood else Vector2(147,98)
+  atlas_object(WORKYARD_ART,0 if wood else 1,Vector2i(2,1),stock,size,Vector2(0.5,1.0))
   return
  var art:Dictionary=Map.unique_resource(index,game.sim.terrain_revision)
  atlas_object(RESOURCE_ATLASES[int(art.atlas)],int(art.frame),Vector2i(3,2) if int(art.atlas)==4 else Vector2i(2,3),node.pos,art.size)
 
-func draw_joined_wall(index:int,tint:Color)->void:
+func draw_joined_wall(index:int,tint:Color,reveal:float=1.0)->void:
  var b:Dictionary=game.sim.buildings[index]
+ var age:int=game.sim.settlement_age
+ var height:float=Ramparts.AGE_HEIGHTS[age-1]
+ if reveal<1.0:
+  height=lerpf(Ramparts.AGE_HEIGHTS[age-2],height,smoothstep(0.0,1.0,reveal))
+  if reveal<0.42: age-=1
  for point in game.sim.wall_tiles(b):
-  Ramparts.piece(self,point,game.sim.wall_tile_neighbors(point),tint,game.sim.settlement_age)
+  Ramparts.piece(self,point,game.sim.wall_tile_neighbors(point),tint,age,height)
 
 func draw_boss_telegraphs()->void:
  var abilities=game.sim.Abilities
@@ -416,39 +426,6 @@ func mask_texture(revision:int)->ImageTexture:
  water_masks[revision]=texture
  return texture
 
-# Blend short delivery tracks into the terrain material. Keep the forest, rock
-# and wetness channels intact so a track looks like part of its surroundings.
-func make_workyard_surface() -> ImageTexture:
- var pixels := Marshalls.base64_to_raw(Map.woodland.surface_pixels)
- for track in Map.workyards.cart_tracks:
-  for i in range(1, track.size()):
-   var a := Vector2(track[i-1][0], track[i-1][1])
-   var b := Vector2(track[i][0], track[i][1])
-   var first := Map.cell_of(a.min(b)-Vector2.ONE*64)
-   var last := Map.cell_of(a.max(b)+Vector2.ONE*64)
-   for y in range(first.y, last.y+1):
-    for x in range(first.x, last.x+1):
-     var p := Map.cell_center(Vector2i(x,y))
-     var distance := p.distance_to(Geometry2D.get_closest_point_to_segment(p,a,b))
-     var ink := roundi(240.0 * (1.0-smoothstep(18.0,64.0,distance)))
-     var offset: int = (y * Map.GRID_WIDTH + x) * 4
-     pixels[offset] = maxi(pixels[offset], ink)
- # Dust and chips soften the transition from each painted apron to the meadow.
- for site in Map.workyards.nodes:
-  var center := Vector2(site.pos[0], site.pos[1])
-  var first := Map.cell_of(center-Vector2(200,150))
-  var last := Map.cell_of(center+Vector2(200,150))
-  var quarry: bool = site.kind == "stone"
-  var channel := 1 if quarry else 0
-  for y in range(first.y,last.y+1):
-   for x in range(first.x,last.x+1):
-    var distance := ((Map.cell_center(Vector2i(x,y))-center) / Vector2(200,150)).length()
-    var dust := roundi((155.0 if quarry else 205.0)*(1.0-smoothstep(0.38,1.0,distance)))
-    var offset: int = (y*Map.GRID_WIDTH+x)*4+channel
-    pixels[offset] = maxi(pixels[offset],dust)
- var surface := Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_RGBA8,pixels)
- return ImageTexture.create_from_image(surface)
-
 func configure_ground(revision:int)->void:
  ground_revision=revision
  var material:=ShaderMaterial.new()
@@ -466,12 +443,11 @@ func configure_ground(revision:int)->void:
    var bytes:PackedByteArray=Marshalls.base64_to_raw(Map.woodland.get("surface_pixels",""))
    if bytes.size()==Map.GRID_WIDTH*Map.GRID_HEIGHT*4:
     woodland_surface=ImageTexture.create_from_image(Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_RGBA8,bytes))
-  if revision >= Map.WORKYARD_REVISION:
-   if workyard_surface == null:
-    workyard_surface = make_workyard_surface()
-   material.set_shader_parameter("surface_mask", workyard_surface)
-  else:
-   material.set_shader_parameter("surface_mask",woodland_surface if revision>=3 else surface_mask)
+  material.set_shader_parameter("surface_mask",woodland_surface if revision>=3 else surface_mask)
+  if revision>=Map.WORKYARD_REVISION:
+   var area:Array=Map.workyards.wear_bounds
+   material.set_shader_parameter("workyard_area",Vector4(area[0],area[1],area[2],area[3]))
+   material.set_shader_parameter("workyard_wear",preload("res://assets/world/workyard-wear.png"))
   water.texture=AUTHORED_FLOOR
   var bounds:Array=Map.authored.water_bounds
   var region:=Rect2(bounds[0],bounds[1],bounds[2],bounds[3])

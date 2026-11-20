@@ -43,6 +43,48 @@ func button(action: String) -> Dictionary:
    return row
  return {}
 
+func touch_event(finger:int,point:Vector2,down:bool,canceled:=false)->void:
+ var event:=InputEventScreenTouch.new()
+ event.index=finger
+ event.position=point
+ event.pressed=down
+ event.canceled=canceled
+ Input.parse_input_event(event)
+ await frame()
+
+func exercise_age_browsing()->void:
+ var funds:Dictionary=game.sim.resources.duplicate()
+ var camera:Vector2=game.camera_center
+ var age:int=game.sim.settlement_age
+ var zoom:float=game.zoom
+ for index in 8:
+  check(game.hall_preview_index==index,"Browse each building in world-art order")
+  await press("next_age_painting")
+ await press("previous_age_painting")
+ check(game.hall_preview_index==7,"Previous wraps to Workshop")
+ await press("next_age_painting")
+ var advance:Vector2=button("advance_age").rect.get_center()
+ await touch_event(3,advance,true)
+ check(game.sim.resources==funds,"A held age purchase leaves supplies untouched")
+ var drift:=InputEventScreenDrag.new()
+ drift.index=3
+ drift.position=advance-Vector2(400,0)
+ drift.relative=Vector2(-400,0)
+ Input.parse_input_event(drift)
+ await frame()
+ await touch_event(3,advance,false)
+ await touch_event(3,advance,true)
+ await touch_event(3,advance,false,true)
+ await touch_event(1,Vector2(405,402),true)
+ await touch_event(2,advance,true)
+ check(game.touches.size()==1,"Panel contact stays outside a battlefield pinch")
+ await touch_event(2,advance,false)
+ await touch_event(1,Vector2(405,402),false,true)
+ check(game.hall_preview_index==0 and game.sim.settlement_age==age and game.sim.resources==funds,
+   "Browsing and canceled gestures never purchase an age")
+ check(game.selected==0 and game.camera_center==camera and game.zoom==zoom,
+   "Browsing and crossing the panel preserve the camera and selection")
+
 func press(action: String) -> void:
  await frame()
  var control := button(action)
@@ -68,6 +110,28 @@ func build_producer(index: int) -> void:
    "The existing producer opens directly for local investment")
  await press("construction")
 
+func check_age_reveal() -> void:
+ var hall: Dictionary = game.sim.buildings[0]
+ check(is_zero_approx(game.age_reveal_progress(hall)), "The first paid frame still shows the standing Wood Hall")
+ check(game.age_reveal_progress(game.sim.buildings[1]) == 1.0, "A producer under construction uses the new age directly")
+ check(game.fx.all(func(effect): return effect.type != "age" and effect.get("text", "") != "Stone"),
+   "The painting supplies age feedback without a floating construction label")
+ await press("pause")
+ game._process(0.3)
+ check(is_zero_approx(game.age_reveal_progress(hall)), "Pause holds the visible architecture in place")
+ await press("resume")
+ var original_speed: int = game.speed
+ game.speed = 10
+ game._process(0.17)
+ check(is_equal_approx(game.age_reveal_progress(hall), 0.17 / game.AGE_REVEAL_SECONDS),
+   "The reveal advances in display seconds at 10x")
+ game.speed = original_speed
+ game.reduced_motion = true
+ game._process(0.0)
+ check(game.age_reveal_progress(hall) == 1.0 and game.previous_architecture.is_empty(),
+   "Reduced motion resolves directly to the paid age and releases the old painting")
+ game.reduced_motion = false
+
 func run() -> void:
  DirAccess.make_dir_recursive_absolute("res://test-results")
  root.size = Vector2i(1440,810)
@@ -79,6 +143,7 @@ func run() -> void:
  await press("start")
  game.sound_on = false
  game.set_process(false)
+ game.reduced_motion = false
  await build_producer(0)
  await press("hall")
  await press("construction")
@@ -89,11 +154,13 @@ func run() -> void:
  var stock: Dictionary = game.sim.resources.duplicate()
  var cost: Array = game.sim.age_cost()
  await capture("wood-hall")
+ await exercise_age_browsing()
  await press("advance_age")
  check(game.sim.settlement_age == 2 and game.camera_center == original_camera,"A single touch advances to Stone in place")
  for i in cost.size():
   var key: String = Sim.RESOURCE_NAMES[i]
   check(is_equal_approx(stock[key]-game.sim.resources[key],cost[i]),"Real opening price charged exactly once: "+key)
+ await check_age_reveal()
  await capture("stone-hall")
  await press("hall_building")
  check(not button("upgrade_local").is_empty(),"Hall combat upgrade accessible from Building")
@@ -119,9 +186,19 @@ func run() -> void:
  check(game.sim.resources == locked_funds and game.sim.track_level("arrow_cadence") == 1,"Touching an age-locked quote leaves supplies and rank intact")
  await press("research:cannon")
  await press("track:cannon_splash")
+ var project_rect: Rect2 = button("track:cannon_splash").rect
  await press("start_research")
  check(game.sim.track_level("cannon_splash") == 2 and game.sim.track_level("cannon_damage") == 1,
    "Cannon blast radius can be purchased independently")
+ check(button("track:cannon_splash").rect == project_rect and project_rect.size.y >= 70,
+   "The paid project retains its large touch target after purchase")
+ await press("research:arrow")
+ check(not button("start_research").enabled and button("start_research").caption == "Iron age required",
+   "Returning to archery keeps the previously selected locked project")
+ await press("research:cannon")
+ await press("start_research")
+ check(game.sim.track_level("cannon_splash") == 3 and game.sim.track_level("cannon_damage") == 1,
+   "Returning to cannons retains the chosen branch for the next paid rank")
  await capture("stone-workshop")
  await press("hall")
  await press("advance_age")
@@ -138,12 +215,15 @@ func run() -> void:
   await press("advance_age")
   check(game.sim.settlement_age == expected_age,"Single paid touch reaches "+Sim.AGE_NAMES[expected_age-1])
  await capture("crown-hall")
+ await press("previous_age_painting")
+ check(game.hall_preview_index==7,"The final age lets the player browse the Crown Workshop")
  check(button("advance_age").is_empty(),"Crown has no invalid further upgrade")
  game.save_game()
  game.sim = null
  game.load_saved_game()
+ check(game.age_reveal_left == 0.0 and game.previous_architecture.is_empty(), "Reloaded game opens in its finished architecture")
  check(game.sim != null and game.sim.settlement_age == 8 and game.sim.track_level("arrow_range") == 2 and
-   game.sim.track_level("arrow_cadence") == 2 and game.sim.track_level("cannon_splash") == 2,
+   game.sim.track_level("arrow_cadence") == 2 and game.sim.track_level("cannon_splash") == 3,
    "On-disk reload restores Crown and the selected research branches")
  game.music_player.stop()
  game.sfx_player.stop()

@@ -159,11 +159,22 @@ new screenshots are actual game-engine and Android captures, not generated art.
 
 ## Resource workyards
 
-`assets/world/workyards.webp` contains two original ImageGen paintings on a
-transparent sheet. The north timber apron has a sawyer's bench, crosscut logs
-and a chopping stump. The south limestone shelf has a stepped face, dressed
-blocks and a low sled. Both use the basin's warm daylight and olive foliage.
-The occupied foundation shares the same yard painting; the Stonemason draws in
-front of the rock. Revision 6 has its own engine-rendered 640×400 minimap,
-`workyards-overview.webp`. Regenerate that image with
+The two original ImageGen paintings in `assets/world/workyards.webp` show
+crosscut timber and a chopping stump on the northern forest edge and a mossed
+limestone ledge with dressed blocks on the western edge of the southern yard.
+Both stockpiles remain visible when a building occupies the yard.
+
+The terrain shader uses `workyard-wear.png` to blend its earth and gravel into
+each foundation and the cart tracks that lead to it. Regenerate the material mask
+with `python tools/bake_workyard_tracks.py` after editing the routes in
+`workyards.json`. Regenerate the rendered revision 6 minimap with
 `godot --path . --script tools/capture_authored.gd -- --workyards`.
+
+## Timber and limestone works
+
+ImageGen painted sixteen producer sprites on two transparent 4×2 sheets.
+The eight saw sheds use circular end grain, a horizontal trunk and a visible
+saw frame. The eight stoneworks use a suspended dressed block and a lifting
+frame that develops into a medieval treadwheel crane. Both families use the
+existing age colour palette and light direction. The packing tool places them
+in the Woodcutter and Stonemason cells of each building atlas.
