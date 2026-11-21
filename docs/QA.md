@@ -22,6 +22,13 @@ Hall-only opening can load the new sites when its enemies are clear of the
 changed terrain. Both single-site layouts use the revised income curve.
 The earlier maps with multiple deposits retain their original output.
 
+An Android 16 emulator at 1544×720 installed the exact published v0.13.1 APK,
+bought both original yards, and updated to v0.13.2 in place. The paid Stone
+settlement kept its save and earned the new rates. An early Hall-only save
+adopted the rear quarry. A separate fresh game built both new sites and measured
+their first upgrades against the actual credited supplies. All 49 native checks
+passed. [Android update evidence](verification/workyards/android-update.json) · [GitHub run](https://github.com/Mirne/Tabara/actions/runs/44848165905).
+
 # Android v0.13.1
 
 Version code 14 uses the same Android signing certificate as v0.13.0. The release APK is 103,797,728 bytes. Its SHA-256 is

@@ -1,0 +1,315 @@
+{
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "label": "Release APK save inspection uses a disposable rooted emulator",
+      "passed": true
+    },
+    {
+      "label": "Upgrade starts with the exact public v0.13.1 APK",
+      "passed": true
+    },
+    {
+      "label": "Android accepts the signed 0.13.1 APK",
+      "passed": true
+    },
+    {
+      "label": "The installed package reports version 0.13.1",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Android landscape screenshot matches the requested 1544x720 raster",
+      "passed": true
+    },
+    {
+      "label": "The public APK saved a live Hall-only opening",
+      "passed": true
+    },
+    {
+      "label": "The original APK advanced to Stone with supplies earned in game",
+      "passed": true
+    },
+    {
+      "label": "The original APK built its one wood yard",
+      "passed": true
+    },
+    {
+      "label": "The original APK built its one stone yard",
+      "passed": true
+    },
+    {
+      "label": "The public v0.13.1 Workshop bought Arrowheads rank two",
+      "passed": true
+    },
+    {
+      "label": "The public v0.13.1 woodcutter bought its second level",
+      "passed": true
+    },
+    {
+      "label": "Selecting the paid woodcutter saved a nondefault view",
+      "passed": true
+    },
+    {
+      "label": "The old app closed with every paid foundation intact",
+      "passed": true
+    },
+    {
+      "label": "Android accepts the signed 0.13.2 APK",
+      "passed": true
+    },
+    {
+      "label": "The installed package reports version 0.13.2",
+      "passed": true
+    },
+    {
+      "label": "The installed patch matches the downloadable file byte for byte",
+      "passed": true
+    },
+    {
+      "label": "Installing v0.13.2 preserves every byte of the v0.13.1 save",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Android landscape screenshot matches the requested 1544x720 raster",
+      "passed": true
+    },
+    {
+      "label": "The updated app resumed Stone on its original terrain",
+      "passed": true
+    },
+    {
+      "label": "Cold launch restored the player\u2019s exact camera",
+      "passed": true
+    },
+    {
+      "label": "All six Workshop research ranks survived",
+      "passed": true
+    },
+    {
+      "label": "Resuming the settlement retained its earned wood, stone and gold",
+      "passed": true
+    },
+    {
+      "label": "Cold launch retained both yards and every paid foundation, position and local level",
+      "passed": true
+    },
+    {
+      "label": "Existing paid settlement ran long enough to measure income",
+      "passed": true
+    },
+    {
+      "label": "Existing paid settlement earns 7.80 wood per game second including the Hall",
+      "passed": true
+    },
+    {
+      "label": "Existing paid settlement earns 6.70 stone per game second including the Hall",
+      "passed": true
+    },
+    {
+      "label": "Android launcher opens the game",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Android landscape screenshot matches the requested 1544x720 raster",
+      "passed": true
+    },
+    {
+      "label": "An existing Hall-only game adopts the revised sites on first resume",
+      "passed": true
+    },
+    {
+      "label": "The Hall-only opening retains its view, mission clock and earned supplies",
+      "passed": true
+    },
+    {
+      "label": "Native menu renders the new illustrated landscape",
+      "passed": true
+    },
+    {
+      "label": "Android landscape screenshot matches the requested 1544x720 raster",
+      "passed": true
+    },
+    {
+      "label": "A fresh game starts on the rear-workyard map with just the Main hall",
+      "passed": true
+    },
+    {
+      "label": "Native touch builds the wood producer on its new foundation",
+      "passed": true
+    },
+    {
+      "label": "Native touch builds the stone producer on its new foundation",
+      "passed": true
+    },
+    {
+      "label": "The quarry stands behind the Hall on the opposite side from the attack approach",
+      "passed": true
+    },
+    {
+      "label": "Fresh level-one workyards ran long enough to measure income",
+      "passed": true
+    },
+    {
+      "label": "Fresh level-one workyards earns 5.80 wood per game second including the Hall",
+      "passed": true
+    },
+    {
+      "label": "Fresh level-one workyards earns 6.70 stone per game second including the Hall",
+      "passed": true
+    },
+    {
+      "label": "Both workyards advanced to level two using the fresh settlement\u2019s supplies",
+      "passed": true
+    },
+    {
+      "label": "Fresh level-two workyards ran long enough to measure income",
+      "passed": true
+    },
+    {
+      "label": "Fresh level-two workyards earns 7.80 wood per game second including the Hall",
+      "passed": true
+    },
+    {
+      "label": "Fresh level-two workyards earns 9.20 stone per game second including the Hall",
+      "passed": true
+    },
+    {
+      "label": "The native patch session has no fatal, script or shader diagnostic",
+      "passed": true
+    }
+  ],
+  "seconds": 214.69,
+  "apk_sha256": "853ca715d578d7148f32b9c32cf5ec11b9aa7493ae97f2e7e358374cfd0cb6e3",
+  "previous_apk_sha256": "7f1f4d7e3a58745f963a5d335cfbbf5f083eaa6a9270b39194371f1c15d5b3b0",
+  "funding": "Fresh game, in-app purchases at normal prices",
+  "migrated_income": {
+    "game_seconds": 4.04999999999977,
+    "credited_per_second": {
+      "wood": 7.80000000000017,
+      "stone": 6.699999999999972
+    }
+  },
+  "fresh_settlement": {
+    "foundations": [
+      [
+        "hall",
+        [
+          4800.0,
+          2800.0
+        ],
+        1,
+        null
+      ],
+      [
+        "wood",
+        [
+          4880.0,
+          2480.0
+        ],
+        2,
+        null
+      ],
+      [
+        "stone",
+        [
+          5400.0,
+          2880.0
+        ],
+        2,
+        null
+      ]
+    ],
+    "level_one": {
+      "game_seconds": 3.950000000000056,
+      "credited_per_second": {
+        "wood": 5.800000000000327,
+        "stone": 6.699999999999496
+      }
+    },
+    "level_two": {
+      "game_seconds": 4.04999999999977,
+      "credited_per_second": {
+        "wood": 7.80000000000017,
+        "stone": 9.200000000000113
+      }
+    }
+  },
+  "paid_age": 2,
+  "paid_camera": [
+    4800.0,
+    2480.0,
+    0.72
+  ],
+  "paid_resources": {
+    "gold": 30.56999999999754,
+    "stone": 333.9399999999784,
+    "wood": 259.78000000001896
+  },
+  "paid_research": {
+    "arrow_cadence": 1,
+    "arrow_damage": 2,
+    "arrow_range": 1,
+    "cannon_cadence": 1,
+    "cannon_damage": 1,
+    "cannon_splash": 1
+  },
+  "paid_foundations": [
+    [
+      "hall",
+      [
+        4800.0,
+        2800.0
+      ],
+      1,
+      null
+    ],
+    [
+      "wood",
+      [
+        4800.0,
+        2480.0
+      ],
+      2,
+      null
+    ],
+    [
+      "stone",
+      [
+        4680.0,
+        3120.0
+      ],
+      1,
+      null
+    ],
+    [
+      "workshop",
+      [
+        5200.0,
+        2800.0
+      ],
+      1,
+      null
+    ]
+  ]
+}
