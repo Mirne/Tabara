@@ -1,10 +1,15 @@
 # Android v0.13.2
 
+Version code 15 uses the same signing certificate as v0.13.1. The APK is 104,396,713 bytes with SHA-256
+`853ca715d578d7148f32b9c32cf5ec11b9aa7493ae97f2e7e358374cfd0cb6e3`.
+
 The default landscape camera shows both new workyards. The log pile and
 placement square share the end of one timber track. A separate lane serves the quarry
 behind the Hall. The rock face blocks movement and
 construction. Producers can be previewed, built, selected and rebuilt on their
-designated foundations. [Opening and built yards](screenshots/rear-workyards.webp).
+designated foundations. Eighty phone-sized touch checks passed at 1544×720,
+including three local upgrades per producer, automatic income measured during
+play and the quarry's paid rebuild. [Opening and built yards](screenshots/rear-workyards.webp) · [Mobile play receipts](verification/workyards/mobile-opening.json).
 
 Six paid simulations compared the two income curves on the revised
 map using three matched enemy seeds and the same build order. At ten game

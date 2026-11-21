@@ -1,0 +1,129 @@
+{
+  "camera": {
+    "center": [
+      4840.0,
+      2800.0
+    ],
+    "site_pixels": {
+      "stone": [
+        981.066711425781,
+        448.533355712891
+      ],
+      "wood": [
+        648.266662597656,
+        192.533325195312
+      ]
+    },
+    "window": [
+      1544,
+      720
+    ],
+    "zoom": 0.72
+  },
+  "checks": 80,
+  "elapsed_game_seconds": 17.9500000000001,
+  "failures": 0,
+  "method": "Menu and mission touch input at native window coordinates, ordinary opening supplies and 50 ms gameplay ticks.",
+  "receipts": [
+    {
+      "after": 7.0,
+      "kind": "wood",
+      "level": 2,
+      "observed_one_second_including_hall": 7.79999999999973,
+      "price": [
+        50.0,
+        25.0,
+        15.0
+      ],
+      "quoted": 7.0,
+      "site_rate_before": 5.0
+    },
+    {
+      "after": 8.75,
+      "kind": "stone",
+      "level": 2,
+      "observed_one_second_including_hall": 9.20000000000016,
+      "price": [
+        45.0,
+        40.0,
+        15.0
+      ],
+      "quoted": 8.75,
+      "site_rate_before": 6.25
+    },
+    {
+      "after": 8.5,
+      "kind": "wood",
+      "level": 3,
+      "observed_one_second_including_hall": 9.30000000000007,
+      "price": [
+        58.0,
+        29.0,
+        18.0
+      ],
+      "quoted": 8.5,
+      "site_rate_before": 7.0
+    },
+    {
+      "after": 10.625,
+      "kind": "stone",
+      "level": 3,
+      "observed_one_second_including_hall": 11.0750000000002,
+      "price": [
+        52.0,
+        46.0,
+        18.0
+      ],
+      "quoted": 10.625,
+      "site_rate_before": 8.75
+    },
+    {
+      "after": 10.0,
+      "kind": "wood",
+      "level": 4,
+      "observed_one_second_including_hall": 10.8000000000001,
+      "price": [
+        67.0,
+        34.0,
+        20.0
+      ],
+      "quoted": 10.0,
+      "site_rate_before": 8.5
+    },
+    {
+      "after": 12.5,
+      "kind": "stone",
+      "level": 4,
+      "observed_one_second_including_hall": 12.9499999999999,
+      "price": [
+        60.0,
+        53.0,
+        20.0
+      ],
+      "quoted": 12.5,
+      "site_rate_before": 10.625
+    }
+  ],
+  "resource_nodes": [
+    [
+      4880.0,
+      2480.0
+    ],
+    [
+      5400.0,
+      2880.0
+    ]
+  ],
+  "resources": {
+    "gold": 38.7949999999985,
+    "stone": 114.389999999995,
+    "wood": 17.6100000000047
+  },
+  "released_map_checks": {
+    "terrain_revision": 6,
+    "checks": 77,
+    "failures": 0
+  },
+  "terrain_revision": 7,
+  "screenshot_sha256": "fe97e92b022cf9e4a9f04517b6dc255d9bc685a5d1266412c7d98d3cead5adca"
+}
