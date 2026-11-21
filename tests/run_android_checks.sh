@@ -5,8 +5,17 @@ export ANDROID_SERIAL=emulator-5554
 export ANDROID_TEST_ROOT=1
 test_python="$RUNNER_TEMP/tabara-test-python/bin/python"
 
-adb root
-adb wait-for-device
+# The freshly booted emulator can close its first root request while adbd
+# restarts. Wait for an actual root shell before inspecting a private save.
+for attempt in {1..8}; do
+  if timeout 15s adb wait-for-device && [[ "$(adb shell id -u)" == 0 ]]; then
+    break
+  fi
+  adb root || true
+  sleep 2
+done
+timeout 15s adb wait-for-device
+[[ "$(adb shell id -u)" == 0 ]] || { echo "Emulator root shell unavailable" >&2; exit 1; }
 if [[ "$TABARA_ANDROID_API" == 36 ]]; then
   adb shell wm size 720x1544
 fi
