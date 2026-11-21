@@ -21,7 +21,7 @@ on:
         type: boolean
         default: false
       attach_to_patch_draft:
-        description: Attach the verified APK and checksum to the v0.13.1 release draft
+        description: Attach the verified APK and checksum to the v0.13.2 release draft
         type: boolean
         default: false
 
@@ -50,9 +50,9 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - name: Verify the downloadable APK and install test tools
         run: |
-          (cd builds && sha256sum --check tabara-frontier-v0.13.1.apk.sha256)
-          curl --fail --location --retry 3 https://github.com/Mirne/Tabara/releases/download/v0.13.0/tabara-frontier-v0.13.apk --output "$RUNNER_TEMP/tabara-v013.apk"
-          printf '%s  %s\n' aa4fb07bdac02c3c328db720a32e5583e9da88c4a200a0c5639b61f0822ec8d5 "$RUNNER_TEMP/tabara-v013.apk" | sha256sum --check
+          (cd builds && sha256sum --check tabara-frontier-v0.13.2.apk.sha256)
+          curl --fail --location --retry 3 https://github.com/Mirne/Tabara/releases/download/v0.13.1/tabara-frontier-v0.13.1.apk --output "$RUNNER_TEMP/tabara-v0131.apk"
+          printf '%s  %s\n' 7f1f4d7e3a58745f963a5d335cfbbf5f083eaa6a9270b39194371f1c15d5b3b0 "$RUNNER_TEMP/tabara-v0131.apk" | sha256sum --check
           python3 -m venv "$RUNNER_TEMP/tabara-test-python"
           "$RUNNER_TEMP/tabara-test-python/bin/pip" install Pillow
       - name: Exercise actual Android app
@@ -98,6 +98,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          (cd builds && sha256sum --check tabara-frontier-v0.13.1.apk.sha256)
-          test "$(gh release view v0.13.1 --json isDraft --jq .isDraft)" = true
-          gh release upload v0.13.1 builds/tabara-frontier-v0.13.1.apk builds/tabara-frontier-v0.13.1.apk.sha256 --clobber
+          (cd builds && sha256sum --check tabara-frontier-v0.13.2.apk.sha256)
+          test "$(gh release view v0.13.2 --json isDraft --jq .isDraft)" = true
+          gh release upload v0.13.2 builds/tabara-frontier-v0.13.2.apk builds/tabara-frontier-v0.13.2.apk.sha256 --clobber

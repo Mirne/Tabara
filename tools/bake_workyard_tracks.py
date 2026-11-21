@@ -5,12 +5,15 @@ The full map and all gameplay terrain masks remain independent of this patch.
 """
 import json
 import math
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA = json.loads((ROOT / "assets/world/workyards.json").read_text())
+LEGACY = "--legacy" in sys.argv
+MAP_FILE = "workyards.json" if LEGACY else "back-workyards.json"
+DATA = json.loads((ROOT / "assets/world" / MAP_FILE).read_text())
 LEFT, TOP, WIDTH, HEIGHT = DATA["wear_bounds"]
 UNITS_PER_PIXEL = 2
 SIZE = WIDTH // UNITS_PER_PIXEL, HEIGHT // UNITS_PER_PIXEL
@@ -55,7 +58,14 @@ def main():
         x, y = site["pos"]
         # The tracks fan out into working floors under the paid foundations.
         # A second pass reaches sideways to the actual log stack or rock face.
-        if site["kind"] == "wood":
+        if not LEGACY and site["kind"] == "wood":
+            earth = brushed(earth, [(x - 39, y - 10), (x + 4, y + 8), (x + 42, y - 12)], 71, 210, 12)
+            earth = brushed(earth, [(x + 7, y + 23), (x + 40, y - 15)], 44, 190, 11)
+        elif not LEGACY:
+            earth = brushed(earth, [(x - 44, y + 2), (x, y + 14), (x + 65, y - 11)], 82, 173, 15)
+            gravel = brushed(gravel, [(x - 84, y - 62), (x - 19, y - 49), (x + 67, y - 27), (x + 123, y - 23)], 56, 162, 16)
+            gravel = brushed(gravel, [(x - 46, y - 3), (x + 12, y + 16), (x + 63, y - 4)], 64, 175, 14)
+        elif site["kind"] == "wood":
             earth = brushed(earth, [(x - 59, y - 8), (x + 4, y + 15), (x + 84, y + 9)], 78, 226, 17)
             earth = brushed(earth, [(x + 74, y + 3), (x + 121, y - 23)], 42, 165, 13)
         else:
@@ -63,7 +73,7 @@ def main():
             gravel = brushed(gravel, [(x - 145, y - 8), (x - 86, y - 11), (x - 40, y + 11)], 93, 211, 20)
             gravel = brushed(gravel, [(x - 61, y + 5), (x + 9, y + 18), (x + 46, y + 16)], 52, 137, 16)
     mask = Image.merge("RGB", (earth, gravel, Image.new("L", SIZE)))
-    mask.save(ROOT / "assets/world/workyard-wear.png", optimize=True)
+    mask.save(ROOT / "assets/world" / ("workyard-wear.png" if LEGACY else "back-workyard-wear.png"), optimize=True)
 
 
 if __name__ == "__main__":

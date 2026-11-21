@@ -27,13 +27,14 @@ PACKAGE = "com.tabara.lasthearth"
 ROOTED_EMULATOR = os.environ.get("ANDROID_TEST_ROOT") == "1"
 SAVE_DIRECTORY = f"/data/data/{PACKAGE}/files"
 SAVE_FILE = SAVE_DIRECTORY + "/frontier-settlement.json"
-APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.13.1.apk"))
+APK = Path(os.environ.get("ANDROID_APK", ROOT / "builds/tabara-frontier-v0.13.2.apk"))
 OUT = ROOT / "test-results" / Path(os.environ.get("ANDROID_REPORT_NAME", "android-frontier")).name
 ADB = os.environ.get("ANDROID_ADB", "adb")
 SERIAL = os.environ.get("ANDROID_SERIAL", "emulator-5554")
 PORT = os.environ.get("ANDROID_ADB_PORT", "5037")
 TIMEOUT = float(os.environ.get("ANDROID_COMMAND_TIMEOUT", "90"))
 TAP_DELAY = float(os.environ.get("ANDROID_TAP_DELAY", "3"))
+CURRENT_YARDS = {"wood": (4880, 2480), "stone": (5400, 2880)}
 checks: list[dict] = []
 size = (1280, 720)
 started = 0.0
@@ -342,9 +343,9 @@ def native_checks(back_only=False):
                 opening_camera = save()["camera"]
                 # Full-height catalogue; selecting and placing hides it until Build structures.
                 tap(1194, 218)
-                tap(*world_point(4800, 2480, opening_camera))
+                tap(*world_point(*CURRENT_YARDS["wood"], opening_camera))
                 image = screen("03a-green-grid-preview")
-                wx, wy = world_point(4800, 2480, opening_camera)
+                wx, wy = world_point(*CURRENT_YARDS["wood"], opening_camera)
                 patch = image.crop((wx-60, wy-60, wx+60, wy+60))
                 green = sum(g > r*1.2 and g > b*1.15 and g > 75 for r, g, b in patch.getdata())
                 check(green > 400, "Native producer preview renders green buildable tiles")
@@ -354,10 +355,10 @@ def native_checks(back_only=False):
                 resume_with_touch()
                 time.sleep(4)
                 tap(1194, 218)
-                tap(*world_point(4800, 2480, preview_save["camera"]))
+                tap(*world_point(*CURRENT_YARDS["wood"], preview_save["camera"]))
                 tap(1273, 685)
                 tap(1352, 218)  # Single timber yard returns to the catalogue.
-                tap(*world_point(4680, 3120, preview_save["camera"]))
+                tap(*world_point(*CURRENT_YARDS["stone"], preview_save["camera"]))
                 tap(1273, 685)
                 tap(1194, 376)
                 tap(*world_point(4480, 2760, preview_save["camera"]))
@@ -390,11 +391,11 @@ def native_checks(back_only=False):
             screen("04-built-and-paused")
             data = wait_saved_structure(16, "wall")
             paid_defenses = data
-            check(data["version"] == 12 and data["terrain_revision"] == 6 and data["settlement_age"] == 1, "Native mission starts in Wood age on the two-yard terrain")
+            check(data["version"] == 12 and data["terrain_revision"] == 7 and data["settlement_age"] == 1, "Native mission starts in Wood age on the two-yard terrain")
             for index, kind in [(1, "wood"), (2, "stone"), (3, "arrow"), (4, "arrow")]:
                 check(data["buildings"][index]["kind"] == kind, "Native touch constructs " + kind)
                 check(len(data["buildings"][index]["pos"]) == 2, "Native save retains " + kind + " world coordinates")
-            expected = [(4800,2480),(4680,3120),(4480,2760),(4640,2760)]
+            expected = [CURRENT_YARDS["wood"], CURRENT_YARDS["stone"], (4480,2760), (4640,2760)]
             for index, position in enumerate(expected, 1):
                 check(tuple(data["buildings"][index]["pos"]) == position, "Native confirmed building follows the grid at " + str(position))
             for index, y in enumerate(range(2580,3021,40),5):
@@ -438,7 +439,7 @@ def native_checks(back_only=False):
             tap(1338, 43)
             checkpoint = save()
             paid_defenses = checkpoint
-            check(checkpoint["version"] == 12 and checkpoint["terrain_revision"] == 6,
+            check(checkpoint["version"] == 12 and checkpoint["terrain_revision"] == 7,
                   "Resumed checkpoint retains the current save format and map")
             check(checkpoint["tower_tracks"]["arrow_damage"] == 1 and checkpoint["regeneration_level"] == 0,
                   "Resumed checkpoint starts before the remaining paid upgrade tests")

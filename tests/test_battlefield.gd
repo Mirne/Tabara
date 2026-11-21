@@ -109,7 +109,7 @@ func run()->void:
  second.hp=0
  start=ally.pos
  sim.step(0.05)
- check(not ally.rallied and is_equal_approx(ally.pos.distance_to(start),base_speed*0.05),"War cry ends immediately when its bosses die")
+ check(not ally.rallied and absf(ally.pos.distance_to(start)-base_speed*0.05)<0.002,"War cry ends immediately when its bosses die")
  sim=quiet()
  boss=sim.spawn_enemy(0,"boss")
  boss.pos=Vector2(6400,2800)

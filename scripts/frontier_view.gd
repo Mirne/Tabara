@@ -39,12 +39,15 @@ var legacy_stronghold_overview:Texture2D
 var environment_layer:Node2D
 var woodland_surface:ImageTexture
 var workyard_overview:Texture2D
+var back_workyard_overview:Texture2D
 
 func _ready()->void:
  scenery=Map.scenery()
  mountain_sprites=Map.mountain_sprites()
  legacy_ridges=Map.legacy_mountain_sprites()
  landmarks=Map.authored_landmarks()
+ if ResourceLoader.exists("res://assets/world/back-workyards-overview.webp"):
+  back_workyard_overview=load("res://assets/world/back-workyards-overview.webp")
  if ResourceLoader.exists("res://assets/world/workyards-overview.webp"):
   workyard_overview=load("res://assets/world/workyards-overview.webp")
  if ResourceLoader.exists("res://assets/world/overview.png"): overview=load("res://assets/world/overview.png")
@@ -297,6 +300,8 @@ func draw_building(index:int)->void:
     var frame:=int(game.animation_clock*5+index)%4
     if yard:
      var stock := Vector2(109,14) if b.kind=="wood" else Vector2(-106,5)
+     if sim.terrain_revision>=Map.REAR_WORKYARD_REVISION:
+      stock=Vector2(60,5) if b.kind=="wood" else Vector2(73,-10)
      var doorway := Vector2(-18,30) if b.kind=="wood" else Vector2(20,28)
      var progress:=sin(phase)
      worker = p + doorway.lerp(stock,smoothstep(-0.86,0.86,progress))
@@ -346,6 +351,12 @@ func atlas_object(texture:Texture2D,index:int,grid:Vector2i,position:Vector2,siz
 
 func draw_deposit(index:int)->void:
  var node:Dictionary=game.sim.resource_nodes[index]
+ if game.sim.terrain_revision>=Map.REAR_WORKYARD_REVISION:
+  if node.kind=="wood":
+   atlas_object(WORKYARD_ART,0,Vector2i(2,1),node.pos+Vector2(44,-8),Vector2(104,70),Vector2(0.5,1.0))
+  else:
+   draw_texture_rect(preload("res://assets/world/rear-limestone.webp"),Rect2(node.pos+Vector2(-100,-120),Vector2(264,94)),false)
+  return
  if game.sim.terrain_revision >= Map.WORKYARD_REVISION:
   var wood:bool=node.kind=="wood"
   var stock:Vector2=node.pos+(Vector2(101,-15) if wood else Vector2(-108,-6))
@@ -445,9 +456,13 @@ func configure_ground(revision:int)->void:
     woodland_surface=ImageTexture.create_from_image(Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_RGBA8,bytes))
   material.set_shader_parameter("surface_mask",woodland_surface if revision>=3 else surface_mask)
   if revision>=Map.WORKYARD_REVISION:
-   var area:Array=Map.workyards.wear_bounds
+   var rear:=revision>=Map.REAR_WORKYARD_REVISION
+   var area:Array=Map.back_workyards.wear_bounds if rear else Map.workyards.wear_bounds
    material.set_shader_parameter("workyard_area",Vector4(area[0],area[1],area[2],area[3]))
-   material.set_shader_parameter("workyard_wear",preload("res://assets/world/workyard-wear.png"))
+   material.set_shader_parameter("workyard_wear",preload("res://assets/world/back-workyard-wear.png") if rear else preload("res://assets/world/workyard-wear.png"))
+   if rear:
+    material.set_shader_parameter("use_rear_roads",true)
+    material.set_shader_parameter("rear_roads",preload("res://assets/world/back-road.png"))
   water.texture=AUTHORED_FLOOR
   var bounds:Array=Map.authored.water_bounds
   var region:=Rect2(bounds[0],bounds[1],bounds[2],bounds[3])
@@ -489,13 +504,18 @@ func configure_environment(revision:int)->void:
   environment_layer.remove_child(node)
   node.queue_free()
  if revision<3: return
- for region in Map.forest_regions():
+ for region in Map.forest_regions(revision):
   var sprite:=Sprite2D.new()
   sprite.texture=load(region.texture)
   sprite.texture_repeat=CanvasItem.TEXTURE_REPEAT_DISABLED
   sprite.centered=false
   sprite.position=region.rect.position
-  sprite.scale=region.rect.size/Vector2(sprite.texture.get_size())
+  var source_size:Vector2=sprite.texture.get_size()
+  if region.region.has_area():
+   sprite.region_enabled=true
+   sprite.region_rect=region.region
+   source_size=region.region.size
+  sprite.scale=region.rect.size/source_size
   environment_layer.add_child(sprite)
  if revision>=4:
   for item in Map.forest_infills():

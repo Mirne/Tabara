@@ -1,3 +1,22 @@
+# Android v0.13.2
+
+The default landscape camera shows both new workyards. The log pile and
+placement square share the end of one timber track. A separate lane serves the quarry
+behind the Hall. The rock face blocks movement and
+construction. Producers can be previewed, built, selected and rebuilt on their
+designated foundations. [Opening and built yards](screenshots/rear-workyards.webp).
+
+Six paid simulations compared the two income curves on the revised
+map using three matched enemy seeds and the same build order. At ten game
+minutes the median credited supply was 6,737 wood and 8,009 stone, up from
+4,260 and 4,964. This particular build order afforded twelve cannons by then,
+up from nine. [Purchases and production measurements](verification/workyards/production.json).
+
+Established v0.13 saves keep their geography and paid levels. An untouched
+Hall-only opening can load the new sites when its enemies are clear of the
+changed terrain. Both single-site layouts use the revised income curve.
+The earlier maps with multiple deposits retain their original output.
+
 # Android v0.13.1
 
 Version code 14 uses the same Android signing certificate as v0.13.0. The release APK is 103,797,728 bytes. Its SHA-256 is

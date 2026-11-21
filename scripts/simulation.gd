@@ -42,6 +42,7 @@ var hit_serial:=0
 var producer_indices:Array[int]=[]
 var producer_approaches:Dictionary={}
 const RESOURCE_NAMES := ["wood", "stone", "gold"]
+const WORKYARD_OUTPUT_BY_LEVEL := [1.0, 1.4, 1.7, 2.0]
 const World = preload("res://scripts/world_data.gd")
 const PATH = World.ROAD
 const MAX_BUILDINGS := 512
@@ -338,7 +339,12 @@ func _scaled_stat(kind: String, key: String, building_level: int, track_rank: in
  var ranks := track_rank - 1
  match key:
   "hp": return base * pow(1.085, grades)
-  "income": return base * pow(1.08, grades)
+  "income":
+   if terrain_revision >= World.WORKYARD_REVISION and kind in ["wood", "stone"]:
+    var opening_level := mini(building_level, WORKYARD_OUTPUT_BY_LEVEL.size())
+    base *= WORKYARD_OUTPUT_BY_LEVEL[opening_level - 1]
+    grades = building_level - opening_level
+   return base * pow(1.08, grades)
   "range": return base + minf(55.0, grades * 0.8) + ARROW_RANGE_PER_RANK * ranks / (1.0 + RADIUS_DIMINISHING_RETURN * ranks)
   "period": return base / ((1.0 + minf(0.5, grades * 0.007)) * (1.0 + ranks * FIRING_RATE_PER_RANK))
   "splash": return base + CANNON_SPLASH_PER_RANK * ranks / (1.0 + RADIUS_DIMINISHING_RETURN * ranks)
@@ -1086,6 +1092,18 @@ static func restore(data: Dictionary):
  sim.cleared_ground.clear()
  for cell in data.cleared_ground: sim.cleared_ground[int(cell)]=true
  sim.buildings=restored
+ if data.version>=12 and layout==World.WORKYARD_REVISION and restored.size()==1 and restored[0].pos==World.HALL:
+  # An opening with just its original Hall can adopt the new sites, unless
+  # a live enemy would be stranded inside their rock face or foundation.
+  var open_for_enemies:=true
+  for enemy in data.enemies:
+   var cell:=World.cell_of(Vector2(enemy.pos[0],enemy.pos[1]))
+   if World.cell_terrain(cell,World.REAR_WORKYARD_REVISION)!=0:
+    open_for_enemies=false
+    break
+  if open_for_enemies:
+   sim.terrain_revision=World.REAR_WORKYARD_REVISION
+   sim.resource_nodes=World.resource_nodes(sim.terrain_revision)
  if data.version<4:
   # Older settlements keep the terrain on which their foundations were built.
   for b in sim.buildings:

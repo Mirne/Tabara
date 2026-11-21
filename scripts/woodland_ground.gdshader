@@ -4,6 +4,8 @@ uniform sampler2D micro_materials : source_color, filter_linear;
 uniform sampler2D water_mask : filter_linear;
 uniform sampler2D surface_mask : filter_linear;
 uniform sampler2D workyard_wear : hint_default_black, filter_linear, repeat_disable;
+uniform bool use_rear_roads=false;
+uniform sampler2D rear_roads : filter_linear, repeat_disable;
 uniform vec4 workyard_area=vec4(0.0);
 uniform vec2 world_size=vec2(8192.0,5120.0);
 vec2 hash2(vec2 p){return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);}
@@ -19,6 +21,7 @@ void fragment(){
  vec2 p=UV*world_size;
  vec3 macro=texture(TEXTURE,UV).rgb;
  vec4 masks=texture(surface_mask,UV);
+ if(use_rear_roads){masks.r=texture(rear_roads,UV).r;}
  vec2 wear=vec2(0.0);
  if(workyard_area.z>0.0){
   vec2 yard_uv=(p-workyard_area.xy)/workyard_area.zw;

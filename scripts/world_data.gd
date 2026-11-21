@@ -18,13 +18,15 @@ const GRID_HEIGHT := 128
 # Two continuous spines meet the map edges, leaving a 480-unit mountain pass.
 const MOUNTAIN_RECTS := [Rect2(3600,0,320,1440),Rect2(3680,1280,480,320),Rect2(4000,1440,240,1120),Rect2(4000,3040,240,2080)]
 const WORKYARD_REVISION := 6
-const AUTHORED_REVISION := WORKYARD_REVISION
+const REAR_WORKYARD_REVISION := 7
+const AUTHORED_REVISION := REAR_WORKYARD_REVISION
 static var terrain_fields:Dictionary={}
 static var authored:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/hearthvale.json"))
 static var woodland:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/woodland.json"))
 static var stronghold:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/stronghold.json"))
 static var open_approach:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/open-approach.json"))
 static var workyards:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/workyards.json"))
+static var back_workyards:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/world/back-workyards.json"))
 static var forest_shapes:Array=[]
 static var forest_pockets:Array=[]
 static var city_shape:=PackedVector2Array()
@@ -44,11 +46,14 @@ static func _static_init()->void:
  for key in woodland.get("forest_cells",[]): canopy_cells[int(key)]=true
  stronghold_infills=_make_forest_infills()
 
-static func forest_regions()->Array:
+static func forest_regions(layout:int=AUTHORED_REVISION)->Array:
  var result:Array=[]
- for item in woodland.regions:
+ var regions:Array=woodland.regions.duplicate()
+ if layout>=REAR_WORKYARD_REVISION: regions.push_front(back_workyards.timber_canopy)
+ for item in regions:
   var a:Array=item.rect
-  result.append({"id":item.id,"belt":item.belt,"texture":item.texture,"rect":Rect2(a[0],a[1],a[2],a[3])})
+  var source:Array=item.get("region",[0,0,0,0])
+  result.append({"id":item.id,"belt":item.belt,"texture":item.texture,"rect":Rect2(a[0],a[1],a[2],a[3]),"region":Rect2(source[0],source[1],source[2],source[3])})
  return result
 
 static func forest_at(p:Vector2)->bool:
@@ -103,6 +108,13 @@ static func polygon(name:String)->PackedVector2Array:
  var result:=PackedVector2Array()
  for pair in authored[name]: result.append(Vector2(pair[0],pair[1]))
  return result
+
+static func trails(layout:int)->Array:
+ if layout<REAR_WORKYARD_REVISION: return authored.trails
+ var network:Array=authored.trails.duplicate()
+ for key in back_workyards.trail_overrides:
+  network[int(key)]=back_workyards.trail_overrides[key]
+ return network
 
 static func authored_landmarks()->Array:
  var result:Array=[]
@@ -181,6 +193,16 @@ static func compute_field(layout:int)->PackedInt32Array:
     for x in range(floori(old_rect.position.x/CELL),ceili(old_rect.end.x/CELL)):
      var key:=y*GRID_WIDTH+x
      if key>=0 and key<field.size() and field[key]==6: field[key]=0
+ if layout>=REAR_WORKYARD_REVISION:
+  for key in back_workyards.forest_cells: field[int(key)]=6
+  var bench:=PackedVector2Array()
+  for p in back_workyards.limestone_footprint: bench.append(Vector2(p[0],p[1]))
+  var bounds:=Rect2(bench[0],Vector2.ZERO)
+  for p in bench: bounds=bounds.expand(p)
+  for y in range(floori(bounds.position.y/CELL),ceili(bounds.end.y/CELL)):
+   for x in range(floori(bounds.position.x/CELL),ceili(bounds.end.x/CELL)):
+    if Geometry2D.is_point_in_polygon(cell_center(Vector2i(x,y)),bench):
+     field[y*GRID_WIDTH+x]=3
  var nodes:=resource_nodes(layout)
  for i in nodes.size():
   var rect:=resource_rect(i,layout)
@@ -270,7 +292,8 @@ static func resource_nodes(layout:int=AUTHORED_REVISION) -> Array:
  if layout>=4:
   var sites := stronghold
   if layout == 5: sites = open_approach
-  elif layout >= WORKYARD_REVISION: sites = workyards
+  elif layout == WORKYARD_REVISION: sites = workyards
+  elif layout >= REAR_WORKYARD_REVISION: sites = back_workyards
   for item in sites.nodes:
    out.append({"pos":Vector2(item.pos[0],item.pos[1]),"kind":item.kind,"zone":item.zone,"amount":float(item.amount)})
   return out

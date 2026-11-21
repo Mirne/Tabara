@@ -133,6 +133,42 @@ func check_migration() -> void:
  check(modern != null and modern.tower_tracks == migrated.tower_tracks and modern.resources == migrated.resources,
    "Migrated settlement can save and reload again without reapplied costs or upgrades")
 
+func check_workyard_income(layout:int) -> void:
+ var sim = Sim.new(14,layout)
+ var wood_rates := [5.0,7.0,8.5,10.0,10.8]
+ var stone_rates := [6.25,8.75,10.625,12.5,13.5]
+ for node in sim.resource_nodes:
+  check(sim.build_at(node.pos,node.kind).is_empty(), "Purchase the designated "+node.kind+" site from starting funds")
+ for tick in 60: sim.step(0.05)
+ for grade in wood_rates.size():
+  var rates:Dictionary=sim.income_rates()
+  check(is_equal_approx(rates.wood,0.8+wood_rates[grade]) and is_equal_approx(rates.stone,0.45+stone_rates[grade]),
+    "Operating yards deliver the quoted wood and stone at level %d on layout %d"%[grade+1,layout])
+  var before:Dictionary=sim.resources.duplicate()
+  for tick in 200: sim.step(0.05)
+  check(is_equal_approx(sim.resources.wood-before.wood,10.0*rates.wood) and is_equal_approx(sim.resources.stone-before.stone,10.0*rates.stone),
+    "Ten game seconds credit the displayed income at level %d"%[grade+1])
+  if grade+1==wood_rates.size(): break
+  for kind in ["wood","stone"]:
+   var index:int=sim.singleton_index(kind)
+   var building:Dictionary=sim.buildings[index]
+   var preview:Dictionary=building.duplicate()
+   preview.level+=1
+   var quote:float=sim.stat(preview,"income")*sim.production_bonus(preview)
+   var expected:float=wood_rates[grade+1] if kind=="wood" else stone_rates[grade+1]
+   check(is_equal_approx(quote,expected),"Local "+kind+" quote uses next level's actual site rate")
+   var stock:Dictionary=sim.resources.duplicate()
+   var price:Array=sim.upgrade_cost(building)
+   check(sim.upgrade_at(index).is_empty() and paid(stock,sim.resources,price),"Purchase "+kind+" upgrade for its quoted price")
+ var restored=Sim.restore(sim.snapshot())
+ check(restored!=null and restored.income_rates()==sim.income_rates() and restored.resources==sim.resources,
+   "Resuming a paid single-yard save keeps production and stored resources")
+ for kind in ["wood","stone"]:
+  var maxed:Dictionary=sim.buildings[sim.singleton_index(kind)].duplicate()
+  maxed.level=Sim.MAX_LEVEL
+  check(is_equal_approx(sim.stat(maxed,"income"),Sim.DEFINITIONS[kind].income*2*pow(1.08,96)),
+    "Late "+kind+" levels compound from their fully developed working site")
+
 func durable_enemy(sim, position: Vector2):
  var enemy: Dictionary = sim.spawn_enemy(0,"elite")
  enemy.pos = position
@@ -178,6 +214,8 @@ func check_weapons() -> void:
 func run() -> void:
  check_progression()
  check_migration()
+ for layout in range(Sim.World.WORKYARD_REVISION,Sim.World.AUTHORED_REVISION+1):
+  check_workyard_income(layout)
  check_weapons()
  print("AGE RESULT: %d checks, %d failures" % [checks,failures])
  quit(1 if failures else 0)

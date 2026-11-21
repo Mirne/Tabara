@@ -23,9 +23,36 @@ func quiet_step(s,seconds:float)->void:
  s.step(seconds)
  s.enemies.clear()
  s.spawn_remaining=0
+func check_workyard_update()->void:
+ var old=Sim.new(77,Map.WORKYARD_REVISION)
+ old.step(0.05)
+ var resumed=roundtrip(old)
+ check(resumed!=null and resumed.terrain_revision==Map.REAR_WORKYARD_REVISION,
+   "An untouched two-yard opening receives the new founding sites on Continue")
+ if resumed==null: return
+ var stone:Vector2=resumed.resource_nodes[1].pos
+ check(stone.x>Map.HALL.x and resumed.navigation.solid(Map.cell_of(stone)) and resumed.placement_error(stone,"stone")=="",
+   "The adopted quarry can be built on its new foundation and blocks enemy navigation")
+ check(old.resources==resumed.resources and is_equal_approx(old.elapsed,resumed.elapsed) and
+   old.enemies[0].pos.is_equal_approx(resumed.enemies[0].pos) and old.rng.state==resumed.rng.state,
+   "Adopting new sites preserves stock, live enemies, clock and random state")
+ var fresh_again=roundtrip(resumed)
+ check(fresh_again!=null and fresh_again.resource_nodes[1].pos==stone,"The adopted layout survives a second save")
+ old.enemies[0].pos=stone
+ var in_battle=roundtrip(old)
+ check(in_battle!=null and in_battle.terrain_revision==Map.WORKYARD_REVISION and in_battle.enemies[0].pos==stone,
+   "A live enemy at the proposed rear foundation keeps its original terrain and position")
+ old.enemies.clear()
+ var old_stone:Vector2=old.resource_nodes[1].pos
+ check(old.build_at(old_stone,"stone")=="","The original quarry is available in the previous layout")
+ var established=roundtrip(old)
+ check(established!=null and established.terrain_revision==Map.WORKYARD_REVISION and
+   established.buildings[1].pos==old_stone and established.resource_nodes[1].pos==old_stone,
+   "The update keeps an established quarry on its paid foundation")
 func run()->void:
+ check_workyard_update()
  var s=Sim.new(7)
- check(s.terrain_revision==6 and s.resource_nodes.size()==2,"New mission has a single timber site and quarry")
+ check(s.terrain_revision==Map.REAR_WORKYARD_REVISION and s.resource_nodes.size()==2,"New mission has a single timber site and rear quarry")
  check(s.buildings.size()==1 and s.enemies.size()==1 and s.enemies[0].progress==0,"Only the hall is prebuilt; enemies start at the western entrance")
  var resource_kinds:Array=[]
  for node in s.resource_nodes:resource_kinds.append(node.kind)
@@ -247,8 +274,9 @@ func run()->void:
  enemy.hp=1e7
  enemy.max_hp=1e7
  enemy.damage=0.01
- s.step(5)
- check(enemy.pos.x<6400 and enemy.target>=2,"Retaliating enemies attack blocking walls before reaching the tower")
+ for tick in 100: s.step(0.05)
+ check(enemy.pos.x<6400 and enemy.target>=2 and s.buildings[enemy.target].hp<s.stat(s.buildings[enemy.target],"hp"),
+   "Retaliating enemies damage a blocking wall before reaching the tower")
  # Producers in legacy outposts remain vulnerable beside their resource cores.
  s=rich(5)
  s.build_at(s.resource_nodes[2].pos,"wood")

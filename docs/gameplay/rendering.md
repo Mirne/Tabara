@@ -33,6 +33,16 @@ Their dirt footprint, picking bounds and health bars match the smaller cell.
 Legacy saved ramparts retain their old physical footprint and share the same
 40-unit visual tiles, so new cells join their perimeter without internal rails.
 
+## Rear workyards
+
+New maps show a single worn timber landing at the forest edge, where the cut
+logs, cart ruts and eligible foundation meet. Remove the redundant trail into
+the eastern side of that clearing, and join the canopy across the retired
+trail tip. The new trees block passage and construction. Place the quarry
+beyond the Hall with a continuous, grass-capped limestone ledge and a working apron off the back road.
+Resource scenery shares its producer's draw order. Preserve the geography of
+earlier paid settlements when loading their map revision.
+
 ## Settlement ages and Workshop presentation
 
 The Hall opens its Age panel from the top bar or a tap on the building. Its

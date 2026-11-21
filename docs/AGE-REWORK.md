@@ -4,7 +4,7 @@
 
 The Main hall advances the settlement through eight medieval tiers. Wood begins with rough beams and shingle roofs. Stone introduces low masonry, Iron adds dark straps and fittings, and Steel brings stronger trusses. Keep, Castle, Citadel and Crown deepen the fortifications through buttresses, battlements, towers and heraldry. Rural buildings keep their working silhouettes: a woodcutter should still read as a woodcutter at Crown. The age names after Iron are design choices.
 
-A new settlement has a single timber yard at the northern woodland edge and one quarry by the southern limestone. The approach through the pass stays clear. A player builds each producer once and spends at its local panel to improve it. Rebuilding uses the same site. The existing Marketplace supplies gold. Loaded settlements keep the sites and producers they paid for.
+A new settlement has a single timber yard at the northern woodland edge and one quarry in the limestone bank east of the Hall. The approach through the pass stays clear. A player builds each producer once and spends at its local panel to improve it. Rebuilding uses the same site. The existing Marketplace supplies gold. Loaded settlements keep the sites and producers they paid for.
 
 ## Implementation and playtest plan
 

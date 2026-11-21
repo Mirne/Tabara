@@ -6,7 +6,7 @@ the **final Warlord arriving at 15:00** to unlock endless survival.
 
 ![Crown age at the Hearthvale pass](docs/screenshots/settlement-crown.webp)
 
-## Version 0.13.1
+## Version 0.13.2
 
 Every settlement starts in **Wood**. Tap **Hall → Age** and use the arrows to
 compare any building with its next-age painting. The same panel shows new
@@ -20,12 +20,19 @@ faster firing and reloading. Later ages raise the maximum research rank. Each
 weapon's three project rows show their exact effects together. Arrowheads also
 shows the damage it adds to Rain of Arrows. [Workshop screenshot](docs/screenshots/workshop-projects.webp).
 
-A new settlement has one timber yard below the northern forest and one quarry
-at the southern limestone shelf. Build on the matching site, then use that
-producer's catalogue card to open its local upgrades. Increasing output makes
-the same yard more productive. Each local panel compares output per second
-and health before spending. A destroyed producer can be rebuilt at level one.
-Earlier saves keep their original geography, standing producers and paid levels.
+A single timber track leads from the settlement road to the log landing at
+the northern forest edge. The quarry works a limestone bank east of the Hall,
+away from the western approach. Tap a producer's catalogue card after building
+to see the next output and purchase its local upgrade. [See the workyards at phone size](docs/screenshots/rear-workyards.webp).
+
+| Output per game second | Level 1 | Level 2 | Level 3 | Level 4 |
+| --- | ---: | ---: | ---: | ---: |
+| Woodcutter | 5 | 7 | 8.5 | 10 |
+| Stonemason | 6.25 | 8.75 | 10.625 | 12.5 |
+
+Each further level adds 8% to the previous level's output. Existing single-site
+settlements get the new yields at their paid levels. Established saves keep
+their foundations. A destroyed yard can be rebuilt at level one.
 
 ## Play on Android
 
@@ -89,8 +96,8 @@ SDK and Java paths in Godot's Editor Settings.
 ```sh
 godot --headless --editor --single-threaded-scene --path . --import --quit
 mkdir -p builds
-godot --headless --path . --export-release Android builds/tabara-frontier-v0.13.1-unpacked.apk
-python3 tools/package_android.py builds/tabara-frontier-v0.13.1-unpacked.apk builds/tabara-frontier-v0.13.1.apk --sdk "$ANDROID_HOME"
+godot --headless --path . --export-release Android builds/tabara-frontier-v0.13.2-unpacked.apk
+python3 tools/package_android.py builds/tabara-frontier-v0.13.2-unpacked.apk builds/tabara-frontier-v0.13.2.apk --sdk "$ANDROID_HOME"
 ```
 
 Set the Godot Android release keystore environment variables before exporting.
@@ -123,10 +130,12 @@ emulator. For a release template, use a disposable rooted AOSP emulator with
 `adb root` and `ANDROID_TEST_ROOT=1` so the harness can verify the app's saved
 state.
 
-`tests/android_patch_update.py` starts a fresh game in the public v0.13.0 APK.
+`tests/android_patch_update.py` starts a fresh game in the public v0.13.1 APK.
 It buys both yards, a Workshop, Stone age, Arrowheads and a woodcutter upgrade
-at their regular prices. It installs v0.13.1 over that game and checks the save,
-camera, stockpiles, positions and paid levels after cold launch. The older
+at their regular prices. It installs v0.13.2 over that game and checks the save,
+camera, stockpiles, positions, paid levels and in-game income after cold launch.
+It then builds both revised workyards in a fresh mission, buys their first
+upgrades and measures the materials actually credited per game second. The older
 `tests/android_upgrade.py` covers the v0.12-to-v0.13.0 migration and all seven
 age advancements with a controlled budget. Both upgrade checks preserve any
 settlement already on the disposable emulator.

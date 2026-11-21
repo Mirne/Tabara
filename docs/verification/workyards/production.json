@@ -1,0 +1,157 @@
+{
+  "method": "Run each enemy seed twice on revision 7, with identical paid orders and defense plots. Each economy order buys its site or upgrades its standing producer. The same market plot (5120, 3040) is available in all six runs. No grants, altered wave times or manual kills. Both runs use the same combat and map code. The control restores the v0.13.1 per-level multiplier for wood and stone only.",
+  "starting_resources": {
+    "wood": 450,
+    "stone": 320,
+    "gold": 180
+  },
+  "measurement": "Total wood and stone credited by five and ten game minutes, including Hall income. Resource receipts balance to better than 0.000001 in every run.",
+  "site_locations": {
+    "wood": [
+      4880,
+      2480
+    ],
+    "stone": [
+      5400,
+      2880
+    ]
+  },
+  "curves": {
+    "v013-rates": "1.08^(level - 1)",
+    "live": "Levels 1 to 4: 1, 1.4, 1.7, 2. Then 2 × 1.08^(level - 4)."
+  },
+  "samples": [
+    {
+      "curve": "v013-rates",
+      "seed": 1,
+      "time_s": 300.0,
+      "wood_earned": 1944.42,
+      "stone_earned": 2246.79,
+      "cannon_towers": 4,
+      "woodcutter_level": 4,
+      "quarry_level": 4,
+      "hall_level": 1
+    },
+    {
+      "curve": "v013-rates",
+      "seed": 1,
+      "time_s": 600.0,
+      "wood_earned": 4260.27,
+      "stone_earned": 4964.13,
+      "cannon_towers": 9,
+      "woodcutter_level": 6,
+      "quarry_level": 6,
+      "hall_level": 5
+    },
+    {
+      "curve": "v013-rates",
+      "seed": 2,
+      "time_s": 300.0,
+      "wood_earned": 1944.42,
+      "stone_earned": 2246.79,
+      "cannon_towers": 4,
+      "woodcutter_level": 4,
+      "quarry_level": 4,
+      "hall_level": 1
+    },
+    {
+      "curve": "v013-rates",
+      "seed": 2,
+      "time_s": 600.0,
+      "wood_earned": 4260.27,
+      "stone_earned": 4964.13,
+      "cannon_towers": 9,
+      "woodcutter_level": 6,
+      "quarry_level": 6,
+      "hall_level": 5
+    },
+    {
+      "curve": "v013-rates",
+      "seed": 3,
+      "time_s": 300.0,
+      "wood_earned": 1944.42,
+      "stone_earned": 2246.79,
+      "cannon_towers": 4,
+      "woodcutter_level": 4,
+      "quarry_level": 4,
+      "hall_level": 1
+    },
+    {
+      "curve": "v013-rates",
+      "seed": 3,
+      "time_s": 600.0,
+      "wood_earned": 4260.27,
+      "stone_earned": 4964.13,
+      "cannon_towers": 9,
+      "woodcutter_level": 6,
+      "quarry_level": 6,
+      "hall_level": 5
+    },
+    {
+      "curve": "live",
+      "seed": 1,
+      "time_s": 300.0,
+      "wood_earned": 2763.15,
+      "stone_earned": 3238.56,
+      "cannon_towers": 6,
+      "woodcutter_level": 5,
+      "quarry_level": 5,
+      "hall_level": 3
+    },
+    {
+      "curve": "live",
+      "seed": 1,
+      "time_s": 600.0,
+      "wood_earned": 6736.8,
+      "stone_earned": 8009.1,
+      "cannon_towers": 12,
+      "woodcutter_level": 9,
+      "quarry_level": 8,
+      "hall_level": 8
+    },
+    {
+      "curve": "live",
+      "seed": 2,
+      "time_s": 300.0,
+      "wood_earned": 2763.15,
+      "stone_earned": 3238.56,
+      "cannon_towers": 6,
+      "woodcutter_level": 5,
+      "quarry_level": 5,
+      "hall_level": 3
+    },
+    {
+      "curve": "live",
+      "seed": 2,
+      "time_s": 600.0,
+      "wood_earned": 6736.8,
+      "stone_earned": 8009.1,
+      "cannon_towers": 12,
+      "woodcutter_level": 9,
+      "quarry_level": 8,
+      "hall_level": 8
+    },
+    {
+      "curve": "live",
+      "seed": 3,
+      "time_s": 300.0,
+      "wood_earned": 2763.15,
+      "stone_earned": 3238.56,
+      "cannon_towers": 6,
+      "woodcutter_level": 5,
+      "quarry_level": 5,
+      "hall_level": 3
+    },
+    {
+      "curve": "live",
+      "seed": 3,
+      "time_s": 600.0,
+      "wood_earned": 6734.62,
+      "stone_earned": 8009.1,
+      "cannon_towers": 12,
+      "woodcutter_level": 9,
+      "quarry_level": 8,
+      "hall_level": 8
+    }
+  ]
+}

@@ -17,6 +17,9 @@ func run()->void:
   data.terrain_fields[str(revision)]=Array(field)
   data.navigation[str(revision)]={"signature":JSON.stringify(Array(field)).sha256_text(),"following":Array(nav.following),"costs":weights}
   print("BAKED layout ",revision," in ",Time.get_ticks_msec()-started,"ms")
+ var rear_trails:=Map.trails(Map.REAR_WORKYARD_REVISION)
+ var back_road:=PackedByteArray()
+ back_road.resize(Map.GRID_WIDTH*Map.GRID_HEIGHT)
  var pixels:=PackedByteArray()
  pixels.resize(Map.GRID_WIDTH*Map.GRID_HEIGHT*4)
  var field:PackedInt32Array=Map.terrain_fields[2]
@@ -24,17 +27,8 @@ func run()->void:
   for x in Map.GRID_WIDTH:
    var index:int=y*Map.GRID_WIDTH+x
    var point:=Map.cell_center(Vector2i(x,y))
-   var road:=0.0
-   for path_index in Map.authored.trails.size():
-    var trail:Array=Map.authored.trails[path_index]
-    var width:float=64 if path_index==0 else 30
-    for i in range(trail.size()-1):
-     var a:=Vector2(trail[i][0],trail[i][1])
-     var b:=Vector2(trail[i+1][0],trail[i+1][1])
-     var distance:float=point.distance_to(Geometry2D.get_closest_point_to_segment(point,a,b))
-     road=maxf(road,1.0-smoothstep(width,width+45,distance))
-   var common:float=((point-Map.HALL)/Vector2(330,230)).length()
-   road=maxf(road,(1.0-smoothstep(0.55,1.25,common))*0.55)
+   var road:=road_at(point,Map.authored.trails)
+   back_road[index]=roundi(road_at(point,rear_trails)*255)
    var rock:=0.0
    var wet:=0.0
    for dy in range(-2,3):
@@ -51,6 +45,10 @@ func run()->void:
    pixels[index*4+1]=roundi(rock*255)
    pixels[index*4+2]=roundi(wet*255)
    pixels[index*4+3]=roundi(dry*255)
+ var rear:=Image.create_from_data(Map.GRID_WIDTH,Map.GRID_HEIGHT,false,Image.FORMAT_L8,back_road)
+ if rear.save_png("res://assets/world/back-road.png")!=OK:
+  quit(1)
+  return
  data["surface_pixels"]=Marshalls.raw_to_base64(pixels)
  var file:=FileAccess.open("res://assets/world/hearthvale.json",FileAccess.WRITE)
  file.store_string(JSON.stringify(data,"",true,true))
@@ -80,3 +78,17 @@ func run()->void:
  woodland_file.close()
  print("WORLD BAKE COMPLETE: ",Map.GRID_WIDTH*Map.GRID_HEIGHT," cells per layout")
  quit()
+
+func road_at(point:Vector2,trails:Array)->float:
+ var road:=0.0
+ for path_index in trails.size():
+  var trail:Array=trails[path_index]
+  var width:float=64 if path_index==0 else 30
+  for i in range(trail.size()-1):
+   var a:=Vector2(trail[i][0],trail[i][1])
+   var b:=Vector2(trail[i+1][0],trail[i+1][1])
+   var distance:float=point.distance_to(Geometry2D.get_closest_point_to_segment(point,a,b))
+   road=maxf(road,1.0-smoothstep(width,width+45,distance))
+ var common:float=((point-Map.HALL)/Vector2(330,230)).length()
+ road=maxf(road,(1.0-smoothstep(0.55,1.25,common))*0.55)
+ return road

@@ -1,18 +1,14 @@
 # Quarry / Stonemason
 
-A new settlement has one stone yard. Its foundation at (4680, 3120) sits on
-the meadow side of the southern limestone spine. A short cart track branches
-from the Hall's southwest road to the working apron. The ledge, cut blocks and
-building share a stable draw order, with stone behind the Stonemason. Tap the
-green foundation and confirm to build. The site itself is scenery.
-
-The limestone face anchors the western edge of the yard. Keep its dressed
-blocks beside the working floor and blend the quarry spoil into the meadow.
-The track and its working apron run up to the same foundation throughout
-placement, construction and rebuilding. The green preview stays visible there.
+A new settlement has one stone yard at (5400, 2880), behind the Hall and
+east of the western assault approach. The working floor faces the rear
+haul road, with an exposed limestone bench at its back. The formation draws
+under the crane and stays in place during construction, destruction and
+rebuilding. Select the Stonemason, tap its green foundation and confirm.
+Resource scenery remains unselectable.
 
 One Stonemason may be built per settlement. Existing saves retain every standing
-quarry, its original foundation, paid levels and production. Build another after
+quarry, its original foundation and paid levels. Build another after
 the last one falls on a valid deposit in that save's layout. A replacement
 starts at level one. Legacy outside quarries still attract enemies.
 
@@ -21,6 +17,12 @@ with the matching-site multiplier of 1.25. Local upgrades are instant through
 level 100 and show current and next production, HP and exact resource cost.
 Level-one upgrade price is 45 wood / 40 stone / 15 gold. Later upgrade prices
 scale by 1.15^(current level - 1), rounded up per resource.
+
+With one quarry site, local levels 1–4 produce 6.25, 8.75, 10.625 and
+12.5 stone per game second on that site. After level 4 each level adds 8%
+to the previous level’s output. The higher rate applies to paid levels in
+existing single-site settlements. Older maps with multiple stone sites keep
+their 8% curve at every level.
 
 Each age painting shows its lifting equipment and dressed limestone above the existing workyard foundation.
 

@@ -164,6 +164,12 @@ crosscut timber and a chopping stump on the northern forest edge and a mossed
 limestone ledge with dressed blocks on the western edge of the southern yard.
 Both stockpiles remain visible when a building occupies the yard.
 
+ImageGen painted the rear limestone bank for the new settlement layout on
+21 November 2026. Its horizontal beds wrap behind the crane, with a worked
+bench in the middle and a higher, turf-covered shoulder to the right. The
+transparent sprite is tightly packed in `assets/world/rear-limestone.webp`
+at 568 × 202 pixels. Revision 6 settlements still use the southern ledge.
+
 The terrain shader uses `workyard-wear.png` to blend its earth and gravel into
 each foundation and the cart tracks that lead to it. Regenerate the material mask
 with `python tools/bake_workyard_tracks.py` after editing the routes in

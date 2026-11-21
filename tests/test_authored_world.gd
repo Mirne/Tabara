@@ -33,6 +33,7 @@ func run()->void:
   check(valid and count>5000,"Every cached route descends safely without corner cutting for layout %d"%layout)
   var original=Sim.new(43,layout)
   original.resources={"wood":400.0,"stone":300.0,"gold":200.0}
+  if layout==Map.WORKYARD_REVISION: original.build_at(original.resource_nodes[0].pos,"wood")
   original.step(7)
   var restored=Sim.restore(JSON.parse_string(JSON.stringify(original.snapshot(),"",true,true)))
   check(restored!=null and restored.terrain_revision==layout and restored.buildings[0].pos==Map.HALL and restored.enemies[0].pos.is_equal_approx(original.enemies[0].pos),"Save roundtrip retains geography and units for layout %d"%layout)
@@ -44,14 +45,20 @@ func run()->void:
    check(migrated!=null and migrated.terrain_revision==layout and migrated.resources==original.resources and migrated.enemies[0].pos.is_equal_approx(original.enemies[0].pos),"Version four settlements retain original geography %d"%layout)
  var s=Sim.new(19)
  s.resources={"wood":1e8,"stone":1e8,"gold":1e8}
- check(s.terrain_revision==6,"New settlements use the connected woodland basin")
+ check(s.terrain_revision==Map.REAR_WORKYARD_REVISION,"New settlements use the rear workyards")
+ var old:=Map.resource_nodes(Map.WORKYARD_REVISION)
+ check(old[0].pos==Vector2(4800,2480) and old[1].pos==Vector2(4680,3120),"Paid original settlements keep both working landings")
+ check(s.resource_nodes[0].pos==Vector2(4880,2480) and s.resource_nodes[1].pos.x>=Map.HALL.x+500,"The timber landing reaches the north canopy and the quarry lies behind the Hall")
+ check(Map.cell_terrain(Map.cell_of(Vector2(5110,2420)),s.terrain_revision)==6 and not s.navigation.passable(Vector2(5110,2420)),"Continuous canopy closes the retired eastern timber pocket")
+ check(s.placement_error(Vector2(5110,2420),"wood")!="","Retired timber-road end is not another producer site")
+ check(Map.cell_terrain(Map.cell_of(Vector2(5460,2780)),s.terrain_revision)==3 and not s.navigation.passable(Vector2(5460,2780)),"The solid limestone bench beside the quarry blocks movement and construction")
  for node in s.resource_nodes:
   if node.kind in ["wood","stone"]:
    check(s.build_at(node.pos,node.kind)=="","Matching producer is buildable on resource site %s"%str(node.pos))
  # Whole 160-unit foundations leave painted trails and the wall opening clear.
  for node in s.resource_nodes:
   var distance:=INF
-  for trail in Map.authored.trails:
+  for trail in Map.trails(s.terrain_revision):
    for i in range(trail.size()-1):
     distance=minf(distance,node.pos.distance_to(Geometry2D.get_closest_point_to_segment(node.pos,Vector2(trail[i][0],trail[i][1]),Vector2(trail[i+1][0],trail[i+1][1]))))
   check(distance>=220,"Resource site is off all painted paths: "+str(node.pos))

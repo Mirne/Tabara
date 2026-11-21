@@ -11,6 +11,6 @@ and the timber stack. The Stonemason's worker moves between the cut blocks and
 its building. Both use the apron in front of the building, turn at each end,
 and begin after construction completes. The two painted work sites and their
 short paths connect the producers to their geography across settlement ages.
-At the northern timber stack and the southern cut face, workers briefly stop
+At the northern timber stack and the cut face, workers briefly stop
 before returning across the worn working floor. The open-sided saw shed and
 outdoor hoist emit smoke when badly damaged.

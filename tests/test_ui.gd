@@ -74,7 +74,7 @@ func run()->void:
  await action("new")
  check(game.screen=="briefing","New settlement opens the briefing")
  await action("start")
- check(game.screen=="mission" and game.sim.terrain_revision==6,"Mission selects the open approach")
+ check(game.screen=="mission" and game.sim.terrain_revision==game.Map.REAR_WORKYARD_REVISION,"Mission selects the rear quarry layout")
  check(game.sim.enemies[0].progress<100 and game.sim.enemies[0].pos.x<400,"Enemies start at the western entrance")
  check(game.selected==-1 and visible_action("build:workshop"),"Initial catalogue shows all construction tools")
  var big:=true
@@ -164,7 +164,7 @@ func run()->void:
  await action("workshop_research")
  check(visible_action("research:regeneration"),"Workshop navigation returns to upgrades")
  # Marketplace shows concrete income upgrades and no trade actions.
- check(game.sim.build_at(Vector2(5500,2920),"market")=="","Fixture builds a paid marketplace")
+ check(game.sim.build_at(Vector2(5120,3040),"market")=="","Fixture builds a paid marketplace clear of both yards")
  var market_index:int=game.sim.buildings.size()-1
  game.sim.buildings[market_index].age=10
  game.selected=market_index

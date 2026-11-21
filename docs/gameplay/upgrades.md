@@ -5,8 +5,13 @@
 Local health/production upgrades are individual purchases at the Hall,
 woodcutter, quarry, Marketplace and Workshop. A replacement starts at one.
 Local building levels and the Workshop wall upgrade go through level 100.
-Their quoted costs grow by 1.15 per level. HP grows by 1.085 and production
-by 1.08. Ordinary upgrades preserve the current health fraction. Wall
+Their quoted costs grow by 1.15 per level and HP grows by 1.085. The first
+four levels of a single-site wood or stone producer yield 1, 1.4, 1.7 and
+2 times its starting output. Each further level multiplies output by 1.08.
+This applies to settlements with one site per resource, including existing
+v0.13 settlements, and uses the level already purchased. Multi-site layouts
+and the Marketplace use a 1.08 multiplier per level from level one.
+Ordinary upgrades preserve the current health fraction. Wall
 upgrades apply to all standing and future wall sections.
 
 Regeneration is available under Workshop Upgrades. Its 100 ranks heal

@@ -85,3 +85,13 @@ requested scope, not a separate owner-confirmed change. A later answer overrides
 ## Settlement ages requested after v0.12
 
 The owner requested Wood, Stone and Iron followed by five more premodern ages at the Main hall. Advancing should visibly change buildings and Workshop research icons. Each tower type gets several distinct upgrades. New settlements have one of each resource building, improved locally, with deliberately placed sites. Use generated paintings and playtest the changing economy. The [rework plan](../AGE-REWORK.md) records the proposed age sequence, implementation work and verification goals.
+
+## Workyard placement and production
+
+Give the timber landing a single visible destination at the woodland edge.
+Put the quarry behind the Hall, away from the western assault, and work it into
+a limestone bank. Early wood and stone upgrades should support one yard each.
+An opening saved on the previous two-yard layout with only its original Hall
+can adopt the new sites if every live enemy remains on open terrain. Preserve
+established settlements' geography, paid buildings and levels. Both single-site
+layouts receive the revised wood and stone income.

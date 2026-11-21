@@ -1198,7 +1198,8 @@ func draw_workshop_tabs()->void:
 func draw_minimap()->void:
  Art.skin(self,Rect2(10,635,251,165),Color(0.9,0.93,0.86),10)
  var map_image:Texture2D=world.legacy_overview if sim.terrain_revision==3 else (world.legacy_stronghold_overview if sim.terrain_revision==4 else world.overview)
- if sim.terrain_revision>=Map.WORKYARD_REVISION: map_image=world.workyard_overview
+ if sim.terrain_revision>=Map.REAR_WORKYARD_REVISION: map_image=world.back_workyard_overview
+ elif sim.terrain_revision==Map.WORKYARD_REVISION: map_image=world.workyard_overview
  if sim.terrain_revision>=3 and map_image!=null: draw_texture_rect(map_image,MINIMAP,false,Color(0.9,0.94,0.88))
  elif world.ground_view!=null: draw_texture_rect(world.ground_view.get_texture(),MINIMAP,false,Color(0.79,0.88,0.75))
  for b in sim.buildings:
